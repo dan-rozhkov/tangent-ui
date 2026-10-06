@@ -4,31 +4,11 @@
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react"
 import type { KeyboardEvent, PointerEvent, ReactNode } from "react"
-import {
-  AnimatePresence,
-  MotionConfig,
-  animate,
-  motion,
-  useMotionValue,
-  useReducedMotion,
-  useTransform,
-} from "motion/react"
+import { AnimatePresence, MotionConfig, animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue, Transition } from "motion/react"
-import {
-  ALargeSmall,
-  Bell,
-  BellOff,
-  ChevronRight,
-  Moon,
-  Presentation,
-  Volume1,
-  Volume2,
-  VolumeX,
-  X,
-} from "lucide-react"
+import { Bell, BellOff, ChevronRight, Headphones, Presentation, Type, Volume1, Volume2, VolumeX, X } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -75,7 +55,12 @@ export interface ControlCenterProps {
 
 type DetailId = "focus" | "notifications"
 type Session = { mode: string; minutes: number; endsAt: number }
-type Toggles = { focus: Session | null; notifications: boolean; channels: Record<string, boolean>; presenting: boolean }
+type Toggles = {
+  focus: Session | null
+  notifications: boolean
+  channels: Record<string, boolean>
+  presenting: boolean
+}
 type Rect = { x: number; y: number; w: number; h: number }
 
 const { blur, duration } = motionTokens
@@ -85,30 +70,44 @@ const standard = [...motionTokens.ease.standard] as Bezier
 /** Duration springs restated as stiffness and damping, so a retarget mid flight keeps the velocity it already has. */
 const physical = ({ visualDuration, bounce }: { visualDuration: number; bounce: number }): Transition => {
   const root = (2 * Math.PI) / (visualDuration * 1.2)
-  return { type: "spring", stiffness: root * root, damping: 2 * (1 - bounce) * root, mass: 1 }
+  return {
+    type: "spring",
+    stiffness: root * root,
+    damping: 2 * (1 - bounce) * root,
+    mass: 1,
+  }
 }
-const GROW = physical(motionTokens.spring.morph)
-const FOLD = physical(motionTokens.spring.smooth)
-/** Content changes inside an open detail follow a beat late and never overshoot. */
-const RESIZE: Transition = { ...FOLD, delay: 0.04 }
+/** The tile grows into its detail and folds back on the same shape spring, with its small overshoot both ways. */
+const MORPH = physical(motionTokens.spring.morph)
+/** Every small control (meter fill, track swell, dial snap, tile press) shares one quick spring. */
 const SNAP = physical(motionTokens.spring.snappy)
-const TILE_RADIUS = 18
-const DETAIL_RADIUS = 20
+const RADIUS = 22
+/** The detail sits this far inside the panel's padding box. */
 const INSET = 8
 const DIAL_MIN = 5
 const DIAL_MAX = 120
-/** Minutes per full turn of the dial; a long session goes round twice. */
-const LAP = 60
-/** iOS style resistance: travel past a limit gives less and less, and never more than `limit`. */
-const rubber = (distance: number, limit: number) => Math.sign(distance) * (1 - 1 / ((Math.abs(distance) * 0.55) / limit + 1)) * limit
+/** Degrees of dial per minute: 120 minutes is one full turn, back at twelve o'clock. */
+const DEG = 3
+const SEGMENTS = 28
 const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value))
+/** Past a limit the knob gives less and less: a reciprocal curve that starts at 0.4 of the pointer's travel. */
+const resist = (excess: number) => (0.4 * excess) / (1 + excess / 222)
+/** A meter pulled past its end stretches at most about 6px, quickly saturating. */
+const stretchOf = (excess: number) => 6 * (1 - Math.exp(-excess / 14))
 
-const clockFormat = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" })
+const clockFormat = new Intl.DateTimeFormat("en-US", {
+  hour: "numeric",
+  minute: "2-digit",
+})
 const defaultFormatTime = (date: Date) => clockFormat.format(date)
 
 const subscribe = () => () => {}
 function useReducedFlag() {
-  const hydrated = useSyncExternalStore(subscribe, () => true, () => false)
+  const hydrated = useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false
+  )
   return !!useReducedMotion() && hydrated
 }
 
@@ -122,7 +121,7 @@ function useNow() {
   return now
 }
 
-/** Icons and status text swap with a short blur. */
+/** Icons swap with a short blur. */
 function Swap({ id, children, className }: { id: string; children: ReactNode; className?: string }) {
   return (
     <AnimatePresence initial={false} mode="popLayout">
@@ -131,7 +130,12 @@ function Swap({ id, children, className }: { id: string; children: ReactNode; cl
         className={cn("inline-flex", className)}
         initial={{ opacity: 0, scale: 0.86, filter: `blur(${blur.subtle}px)` }}
         animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-        exit={{ opacity: 0, scale: 0.86, filter: `blur(${blur.subtle}px)`, transition: { duration: duration.instant, ease: standard } }}
+        exit={{
+          opacity: 0,
+          scale: 0.86,
+          filter: `blur(${blur.subtle}px)`,
+          transition: { duration: duration.instant, ease: standard },
+        }}
         transition={{ duration: duration.fast, ease: enter }}
       >
         {children}
@@ -140,7 +144,30 @@ function Swap({ id, children, className }: { id: string; children: ReactNode; cl
   )
 }
 
-const focusMuted = "outline-none focus-visible:bg-foreground/[0.065]"
+/** A line of status text that rolls: the old line leaves upward as the new one rises in from below, both with a slight blur. */
+function Roll({ id, children, className }: { id: string; children: ReactNode; className?: string }) {
+  return (
+    <AnimatePresence initial={false} mode="popLayout">
+      <motion.span
+        key={id}
+        className={cn("block", className)}
+        initial={{ opacity: 0, y: 8, filter: `blur(${blur.subtle}px)` }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        exit={{
+          opacity: 0,
+          y: -8,
+          filter: `blur(${blur.subtle}px)`,
+          transition: { duration: 0.1, ease: standard },
+        }}
+        transition={{ duration: 0.15, ease: enter }}
+      >
+        {children}
+      </motion.span>
+    </AnimatePresence>
+  )
+}
+
+const hoverFill = "outline-none focus-visible:bg-foreground/[0.06] pointer-fine:hover:bg-foreground/[0.06] pointer-fine:hover:text-foreground"
 
 interface TileProps {
   label: string
@@ -149,84 +176,102 @@ interface TileProps {
   iconKey: string
   on: boolean
   wide?: boolean
-  /** A decorative copy that rides on the morph surface. */
-  ghost?: boolean
   detail?: DetailId
+  /** The chevron's name, which says what the detail holds. */
+  detailLabel?: string
   expanded?: boolean
   onToggle?: () => void
   onOpen?: () => void
-  chevronRef?: (node: HTMLButtonElement | null) => void
 }
 
-/** A toggle with an optional chevron. The ghost copy has the same layout and no controls, so the surface starts as an exact copy. */
-function Tile({ label, status, icon: Icon, iconKey, on, wide, ghost, detail, expanded, onToggle, onOpen, chevronRef }: TileProps) {
-  const ToggleTag = ghost ? "span" : "button"
-  const ChevronTag = ghost ? "span" : "button"
-  const iconDisc = (
-    <span
-      className={cn(
-        "grid size-9 flex-none place-items-center rounded-full transition-[background-color,color] duration-200 ease-standard motion-reduce:transition-none [&_svg]:size-[18px]",
-        on ? "bg-accent text-accent-foreground" : "bg-foreground/[0.07] text-foreground",
-      )}
-    >
-      <Swap id={iconKey}>
-        <Icon aria-hidden="true" />
-      </Swap>
-    </span>
-  )
-  const text = (
-    <span className="flex min-w-0 flex-col text-left">
-      <span className="truncate text-sm leading-body font-medium text-foreground">{label}</span>
-      <span className="relative block h-[1.125rem] overflow-hidden text-xs leading-body text-text-secondary">
-        <Swap id={status} className="truncate whitespace-nowrap">
-          {status}
-        </Swap>
-      </span>
-    </span>
-  )
+/** A toggle that fills the tile, with an optional chevron that opens its detail. */
+function Tile({
+  label,
+  status,
+  icon: Icon,
+  iconKey,
+  on,
+  wide,
+  detail,
+  detailLabel,
+  expanded,
+  onToggle,
+  onOpen,
+  hidden,
+  reduced,
+  className,
+  tileRef,
+}: TileProps & {
+  hidden?: boolean
+  reduced?: boolean
+  className?: string
+  tileRef?: (node: HTMLDivElement | null) => void
+}) {
   return (
-    <div aria-hidden={ghost || undefined} className={cn("flex size-full", wide ? "items-center" : "flex-col")}>
-      <ToggleTag
-        {...(ghost ? {} : { type: "button" as const, "aria-pressed": on, onClick: onToggle })}
+    <div ref={tileRef} className={cn("relative", hidden && "opacity-0", className)}>
+      {/* A press sinks the whole tile slightly; the buttons inside stay flat. */}
+      <motion.div
+        whileTap={reduced ? undefined : { scale: 0.978 }}
+        transition={SNAP}
         className={cn(
-          "flex min-w-0 flex-1 cursor-pointer rounded-[inherit] [-webkit-tap-highlight-color:transparent]",
-          wide ? "h-full items-center gap-3 pl-3" : "flex-col items-start justify-between gap-2 p-3",
-          !ghost && focusMuted,
-          !ghost && "transition-[background-color] duration-160 ease-standard pointer-fine:hover:bg-foreground/[0.035]",
+          "absolute inset-0 rounded-[22px] transition-[background-color] duration-240 ease-standard motion-reduce:transition-none",
+          on ? "bg-[color-mix(in_oklab,var(--foreground)_7%,var(--surface-muted))]" : "bg-surface-muted"
         )}
       >
-        {iconDisc}
-        {text}
-      </ToggleTag>
-      {detail && (
-        <ChevronTag
-          {...(ghost
-            ? {}
-            : {
-                type: "button" as const,
-                ref: chevronRef,
-                "aria-label": `${label} options`,
-                "aria-haspopup": "dialog" as const,
-                "aria-expanded": expanded,
-                onClick: onOpen,
-              })}
+        <button
+          type="button"
+          aria-pressed={on}
+          onClick={onToggle}
           className={cn(
-            "grid size-8 flex-none cursor-pointer place-items-center rounded-full text-text-secondary [-webkit-tap-highlight-color:transparent]",
-            wide ? "mr-3" : "absolute top-3 right-3",
-            !ghost && focusMuted,
-            !ghost && "transition-[background-color,color] duration-160 ease-standard pointer-fine:hover:bg-foreground/[0.065] pointer-fine:hover:text-foreground",
+            "absolute inset-0 flex min-w-0 cursor-pointer rounded-[inherit] text-left outline-none [-webkit-tap-highlight-color:transparent]",
+            wide ? "items-center gap-3 py-3 pr-14 pl-3.5" : "flex-col items-start justify-between px-3.5 py-3"
           )}
         >
-          <ChevronRight className="size-4" aria-hidden="true" />
-        </ChevronTag>
-      )}
+          <span
+            className={cn(
+              "grid size-9 flex-none place-items-center rounded-full transition-[background-color,color,box-shadow] duration-240 ease-standard motion-reduce:transition-none [&_svg]:size-[18px]",
+              on ? "bg-accent text-accent-foreground" : "bg-surface-raised text-text-secondary shadow-resting"
+            )}
+          >
+            <Swap id={iconKey}>
+              <Icon aria-hidden="true" />
+            </Swap>
+          </span>
+          <span className="flex w-full min-w-0 flex-col">
+            <span className="truncate text-sm leading-[1.4] font-medium text-foreground">{label}</span>
+            <span className="relative block h-[16.8px] overflow-hidden text-xs leading-[1.4] text-text-secondary">
+              <Roll id={status} className="truncate whitespace-nowrap">
+                {status}
+              </Roll>
+            </span>
+          </span>
+        </button>
+        {detail && (
+          <button
+            type="button"
+            aria-label={detailLabel}
+            aria-haspopup="dialog"
+            aria-expanded={expanded}
+            onClick={onOpen}
+            className={cn(
+              "absolute grid size-8 cursor-pointer place-items-center rounded-full text-text-secondary [-webkit-tap-highlight-color:transparent]",
+              "transition-[background-color,color] duration-160 ease-standard",
+              hoverFill,
+              wide ? "top-1/2 right-3.5 -translate-y-1/2" : "top-2 right-2"
+            )}
+          >
+            <ChevronRight className="size-4" aria-hidden="true" />
+          </button>
+        )}
+      </motion.div>
     </div>
   )
 }
 
 /**
- * A level on a wide track. It follows the pointer 1:1 from where it was grabbed and stretches with resistance past either end;
- * a tap without a drag jumps there, and the track swells a little while held.
+ * A level drawn as 28 bars. The filled layer is clipped at the exact fractional value, not at bar edges. A drag follows the pointer 1:1
+ * from where it was grabbed and stretches a few pixels past either end; a tap without a drag jumps there on release, and the track swells
+ * while held.
  */
 function Meter({
   label,
@@ -234,8 +279,8 @@ function Meter({
   max,
   step,
   defaultValue,
-  format,
   icon,
+  preview,
   onChange,
   reduced,
 }: {
@@ -244,8 +289,8 @@ function Meter({
   max: number
   step: number
   defaultValue: number
-  format: (value: number) => string
-  icon: (value: number) => { Icon: LucideIcon; key: string }
+  icon: (value: number) => ReactNode
+  preview?: (value: number) => ReactNode
   onChange: (value: number) => void
   reduced: boolean
 }) {
@@ -256,9 +301,16 @@ function Meter({
   const stretch = useMotionValue(1)
   const swell = useMotionValue(1)
   const origin = useMotionValue("0% 50%")
-  const clip = useTransform(fill, f => `inset(0 ${((1 - clamp(f, 0, 1)) * 100).toFixed(3)}% 0 0 round 16px)`)
+  const clip = useTransform(fill, f => `inset(0 ${((1 - clamp(f, 0, 1)) * 100).toFixed(3)}% 0 0)`)
+  // The number follows the animated fill, so a tap counts its way over; the slider's own value is final at once.
+  const shown = useTransform(fill, f => `${clamp(Math.round((min + f * span) / step) * step, min, max)}%`)
   const trackRef = useRef<HTMLDivElement>(null)
-  const drag = useRef<{ id: number; x: number; from: number; moved: boolean } | null>(null)
+  const drag = useRef<{
+    id: number
+    x: number
+    from: number
+    moved: boolean
+  } | null>(null)
   const latest = useRef(value)
   const fillAnim = useRef<AnimationPlaybackControls | null>(null)
 
@@ -275,22 +327,28 @@ function Meter({
     if (reduced) fill.jump(target)
     else fillAnim.current = animate(fill, target, SNAP)
   }
-  const settleStretch = () => {
+  const settle = () => {
     if (reduced) {
       stretch.jump(1)
       swell.jump(1)
       return
     }
-    animate(stretch, 1, physical(motionTokens.spring.morph))
+    animate(stretch, 1, SNAP)
     animate(swell, 1, SNAP)
   }
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0 || !event.isPrimary) return
     event.currentTarget.setPointerCapture(event.pointerId)
+    // A fill still gliding from a tap is picked up where it is.
     fillAnim.current?.stop()
-    drag.current = { id: event.pointerId, x: event.clientX, from: fill.get(), moved: false }
-    if (!reduced) animate(swell, 1.06, SNAP)
+    drag.current = {
+      id: event.pointerId,
+      x: event.clientX,
+      from: fill.get(),
+      moved: false,
+    }
+    if (!reduced) animate(swell, 1.18, SNAP)
     trackRef.current?.focus({ preventScroll: true })
   }
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
@@ -303,12 +361,11 @@ function Meter({
     const raw = state.from + dx / width
     const kept = clamp(raw, 0, 1)
     fill.set(kept)
-    // Past an end the whole track gives a little, anchored at the far side, so the limit reads as elastic rather than a wall.
-    const over = (raw - kept) * width
+    // Past an end the track gives a few pixels, anchored at the far side, so the limit reads as elastic rather than a wall.
     if (!reduced) {
-      const give = rubber(over, 14)
-      origin.set(give >= 0 ? "0% 50%" : "100% 50%")
-      stretch.set(1 + Math.abs(give) / width)
+      const over = (raw - kept) * width
+      origin.set(over >= 0 ? "0% 50%" : "100% 50%")
+      stretch.set(1 + stretchOf(Math.abs(over)) / width)
     }
     commit(stepped(kept))
   }
@@ -323,8 +380,8 @@ function Meter({
         commit(next)
         glideTo(next)
       }
-    } else glideTo(latest.current)
-    settleStretch()
+    } else if (state.moved) fill.set((latest.current - min) / span)
+    settle()
   }
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     const keys: Record<string, number> = {
@@ -341,36 +398,34 @@ function Meter({
     else if (event.key in keys) next = clamp(latest.current + keys[event.key], min, max)
     else return
     event.preventDefault()
-    // A key pressed at a limit nudges the track instead of doing nothing.
-    if (next === latest.current && !reduced && event.key in keys) {
-      origin.set(keys[event.key] > 0 ? "0% 50%" : "100% 50%")
-      animate(stretch, [1, 1.025, 1], { duration: 0.32, ease: standard })
-    }
     commit(next)
     glideTo(next)
   }
 
-  const { Icon, key } = icon(value)
-  const overlay = (inverse: boolean) => (
-    <span
-      className={cn(
-        "pointer-events-none absolute inset-0 flex items-center justify-between px-3.5 text-sm leading-body font-medium tabular-nums [&_svg]:size-[18px]",
-        inverse ? "text-background" : "text-foreground",
-      )}
-      aria-hidden="true"
-    >
-      <Swap id={key}>
-        <Icon />
-      </Swap>
-      <span>{format(value)}</span>
-    </span>
-  )
+  const bars = (filled: boolean) =>
+    Array.from({ length: SEGMENTS }, (_, index) => (
+      <span
+        key={index}
+        className={cn("h-full min-w-0 flex-1 rounded-[2px]", filled ? "bg-foreground" : "bg-foreground/[0.11]")}
+        // The filled ink thins slightly toward the far end.
+        style={filled ? { opacity: 1 - (0.12 * index) / (SEGMENTS - 1) } : undefined}
+      />
+    ))
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <span id={labelId} className="pl-1 text-xs leading-body text-text-secondary">
-        {label}
-      </span>
+    <div className="flex flex-col gap-[11px]">
+      <div className="flex h-[18px] items-center gap-2 text-foreground">
+        <span className="flex-none [&_svg]:size-4" aria-hidden="true">
+          {icon(value)}
+        </span>
+        <span id={labelId} className="min-w-0 flex-1 truncate text-sm leading-[1.4]">
+          {label}
+        </span>
+        {preview?.(value)}
+        <motion.span className="min-w-[2.6em] text-right text-xs leading-[1.4] text-text-secondary tabular-nums" aria-hidden="true">
+          {shown}
+        </motion.span>
+      </div>
       <div
         ref={trackRef}
         role="slider"
@@ -379,24 +434,19 @@ function Meter({
         aria-valuemin={min}
         aria-valuemax={max}
         aria-valuenow={value}
-        aria-valuetext={format(value)}
+        aria-valuetext={`${value}%`}
         aria-orientation="horizontal"
         onKeyDown={onKeyDown}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerEnd}
         onPointerCancel={onPointerEnd}
-        className="group/meter relative h-11 cursor-pointer touch-pan-y outline-none select-none [-webkit-tap-highlight-color:transparent]"
+        className="relative h-[30px] cursor-ew-resize touch-pan-y outline-none select-none [-webkit-tap-highlight-color:transparent]"
       >
-        <motion.span
-          className="absolute inset-0 block rounded-[16px] bg-foreground/[0.07] transition-[background-color] duration-160 ease-standard group-focus-visible/meter:bg-foreground/[0.11]"
-          style={{ scaleX: stretch, scaleY: swell, transformOrigin: origin }}
-          aria-hidden="true"
-        >
-          <motion.span className="absolute inset-0 block rounded-[16px] bg-foreground" style={{ clipPath: clip }} />
-          {overlay(false)}
-          <motion.span className="absolute inset-0 block" style={{ clipPath: clip }}>
-            {overlay(true)}
+        <motion.span className="absolute inset-0 block" style={{ scaleX: stretch, scaleY: swell, transformOrigin: origin }} aria-hidden="true">
+          <span className="absolute inset-0 flex gap-[3px]">{bars(false)}</span>
+          <motion.span className="absolute inset-0 flex gap-[3px]" style={{ clipPath: clip }}>
+            {bars(true)}
           </motion.span>
         </motion.span>
       </div>
@@ -405,8 +455,8 @@ function Meter({
 }
 
 /**
- * The session length. The knob counts minutes as it travels, keeps counting across twelve o'clock into a second lap,
- * resists past 5 and 120 minutes, and springs to 5 minute steps on release.
+ * The session length: 3 degrees per minute clockwise from twelve o'clock, so 120 minutes is a full turn. The knob follows the pointer's
+ * angle, counting whole minutes as it goes; it clamps at 5 and 120 minutes with a reciprocal give, and springs to 5 minute steps on release.
  */
 function DurationDial({
   value,
@@ -419,27 +469,21 @@ function DurationDial({
   untilText: (minutes: number) => string
   reduced: boolean
 }) {
-  const minutes = useMotionValue(value)
+  const angle = useMotionValue(value * DEG)
   const [count, setCount] = useState(value)
-  const drag = useRef<{ id: number; angle: number; raw: number } | null>(null)
+  const drag = useRef<{ id: number; last: number; raw: number } | null>(null)
   const anim = useRef<AnimationPlaybackControls | null>(null)
   const ref = useRef<HTMLDivElement>(null)
-  const R = 42
-  const C = 2 * Math.PI * R
-  const lap1 = useTransform(minutes, m => `${(clamp(m / LAP, 0, 1) * C).toFixed(2)} ${C}`)
-  const lap2 = useTransform(minutes, m => `${(clamp((m - LAP) / LAP, 0, 1) * C).toFixed(2)} ${C}`)
-  /* A zero length dash with a round cap would still draw a dot, so the second lap shows only once it starts. */
-  const lap2Opacity = useTransform(minutes, m => (m > LAP + 0.05 ? 1 : 0))
-  const knobX = useTransform(minutes, m => 50 + R * Math.sin((m / LAP) * 2 * Math.PI))
-  const knobY = useTransform(minutes, m => 50 - R * Math.cos((m / LAP) * 2 * Math.PI))
+  const dash = useTransform(angle, a => `${clamp(a / 360, 0, 1).toFixed(4)} 1`)
+  const arm = useTransform(angle, a => `rotate(${a.toFixed(2)}deg)`)
 
   const glide = useCallback(
     (to: number) => {
       anim.current?.stop()
-      if (reduced) minutes.jump(to)
-      else anim.current = animate(minutes, to, SNAP)
+      if (reduced) angle.jump(to)
+      else anim.current = animate(angle, to, SNAP)
     },
-    [minutes, reduced],
+    [angle, reduced]
   )
 
   // A new seed from outside (a different mode) glides the knob over.
@@ -448,63 +492,88 @@ function DurationDial({
     if (seen.current === value || drag.current) return
     seen.current = value
     setCount(value)
-    glide(value)
+    glide(value * DEG)
   }, [glide, value])
 
+  /** The pointer's angle in degrees, clockwise from twelve o'clock, 0 to 360. */
   const angleAt = (event: PointerEvent<HTMLDivElement>) => {
     const rect = ref.current!.getBoundingClientRect()
-    return Math.atan2(event.clientX - (rect.left + rect.width / 2), -(event.clientY - (rect.top + rect.height / 2)))
+    const deg = (Math.atan2(event.clientX - (rect.left + rect.width / 2), -(event.clientY - (rect.top + rect.height / 2))) * 180) / Math.PI
+    return (deg + 360) % 360
+  }
+  const lo = DIAL_MIN * DEG
+  const hi = DIAL_MAX * DEG
+  const follow = (raw: number) => {
+    const kept = clamp(raw, lo, hi)
+    const shown = raw > hi ? hi + resist(raw - hi) : raw < lo ? lo - resist(lo - raw) : raw
+    const minutes = Math.round(kept / DEG)
+    if (reduced) angle.jump(clamp(Math.round(minutes / 5) * 5, DIAL_MIN, DIAL_MAX) * DEG)
+    else if (anim.current?.state === "running") anim.current = animate(angle, shown, SNAP)
+    else angle.set(shown)
+    setCount(minutes)
   }
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0 || !event.isPrimary) return
     event.currentTarget.setPointerCapture(event.pointerId)
-    anim.current?.stop()
     ref.current?.focus({ preventScroll: true })
-    drag.current = { id: event.pointerId, angle: angleAt(event), raw: clamp(minutes.get(), DIAL_MIN, DIAL_MAX) }
+    const pointer = angleAt(event)
+    // Of the turns that land on the pointer, take the one nearest the knob, so a press near twelve o'clock stays on its side.
+    const current = angle.get()
+    const raw = [pointer - 360, pointer, pointer + 360].reduce((best, option) =>
+      Math.abs(option - current) < Math.abs(best - current) ? option : best
+    )
+    drag.current = { id: event.pointerId, last: pointer, raw }
+    anim.current?.stop()
+    if (!reduced) anim.current = animate(angle, clamp(raw, lo, hi), SNAP)
+    follow(raw)
   }
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
     const state = drag.current
     if (!state || state.id !== event.pointerId) return
-    const angle = angleAt(event)
-    let delta = angle - state.angle
-    // Unwrap across twelve o'clock so the count keeps going instead of jumping a lap.
-    if (delta > Math.PI) delta -= 2 * Math.PI
-    if (delta < -Math.PI) delta += 2 * Math.PI
-    state.angle = angle
-    state.raw += (delta / (2 * Math.PI)) * LAP
-    // Past the limits the knob still moves, but less and less; the raw angle is kept so turning back feels anchored.
-    const raw = state.raw
-    const shown = raw < DIAL_MIN ? DIAL_MIN + rubber(raw - DIAL_MIN, 4) : raw > DIAL_MAX ? DIAL_MAX + rubber(raw - DIAL_MAX, 4) : raw
-    minutes.set(reduced ? clamp(raw, DIAL_MIN, DIAL_MAX) : shown)
-    // Without travel to follow, the reduced dial moves in the same 5 minute steps it lands on.
-    if (reduced) minutes.set(clamp(Math.round(raw / 5) * 5, DIAL_MIN, DIAL_MAX))
-    setCount(clamp(Math.round(raw), DIAL_MIN, DIAL_MAX))
+    const pointer = angleAt(event)
+    // Unwrapped across twelve o'clock, so the limit is a wall to push against rather than a jump to the other end.
+    let delta = pointer - state.last
+    if (delta > 180) delta -= 360
+    if (delta < -180) delta += 360
+    state.last = pointer
+    state.raw += delta
+    follow(state.raw)
   }
   const onPointerEnd = (event: PointerEvent<HTMLDivElement>) => {
     const state = drag.current
     if (!state || state.id !== event.pointerId) return
     drag.current = null
-    const snapped = clamp(Math.round(state.raw / 5) * 5, DIAL_MIN, DIAL_MAX)
+    const snapped = clamp(Math.round(clamp(state.raw, lo, hi) / DEG / 5) * 5, DIAL_MIN, DIAL_MAX)
     seen.current = snapped
     setCount(snapped)
-    glide(snapped)
+    glide(snapped * DEG)
     onChange(snapped)
   }
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const steps: Record<string, number> = { ArrowRight: 5, ArrowUp: 5, ArrowLeft: -5, ArrowDown: -5, PageUp: 15, PageDown: -15 }
+    const steps: Record<string, number> = {
+      ArrowRight: 5,
+      ArrowUp: 5,
+      ArrowLeft: -5,
+      ArrowDown: -5,
+      PageUp: 15,
+      PageDown: -15,
+    }
+    const base = clamp(Math.round(count / 5) * 5, DIAL_MIN, DIAL_MAX)
     let next: number
     if (event.key === "Home") next = DIAL_MIN
     else if (event.key === "End") next = DIAL_MAX
-    else if (event.key in steps) next = clamp(count + steps[event.key], DIAL_MIN, DIAL_MAX)
+    else if (event.key in steps) next = clamp(base + steps[event.key], DIAL_MIN, DIAL_MAX)
     else return
     event.preventDefault()
     seen.current = next
     setCount(next)
-    glide(next)
+    glide(next * DEG)
     onChange(next)
   }
 
-  const until = untilText(count)
+  // The count reads whole minutes while dragging; the value and its end time use the 5 minute step it will land on.
+  const quantized = clamp(Math.round(count / 5) * 5, DIAL_MIN, DIAL_MAX)
+  const until = untilText(quantized)
   return (
     <div
       ref={ref}
@@ -513,67 +582,103 @@ function DurationDial({
       aria-label="Session length"
       aria-valuemin={DIAL_MIN}
       aria-valuemax={DIAL_MAX}
-      aria-valuenow={count}
-      aria-valuetext={`${count} minutes, until ${until}`}
+      aria-valuenow={quantized}
+      aria-valuetext={`${quantized} minutes, until ${until}`}
       onKeyDown={onKeyDown}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerEnd}
       onPointerCancel={onPointerEnd}
-      className="group/dial relative mx-auto size-[164px] flex-none cursor-grab touch-none rounded-full outline-none select-none active:cursor-grabbing max-[359px]:size-[150px]"
+      className="relative mx-auto size-[164px] flex-none cursor-grab touch-none rounded-full outline-none select-none active:cursor-grabbing max-[359px]:size-[150px]"
     >
-      <svg viewBox="0 0 100 100" className="absolute inset-0 size-full overflow-visible" aria-hidden="true">
-        <circle
-          cx="50"
-          cy="50"
-          r={R}
+      <svg viewBox="0 0 200 200" className="absolute inset-0 size-full overflow-visible" aria-hidden="true">
+        {Array.from({ length: 24 }, (_, index) => {
+          const major = index % 6 === 0
+          return (
+            <line
+              key={index}
+              x1="100"
+              y1="22"
+              x2="100"
+              y2="32"
+              transform={`rotate(${index * 15} 100 100)`}
+              strokeWidth={major ? 2 : 1.5}
+              className={major ? "stroke-foreground/[0.36]" : "stroke-foreground/[0.16]"}
+            />
+          )
+        })}
+        <circle cx="100" cy="100" r="94" fill="none" strokeWidth="4" className="stroke-foreground/[0.08]" />
+        <motion.circle
+          cx="100"
+          cy="100"
+          r="94"
           fill="none"
-          strokeWidth="7"
-          className="stroke-foreground/[0.07] transition-[stroke] duration-160 group-focus-visible/dial:stroke-foreground/[0.12]"
+          strokeWidth="4"
+          pathLength={1}
+          transform="rotate(-90 100 100)"
+          className="stroke-accent"
+          style={{ strokeDasharray: dash }}
         />
-        <g transform="rotate(-90 50 50)">
-          <motion.circle cx="50" cy="50" r={R} fill="none" strokeWidth="7" strokeLinecap="round" className="stroke-accent/45" style={{ strokeDasharray: lap1 }} />
-          <motion.circle cx="50" cy="50" r={R} fill="none" strokeWidth="7" strokeLinecap="round" className="stroke-accent" style={{ strokeDasharray: lap2, opacity: lap2Opacity }} />
-        </g>
-        <motion.circle cx={knobX} cy={knobY} r="6.4" className="fill-control-thumb stroke-border-strong" strokeWidth="0.6" style={{ filter: "drop-shadow(0 1px 1.5px rgb(0 0 0 / .18))" }} />
       </svg>
+      <motion.span className="pointer-events-none absolute inset-0 block" style={{ transform: arm }} aria-hidden="true">
+        <span className="absolute top-[calc(3%-8px)] left-[calc(50%-8px)] size-4 rounded-full border-[3px] border-accent bg-surface-raised shadow-raised" />
+      </motion.span>
       <span className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
-        <span className="flex items-baseline gap-1">
-          <span className="font-display text-[2rem] leading-none font-medium tracking-display text-foreground tabular-nums">{count}</span>
-          <span className="text-xs leading-body text-text-secondary">min</span>
+        <span className="flex items-baseline gap-0.5">
+          <span className="text-[36px] leading-9 text-foreground tabular-nums">{count}</span>
+          <span className="text-sm leading-[1.4] text-text-secondary">min</span>
         </span>
-        <span className="mt-1 text-xs leading-body text-text-secondary tabular-nums">until {until}</span>
+        <span className="mt-0.5 text-xs leading-[1.4] text-text-secondary tabular-nums">Until {until}</span>
       </span>
     </div>
   )
 }
 
+/** The detail's header: the tile's icon on the accent disc, the title, and a close button. It rides on the surface from the first frame. */
+function DetailHead({ titleId, title, icon: Icon, onClose }: { titleId: string; title: string; icon: LucideIcon; onClose: () => void }) {
+  return (
+    <div className="flex h-[52px] flex-none items-center gap-3 pr-3 pl-3.5">
+      <span className="grid size-9 flex-none place-items-center rounded-full bg-accent text-accent-foreground [&_svg]:size-[18px]">
+        <Icon aria-hidden="true" />
+      </span>
+      <h2 id={titleId} className="min-w-0 flex-1 truncate text-sm leading-[1.1] font-medium">
+        {title}
+      </h2>
+      <button
+        type="button"
+        aria-label="Close"
+        data-autofocus=""
+        onClick={onClose}
+        className="grid size-8 flex-none cursor-pointer place-items-center rounded-full bg-surface-raised text-foreground shadow-resting outline-none [-webkit-tap-highlight-color:transparent] focus-visible:bg-foreground/[0.06]"
+      >
+        <X className="size-4" aria-hidden="true" />
+      </button>
+    </div>
+  )
+}
+
 function FocusDetail({
-  titleId,
   modes,
-  people,
   session,
   now,
   formatTime,
   reduced,
+  layoutKey,
   onStart,
   onEnd,
-  onClose,
 }: {
-  titleId: string
   modes: ControlCenterFocusMode[]
-  people: ControlCenterPerson[]
   session: Session | null
   now: number
   formatTime: (date: Date) => string
   reduced: boolean
+  layoutKey: string
   onStart: (mode: string, minutes: number) => void
   onEnd: () => void
-  onClose: () => void
 }) {
   const descId = useId()
   const [mode, setMode] = useState(session?.mode ?? modes[0]?.id ?? "")
-  const [minutes, setMinutes] = useState(() => session?.minutes ?? modes[0]?.defaultMinutes ?? 25)
+  const [minutes, setMinutes] = useState(() => session?.minutes ?? clamp(modes[0]?.defaultMinutes ?? 25, DIAL_MIN, DIAL_MAX))
   const picked = modes.find(item => item.id === mode) ?? modes[0]
   const pick = (next: ControlCenterFocusMode, focus = false, group?: HTMLElement) => {
     setMode(next.id)
@@ -598,149 +703,156 @@ function FocusDetail({
   const untilText = (value: number) => formatTime(new Date(now + value * 60_000))
 
   return (
-    <div className="flex flex-col gap-3 p-3">
-      <div className="flex h-8 items-center gap-2 pl-1">
-        <h2 id={titleId} className="min-w-0 flex-1 truncate text-base leading-body font-medium">
-          Focus
-        </h2>
-        <button
-          type="button"
-          aria-label="Close"
-          onClick={onClose}
-          className={cn("grid size-8 flex-none cursor-pointer place-items-center rounded-full text-text-secondary pointer-fine:hover:bg-foreground/[0.065]", focusMuted)}
-        >
-          <X className="size-4" aria-hidden="true" />
-        </button>
-      </div>
-      <div role="radiogroup" aria-label="Focus mode" aria-describedby={descId} onKeyDown={onRadioKey} className="flex gap-1">
+    <div className="flex min-h-full flex-col gap-2.5 px-3.5 pt-2 pb-3.5">
+      <div
+        role="radiogroup"
+        aria-label="Mode"
+        aria-describedby={descId}
+        onKeyDown={onRadioKey}
+        className="flex flex-none rounded-full bg-foreground/[0.06] p-0.5"
+      >
         {modes.map(item => {
           const on = item.id === mode
-          const Icon = item.icon
           return (
             <button
               key={item.id}
               type="button"
               role="radio"
               data-mode={item.id}
-              data-autofocus={on ? "" : undefined}
               aria-checked={on}
               tabIndex={on ? 0 : -1}
               onClick={() => pick(item)}
               className={cn(
-                "relative inline-flex h-9 min-w-0 flex-auto cursor-pointer items-center justify-center gap-1.5 rounded-full px-2.5 text-sm leading-body font-medium whitespace-nowrap",
+                "relative isolate h-[30px] min-w-0 flex-1 cursor-pointer truncate rounded-full px-2 text-xs leading-none font-medium whitespace-nowrap outline-none",
                 "transition-[color] duration-160 ease-standard",
-                on ? "text-background" : "text-foreground pointer-fine:hover:bg-foreground/[0.065] focus-visible:bg-foreground/[0.065]",
-                "outline-none",
+                on ? "text-foreground" : "text-text-secondary focus-visible:text-foreground pointer-fine:hover:text-foreground"
               )}
             >
               {on && (
                 <motion.span
-                  layoutId={`${titleId}-mode`}
-                  className="absolute inset-0 -z-0 rounded-full bg-foreground"
-                  transition={reduced ? { duration: 0 } : motionTokens.spring.morph}
+                  layoutId={`${layoutKey}-mode`}
+                  className="absolute inset-0 -z-10 rounded-full bg-surface-raised shadow-resting"
+                  transition={reduced ? { duration: 0 } : MORPH}
                   aria-hidden="true"
                 />
               )}
-              <Icon className="relative size-4 flex-none" aria-hidden="true" />
-              <span className="relative truncate">{item.label}</span>
+              {item.label}
             </button>
           )
         })}
       </div>
-      <p id={descId} className="-mt-1 h-[1.125rem] overflow-hidden text-center text-xs leading-body text-text-secondary">
-        <Swap id={picked?.id ?? ""}>{picked?.description}</Swap>
+      <p id={descId} className="relative h-[16.8px] flex-none overflow-hidden text-center text-xs leading-[1.4] text-text-secondary">
+        <Roll id={picked?.id ?? ""}>{picked?.description}</Roll>
       </p>
       <DurationDial value={minutes} onChange={setMinutes} untilText={untilText} reduced={reduced} />
-      {people.length > 0 && (
-        <div className="flex items-center justify-center gap-2">
-          <ul className="flex -space-x-1.5" aria-label="Can still reach you">
-            {people.map(person => (
-              <li key={person.id} className="rounded-full ring-2 ring-surface-raised">
-                <img src={person.avatar} alt={person.name} title={person.name} className="size-6 rounded-full object-cover" />
-              </li>
-            ))}
-          </ul>
-          <span className="text-xs leading-body text-text-secondary" aria-hidden="true">
-            can still reach you
-          </span>
-        </div>
-      )}
-      <div className="flex gap-2">
+      <div className="mt-auto flex flex-none gap-2 pt-2">
         {session && (
-          <Button variant="secondary" className="min-h-10 flex-1 rounded-full" onClick={onEnd}>
+          <button
+            type="button"
+            onClick={onEnd}
+            className="h-[38px] flex-1 cursor-pointer rounded-full bg-foreground/[0.06] text-sm font-medium text-foreground transition-[background-color] duration-160 ease-standard outline-none focus-visible:bg-foreground/[0.1] pointer-fine:hover:bg-foreground/[0.1]"
+          >
             End session
-          </Button>
+          </button>
         )}
-        <Button className="min-h-10 flex-1 rounded-full" onClick={() => onStart(mode, minutes)}>
+        <button
+          type="button"
+          onClick={() => onStart(mode, minutes)}
+          className="h-[38px] flex-1 cursor-pointer rounded-full bg-foreground text-sm font-medium text-background transition-opacity duration-160 ease-standard outline-none focus-visible:opacity-85 pointer-fine:hover:opacity-90"
+        >
           {session ? "Update session" : "Start session"}
-        </Button>
+        </button>
       </div>
     </div>
   )
 }
 
+function SwitchRow({
+  id,
+  label,
+  description,
+  checked,
+  onChange,
+}: {
+  id: string
+  label: string
+  description?: string
+  checked: boolean
+  onChange: (on: boolean) => void
+}) {
+  return (
+    <div className="flex items-center gap-3 py-[7px]">
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span id={id} className="truncate text-sm leading-[1.4]">
+          {label}
+        </span>
+        {description && (
+          <span id={`${id}-d`} className="truncate text-xs leading-[1.4] text-text-secondary">
+            {description}
+          </span>
+        )}
+      </span>
+      <Switch
+        aria-labelledby={id}
+        aria-describedby={description ? `${id}-d` : undefined}
+        checked={checked}
+        onCheckedChange={onChange}
+        className="min-h-0"
+      />
+    </div>
+  )
+}
+
 function NotificationsDetail({
-  titleId,
   channels,
+  people,
   on,
   channelOn,
   onMaster,
   onChannel,
-  onClose,
 }: {
-  titleId: string
   channels: ControlCenterChannel[]
+  people: ControlCenterPerson[]
   on: boolean
   channelOn: Record<string, boolean>
   onMaster: (on: boolean) => void
   onChannel: (id: string, on: boolean) => void
-  onClose: () => void
 }) {
   const uid = useId()
+  const shown = people.slice(0, 3)
+  const names = shown.map(person => person.name.split(" ")[0]).join(", ")
   return (
-    <div className="flex flex-col gap-2 p-3">
-      <div className="flex h-8 items-center gap-2 pl-1">
-        <h2 id={titleId} className="min-w-0 flex-1 truncate text-base leading-body font-medium">
-          Notifications
-        </h2>
-        <button
-          type="button"
-          aria-label="Close"
-          onClick={onClose}
-          className={cn("grid size-8 flex-none cursor-pointer place-items-center rounded-full text-text-secondary pointer-fine:hover:bg-foreground/[0.065]", focusMuted)}
-        >
-          <X className="size-4" aria-hidden="true" />
-        </button>
-      </div>
-      <div className="flex items-center gap-3 rounded-[14px] bg-foreground/[0.04] px-3 py-2.5">
-        <span id={`${uid}-all`} className="min-w-0 flex-1 text-sm leading-body font-medium">
-          Allow notifications
-        </span>
-        <Switch data-autofocus="" aria-labelledby={`${uid}-all`} checked={on} onCheckedChange={onMaster} className="min-h-0" />
+    <div className="flex min-h-full flex-col gap-2.5 px-3.5 pt-2 pb-3.5">
+      <div className="border-b border-border pb-1.5">
+        <SwitchRow id={`${uid}-all`} label="All notifications" description="Delivered as they arrive" checked={on} onChange={onMaster} />
       </div>
       <ul className="flex flex-col" aria-label="Channels">
         {channels.map(channel => (
-          <li key={channel.id} className="flex items-center gap-3 border-b border-border-subtle px-3 py-2.5 last:border-b-0">
-            <span className={cn("flex min-w-0 flex-1 flex-col transition-opacity duration-200", !on && "opacity-55")}>
-              <span id={`${uid}-${channel.id}`} className="truncate text-sm leading-body">
-                {channel.label}
-              </span>
-              {channel.description && (
-                <span id={`${uid}-${channel.id}-d`} className="truncate text-xs leading-body text-text-secondary">
-                  {channel.description}
-                </span>
-              )}
-            </span>
-            <Switch
-              aria-labelledby={`${uid}-${channel.id}`}
-              aria-describedby={channel.description ? `${uid}-${channel.id}-d` : undefined}
+          <li key={channel.id}>
+            <SwitchRow
+              id={`${uid}-${channel.id}`}
+              label={channel.label}
+              description={channel.description}
               checked={!!channelOn[channel.id]}
-              onCheckedChange={next => onChannel(channel.id, next)}
-              className="min-h-0"
+              onChange={next => onChannel(channel.id, next)}
             />
           </li>
         ))}
       </ul>
+      {shown.length > 0 && (
+        <div className="mt-auto flex items-center gap-3 border-t border-border pt-3">
+          <ul className="flex flex-none" aria-label="Can reach you during focus">
+            {shown.map((person, index) => (
+              <li key={person.id} className={cn("rounded-full ring-2 ring-surface-muted", index > 0 && "-ml-2")}>
+                <img src={person.avatar} alt={person.name} title={person.name} className="size-7 rounded-full object-cover" />
+              </li>
+            ))}
+          </ul>
+          <span className="min-w-0 text-xs leading-[1.4] text-text-secondary" aria-hidden="true">
+            {names} can reach you during focus
+          </span>
+        </div>
+      )}
     </div>
   )
 }
@@ -766,19 +878,32 @@ export function ControlCenter({
 
   const [focus, setFocus] = useState<Session | null>(null)
   const [notifications, setNotifications] = useState(true)
-  const [channelOn, setChannelOn] = useState<Record<string, boolean>>(() => Object.fromEntries(channels.map(channel => [channel.id, !!channel.defaultOn])))
+  const [channelOn, setChannelOn] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(channels.map(channel => [channel.id, !!channel.defaultOn]))
+  )
   const [presenting, setPresenting] = useState(false)
   // Meters keep their own state, so a drag re-renders only the meter; the panel reads their levels from here.
   const initialVolume = clamp(Math.round(defaultVolume), 0, 100)
   const initialTextSize = clamp(Math.round(defaultTextSize / 5) * 5, 85, 130)
   const levels = useRef({ volume: initialVolume, textSize: initialTextSize })
-  const toggles = useRef<Toggles>({ focus: null, notifications: true, channels: channelOn, presenting: false })
+  const toggles = useRef<Toggles>({
+    focus: null,
+    notifications: true,
+    channels: channelOn,
+    presenting: false,
+  })
 
   const emit = (patch: Partial<Toggles> = {}) => {
     const next = { ...toggles.current, ...patch }
     toggles.current = next
     onStateChange?.({
-      focus: next.focus ? { mode: next.focus.mode, minutes: next.focus.minutes, until: new Date(next.focus.endsAt).toISOString() } : null,
+      focus: next.focus
+        ? {
+            mode: next.focus.mode,
+            minutes: next.focus.minutes,
+            until: new Date(next.focus.endsAt).toISOString(),
+          }
+        : null,
       notifications: next.notifications,
       channels: { ...next.channels },
       presenting: next.presenting,
@@ -809,27 +934,30 @@ export function ControlCenter({
   }, [focus, now])
 
   /* ---------- One surface that grows out of a tile ---------- */
-  const panelRef = useRef<HTMLDivElement>(null)
-  const tileRefs = useRef<Record<DetailId, HTMLDivElement | null>>({ focus: null, notifications: null })
-  const chevronRefs = useRef<Record<DetailId, HTMLButtonElement | null>>({ focus: null, notifications: null })
+  const panelRef = useRef<HTMLElement>(null)
+  const tileRefs = useRef<Record<DetailId, HTMLDivElement | null>>({
+    focus: null,
+    notifications: null,
+  })
   const [open, setOpen] = useState<DetailId | null>(null)
   const [shown, setShown] = useState<DetailId | null>(null)
   const openRef = useRef<DetailId | null>(null)
+  const shownRef = useRef<DetailId | null>(null)
   const focusBack = useRef<DetailId | null>(null)
-  const grown = useRef(false)
   const runs = useRef<AnimationPlaybackControls[]>([])
   const [box, setBox] = useState({ w: 0, h: 0 })
-  const [tileSize, setTileSize] = useState({ w: 0, h: 0 })
   const sx = useMotionValue(0)
   const sy = useMotionValue(0)
   const sw = useMotionValue(0)
   const sh = useMotionValue(0)
-  const sr = useMotionValue(TILE_RADIUS)
 
   useLayoutEffect(() => {
     const panel = panelRef.current
     if (!panel) return
-    const report = () => setBox(current => (current.w === panel.clientWidth && current.h === panel.clientHeight ? current : { w: panel.clientWidth, h: panel.clientHeight }))
+    const report = () =>
+      setBox(current =>
+        current.w === panel.clientWidth && current.h === panel.clientHeight ? current : { w: panel.clientWidth, h: panel.clientHeight }
+      )
     report()
     const observer = new ResizeObserver(report)
     observer.observe(panel)
@@ -842,38 +970,69 @@ export function ControlCenter({
     if (!tile || !panel) return null
     const a = tile.getBoundingClientRect()
     const b = panel.getBoundingClientRect()
-    return { x: a.left - b.left, y: a.top - b.top, w: a.width, h: a.height }
+    // Measured from the padding box, which is what the absolute surface is placed in.
+    return {
+      x: a.left - b.left - panel.clientLeft,
+      y: a.top - b.top - panel.clientTop,
+      w: a.width,
+      h: a.height,
+    }
   }
-  const drive = (rect: Rect, radius: number, spring: Transition | null, onDone?: () => void) => {
+  const drive = (rect: Rect, spring: Transition | null, onDone?: () => void, from?: Rect) => {
     runs.current.forEach(run => run.stop())
     runs.current = []
+    if (from) {
+      sx.jump(from.x)
+      sy.jump(from.y)
+      sw.jump(from.w)
+      sh.jump(from.h)
+    }
     const pairs: [MotionValue<number>, number][] = [
       [sx, rect.x],
       [sy, rect.y],
       [sw, rect.w],
       [sh, rect.h],
-      [sr, radius],
     ]
     if (!spring) {
       pairs.forEach(([value, to]) => value.jump(to))
       onDone?.()
       return
     }
-    runs.current = pairs.map(([value, to], index) => animate(value, to, { ...spring, onComplete: index === 0 ? onDone : undefined }))
+    runs.current = pairs.map(([value, to], index) =>
+      animate(value, to, {
+        ...spring,
+        onComplete: index === 0 ? onDone : undefined,
+      })
+    )
   }
 
-  const openDetail = (id: DetailId) => {
-    if (openRef.current) return
-    const rect = rectOf(id)
-    if (!rect) return
-    // Reopening during a fold picks the surface up where it is.
-    if (shown !== id) drive(rect, TILE_RADIUS, null)
-    openRef.current = id
-    grown.current = false
-    setTileSize({ w: rect.w, h: rect.h })
-    setShown(id)
-    setOpen(id)
-  }
+  const openDetail = useCallback(
+    (id: DetailId) => {
+      const panel = panelRef.current
+      const rect = rectOf(id)
+      if (openRef.current || !rect || !panel) return
+      // Reopening during a fold picks the surface up where it is.
+      const from = shownRef.current === id ? undefined : rect
+      openRef.current = id
+      shownRef.current = id
+      setShown(id)
+      setOpen(id)
+      drive(
+        {
+          x: INSET,
+          y: INSET,
+          w: panel.clientWidth - INSET * 2,
+          h: panel.clientHeight - INSET * 2,
+        },
+        reduced ? null : MORPH,
+        undefined,
+        from
+      )
+    },
+    // drive and rectOf only touch stable motion values and refs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [reduced]
+  )
   const closeDetail = useCallback(
     (focusChevron: boolean) => {
       const id = openRef.current
@@ -882,39 +1041,42 @@ export function ControlCenter({
       setOpen(null)
       // The grid is inert until this close renders, so the chevron takes focus in an effect.
       if (focusChevron) focusBack.current = id
-      const tile = tileRefs.current[id]
-      const panel = panelRef.current
       const finish = () => {
-        if (!openRef.current) setShown(null)
+        if (openRef.current) return
+        shownRef.current = null
+        setShown(null)
       }
-      if (!tile || !panel) return finish()
-      const a = tile.getBoundingClientRect()
-      const b = panel.getBoundingClientRect()
-      drive({ x: a.left - b.left, y: a.top - b.top, w: a.width, h: a.height }, TILE_RADIUS, reduced ? null : FOLD, finish)
+      const rect = rectOf(id)
+      if (!rect) return finish()
+      drive(rect, reduced ? null : MORPH, finish)
     },
-    // drive only touches stable motion values and refs.
+    // drive and rectOf only touch stable motion values and refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [reduced],
+    [reduced]
   )
-  /** The detail reports its natural height; the surface grows to it, centered in the panel and capped to fit. */
-  const onDetailSize = (height: number) => {
-    const panel = panelRef.current
-    if (!openRef.current || !panel) return
-    const W = panel.clientWidth
-    const H = panel.clientHeight
-    const h = Math.min(height, H - INSET * 2)
-    const target = { x: INSET, y: Math.max(INSET, (H - h) / 2), w: W - INSET * 2, h }
-    const spring = reduced ? null : grown.current ? RESIZE : GROW
-    grown.current = true
-    drive(target, DETAIL_RADIUS, spring)
-  }
+
+  // A panel that changes size while a detail is open keeps the detail filling it.
+  useEffect(() => {
+    if (!openRef.current) return
+    drive(
+      {
+        x: INSET,
+        y: INSET,
+        w: Math.max(0, box.w - INSET * 2),
+        h: Math.max(0, box.h - INSET * 2),
+      },
+      null
+    )
+    // Only a size change re-lays the open detail.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [box])
 
   // Focus moves into the detail once it mounts, and back to the chevron once the grid is live again.
   useEffect(() => {
     if (!open) {
       const id = focusBack.current
       focusBack.current = null
-      if (id) chevronRefs.current[id]?.focus({ preventScroll: true })
+      if (id) tileRefs.current[id]?.querySelector<HTMLElement>("[aria-haspopup]")?.focus({ preventScroll: true })
       return
     }
     const frame = requestAnimationFrame(() => {
@@ -934,7 +1096,7 @@ export function ControlCenter({
     if (event.key !== "Tab") return
     // Tab cycles inside the open detail.
     const nodes = Array.from(
-      event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input, [tabindex]:not([tabindex="-1"])'),
+      event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled]), [href], input, [tabindex]:not([tabindex="-1"])')
     ).filter(node => !node.closest("[aria-hidden='true']") && node.tabIndex >= 0)
     if (!nodes.length) return
     const first = nodes[0]
@@ -960,20 +1122,16 @@ export function ControlCenter({
         : enabledCount === 0
           ? "No channels"
           : `${enabledCount} of ${channels.length} channels`
-  const tiles: Record<DetailId | "presenting", TileProps> = {
+  const tiles: Record<DetailId | "presenting", Omit<TileProps, "onToggle" | "onOpen">> = {
     focus: {
       label: mode?.label ?? "Focus",
       status: focus ? `Until ${formatTime(new Date(focus.endsAt))}` : "Off",
-      icon: mode?.icon ?? Moon,
+      icon: mode?.icon ?? Headphones,
       iconKey: mode?.id ?? "off",
       on: !!focus,
       wide: true,
       detail: "focus",
-      onToggle: () => {
-        if (focus) return endSession()
-        const first = focusModes[0]
-        if (first) startSession(first.id, clamp(first.defaultMinutes, DIAL_MIN, DIAL_MAX))
-      },
+      detailLabel: "Focus session settings",
     },
     notifications: {
       label: "Notifications",
@@ -982,10 +1140,7 @@ export function ControlCenter({
       iconKey: notifications ? "on" : "off",
       on: notifications,
       detail: "notifications",
-      onToggle: () => {
-        setNotifications(!notifications)
-        emit({ notifications: !notifications })
-      },
+      detailLabel: "Notification channels",
     },
     presenting: {
       label: "Presenting",
@@ -993,67 +1148,69 @@ export function ControlCenter({
       icon: Presentation,
       iconKey: "presenting",
       on: presenting,
-      onToggle: () => {
-        setPresenting(!presenting)
-        emit({ presenting: !presenting })
-      },
     },
   }
 
-  const tile = (id: DetailId | "presenting", extra?: string) => {
-    const props = tiles[id]
+  const slot = (id: DetailId | "presenting", extra?: string) => {
     const detail = id === "presenting" ? undefined : id
-    return (
-      <div
-        ref={detail ? node => void (tileRefs.current[detail] = node) : undefined}
-        className={cn(
-          "relative rounded-[18px] bg-surface-raised shadow-resting ring-1 ring-border-subtle",
-          detail && shown === detail && "opacity-0",
-          extra,
-        )}
-      >
-        <Tile
-          {...props}
-          expanded={open === detail}
-          onOpen={detail ? () => openDetail(detail) : undefined}
-          chevronRef={detail ? node => void (chevronRefs.current[detail] = node) : undefined}
-        />
-      </div>
-    )
+    return {
+      ...tiles[id],
+      expanded: open === detail,
+      hidden: !!detail && shown === detail,
+      reduced,
+      className: extra,
+    }
   }
 
   const titleId = `${uid}-detail-title`
   const detailOpen = open !== null && open === shown
+  const headIcon = shown === "focus" ? tiles.focus.icon : tiles.notifications.icon
 
   return (
     <MotionConfig reducedMotion="user">
-      <div
+      <section
         ref={panelRef}
-        role="group"
         aria-label={label}
         className={cn(
-          "relative isolate h-[26rem] w-[min(100%,22.5rem)] overflow-hidden rounded-[28px] bg-surface-muted text-foreground shadow-floating ring-1 ring-border",
-          className,
+          "relative isolate box-border flex min-h-[396px] w-[min(100%,360px)] flex-col overflow-hidden rounded-[30px] border border-border bg-surface-raised p-2.5 text-foreground shadow-floating max-[359px]:p-1.5",
+          className
         )}
       >
-        <div inert={!!open || undefined} className="flex h-full flex-col gap-2 p-3 max-[359px]:p-2">
-          <div className="flex h-7 items-center justify-between px-1">
-            <span className="text-sm leading-body font-medium">{label}</span>
-          </div>
-          {tile("focus", "h-16")}
-          <div className="grid grid-cols-2 gap-2">
-            {tile("notifications", "h-[84px]")}
-            {tile("presenting", "h-[84px]")}
-          </div>
-          <div className="mt-auto flex flex-col gap-3">
+        <div inert={!!open || undefined} aria-hidden={!!open || undefined} className="grid flex-1 grid-cols-2 grid-rows-[84px_104px_1fr] gap-2">
+          <Tile
+            {...slot("focus", "col-span-2")}
+            tileRef={node => void (tileRefs.current.focus = node)}
+            onOpen={() => openDetail("focus")}
+            onToggle={() => {
+              if (focus) return endSession()
+              const first = focusModes[0]
+              if (first) startSession(first.id, clamp(first.defaultMinutes, DIAL_MIN, DIAL_MAX))
+            }}
+          />
+          <Tile
+            {...slot("notifications")}
+            tileRef={node => void (tileRefs.current.notifications = node)}
+            onOpen={() => openDetail("notifications")}
+            onToggle={() => {
+              setNotifications(!notifications)
+              emit({ notifications: !notifications })
+            }}
+          />
+          <Tile
+            {...slot("presenting")}
+            onToggle={() => {
+              setPresenting(!presenting)
+              emit({ presenting: !presenting })
+            }}
+          />
+          <div className="col-span-2 flex flex-col justify-center gap-3.5 px-1.5 pt-1 pb-1.5">
             <Meter
               label="Alert volume"
               min={0}
               max={100}
               step={1}
               defaultValue={initialVolume}
-              format={value => `${value}%`}
-              icon={value => (value === 0 ? { Icon: VolumeX, key: "mute" } : value < 34 ? { Icon: Volume1, key: "low" } : { Icon: Volume2, key: "high" })}
+              icon={value => (value === 0 ? <VolumeX /> : value < 34 ? <Volume1 /> : <Volume2 />)}
               onChange={value => {
                 levels.current.volume = value
                 emit()
@@ -1066,8 +1223,14 @@ export function ControlCenter({
               max={130}
               step={5}
               defaultValue={initialTextSize}
-              format={value => `${value}%`}
-              icon={() => ({ Icon: ALargeSmall, key: "text" })}
+              icon={() => <Type />}
+              preview={value => (
+                <span className="grid h-[18px] w-[26px] flex-none place-items-center overflow-visible" aria-hidden="true">
+                  <span className="leading-none font-medium" style={{ fontSize: `${(15 * value) / 100}px` }}>
+                    Aa
+                  </span>
+                </span>
+              )}
               onChange={value => {
                 levels.current.textSize = value
                 emit()
@@ -1081,10 +1244,16 @@ export function ControlCenter({
           {open && (
             <motion.div
               key="scrim"
-              className="absolute inset-0 z-10 bg-background/45 backdrop-blur-[2px]"
+              className="absolute inset-0 z-10 bg-surface-raised/55 backdrop-blur-[2px]"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { duration: duration.standard, ease: standard } }}
-              exit={{ opacity: 0, transition: { duration: duration.exit, ease: standard } }}
+              animate={{
+                opacity: 1,
+                transition: { duration: 0.37, ease: standard, delay: 0.025 },
+              }}
+              exit={{
+                opacity: 0,
+                transition: { duration: 0.26, ease: standard },
+              }}
               onClick={() => closeDetail(true)}
               aria-hidden="true"
             />
@@ -1098,37 +1267,49 @@ export function ControlCenter({
             aria-modal={detailOpen || undefined}
             aria-labelledby={detailOpen ? titleId : undefined}
             onKeyDown={onSurfaceKey}
-            className="absolute top-0 left-0 z-20 overflow-hidden bg-surface-raised shadow-floating ring-1 ring-border-subtle"
-            style={{ x: sx, y: sy, width: sw, height: sh, borderRadius: sr }}
+            className="absolute top-0 left-0 z-20 flex flex-col overflow-hidden bg-surface-muted"
+            style={{
+              x: sx,
+              y: sy,
+              width: sw,
+              height: sh,
+              borderRadius: RADIUS,
+            }}
           >
-            {/* The tile's own face rides along and fades as the detail comes in, so the eye reads one shape changing. */}
+            {/* The header is opaque from the first frame and rides with the surface; the body fades in a beat later. */}
+            <DetailHead titleId={titleId} title={shown === "focus" ? "Focus" : "Notifications"} icon={headIcon} onClose={() => closeDetail(true)} />
             <motion.div
-              className="absolute top-0 left-0"
-              style={{ width: tileSize.w, height: tileSize.h }}
-              initial={false}
+              className="min-h-0 flex-1 [scrollbar-width:none] overflow-y-auto overscroll-contain [&::-webkit-scrollbar]:hidden"
+              style={{
+                width: Math.max(0, box.w - INSET * 2),
+                minWidth: Math.max(0, box.w - INSET * 2),
+              }}
+              initial={{ opacity: 0 }}
               animate={
                 detailOpen
-                  ? { opacity: 0, filter: `blur(${blur.subtle}px)`, transition: { duration: duration.instant, ease: standard } }
-                  : { opacity: 1, filter: "blur(0px)", transition: { duration: duration.fast, ease: enter, delay: 0.1 } }
+                  ? {
+                      opacity: 1,
+                      transition: {
+                        duration: 0.25,
+                        ease: standard,
+                        delay: 0.06,
+                      },
+                    }
+                  : {
+                      opacity: 0,
+                      transition: { duration: 0.095, ease: "linear" },
+                    }
               }
-            >
-              <Tile {...tiles[shown]} ghost />
-            </motion.div>
-            <DetailFace
-              width={box.w - INSET * 2}
-              maxHeight={box.h - INSET * 2}
-              visible={detailOpen}
-              onSize={onDetailSize}
+              inert={!detailOpen || undefined}
             >
               {shown === "focus" ? (
                 <FocusDetail
-                  titleId={titleId}
                   modes={focusModes}
-                  people={people}
                   session={focus}
                   now={now}
                   formatTime={formatTime}
                   reduced={reduced}
+                  layoutKey={uid}
                   onStart={(id, minutes) => {
                     startSession(id, minutes)
                     closeDetail(true)
@@ -1137,12 +1318,11 @@ export function ControlCenter({
                     endSession()
                     closeDetail(true)
                   }}
-                  onClose={() => closeDetail(true)}
                 />
               ) : (
                 <NotificationsDetail
-                  titleId={titleId}
                   channels={channels}
+                  people={people}
                   on={notifications}
                   channelOn={channelOn}
                   onMaster={next => {
@@ -1154,60 +1334,13 @@ export function ControlCenter({
                     setChannelOn(all)
                     emit({ channels: all })
                   }}
-                  onClose={() => closeDetail(true)}
                 />
               )}
-            </DetailFace>
+            </motion.div>
           </motion.div>
         )}
-      </div>
+      </section>
     </MotionConfig>
-  )
-}
-
-/** The detail keeps its own natural height, which the surface follows; it crossfades in with a small blur. */
-function DetailFace({
-  width,
-  maxHeight,
-  visible,
-  onSize,
-  children,
-}: {
-  width: number
-  maxHeight: number
-  visible: boolean
-  onSize: (height: number) => void
-  children: ReactNode
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const report = useRef(onSize)
-  useLayoutEffect(() => {
-    report.current = onSize
-  })
-  useLayoutEffect(() => {
-    const node = ref.current
-    if (!node) return
-    const measure = () => report.current(node.scrollHeight)
-    measure()
-    const observer = new ResizeObserver(measure)
-    observer.observe(node.firstElementChild ?? node)
-    return () => observer.disconnect()
-  }, [])
-  return (
-    <motion.div
-      ref={ref}
-      className="absolute top-0 left-0 overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      style={{ width: Math.max(0, width), maxHeight: Math.max(0, maxHeight) }}
-      initial={{ opacity: 0, filter: `blur(${blur.soft}px)` }}
-      animate={
-        visible
-          ? { opacity: 1, filter: "blur(0px)", transition: { duration: 0.22, ease: enter, delay: 0.06 } }
-          : { opacity: 0, filter: `blur(${blur.soft}px)`, transition: { duration: duration.instant, ease: standard } }
-      }
-      inert={!visible || undefined}
-    >
-      {children}
-    </motion.div>
   )
 }
 

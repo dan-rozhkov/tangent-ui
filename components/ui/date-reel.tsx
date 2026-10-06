@@ -4,7 +4,6 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react"
 import { motion, useReducedMotion } from "motion/react"
 
-import { buttonVariants } from "@/components/ui/button"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
 
@@ -80,21 +79,44 @@ export interface DateReelProps {
 }
 
 /* ---------------------------------------------------------------------------------------------------------------
-   Geometry. Entries sit on a cylinder STEP degrees apart; eleven slots cover the visible half turn.
+   Geometry. Entries ride a cylinder drawn with plain 2D transforms: each node rises on the sine of its angle,
+   shrinks with a perspective factor and flattens with the cosine. Eleven nodes cover the visible half turn.
    --------------------------------------------------------------------------------------------------------------- */
 
 const SLOTS = 11
 const HALF = (SLOTS - 1) / 2
-const STEP = 18
-/** Cylinder radius in rows, so neighbouring entries at the front sit exactly one row apart. */
-const RADIUS_ROWS = 1 / (2 * Math.sin((STEP * Math.PI) / 360))
-/** Seconds of momentum a flick carries before it lands (iOS-like deceleration). */
-const GLIDE = 0.4
-/** Critically damped: the same settle time as the smooth token, never overshooting on its own. */
-const OMEGA = (2 * Math.PI) / (motionTokens.spring.smooth.visualDuration * 1.2)
-/** Entries a drag can stretch past either end. */
-const STRETCH = 1.4
-const STAGGER = motionTokens.stagger.line
+/** Cylinder radius in rows (121px at a 42px row), so arc length on the drum matches the pointer 1:1. */
+const RADIUS_ROWS = 121 / 42
+/** Eye distance for the perspective shrink, in cylinder radii. */
+const EYE = 4
+/** Seconds of momentum a flick carries: it lands on the entry nearest to where it would be after this long. */
+const PROJECTION = 0.32
+/** Exponential glide rates (1/s): flicks decay slower than gentle releases, so long throws read as momentum. */
+const GLIDE_FAST = 3.05
+const GLIDE_SLOW = 4
+/** Release speeds in rows per second between which the glide rate eases from slow to fast (about 210 to 600px/s). */
+const GLIDE_SLOW_SPEED = 5
+const GLIDE_FAST_SPEED = 14.3
+/** Home and End sweep through every entry on a quicker glide. */
+const GLIDE_JUMP = 10.5
+/** Keys, taps and the wheel: one spring whatever the distance, slightly overdamped, settling in about 0.4s. */
+const SPRING_STEP = { k: 380, c: 43 }
+/** Quick picks and outside changes: critically damped and calmer, settling in about 0.6s. */
+const SPRING_PICK = { k: 137, c: 23.4 }
+/** Back from a rubber band stretch: critically damped at 15 rad/s, no bounce at the edge. */
+const SPRING_BACK = { k: 225, c: 30 }
+/** iOS rubber band: shown = D * c * d / (D + c * d), with D in rows (105px at a 42px row). */
+const RUBBER_C = 0.55
+const RUBBER_D = 2.5
+/** Pixels a press may wander and still count as a tap. */
+const TAP_SLOP = 3
+/** Quick picks wait for the pressed pill, then start one reel after another. */
+const PICK_DELAY = 0.14
+const PICK_STAGGER = 0.05
+/** The intro waits a beat after the picker is first seen, then glides every reel in together. */
+const INTRO_DELAY = 0.14
+/** Confirm shows its pending label only when the promise takes longer than this, so quick saves never flash. */
+const PENDING_DELAY = 150
 const DEFAULT_VALUE = new Date(2026, 8, 24, 9, 30)
 const DAY = 86_400_000
 
@@ -130,7 +152,7 @@ function normalize(date: Date, step: number) {
   next.setMinutes(Math.round(next.getMinutes() / step) * step)
   return next
 }
-const rubber = (distance: number) => (1 - 1 / ((distance * 0.55) / STRETCH + 1)) * STRETCH
+const rubber = (distance: number) => (RUBBER_D * RUBBER_C * distance) / (RUBBER_D + RUBBER_C * distance)
 
 /* ---------------------------------------------------------------------------------------------------------------
    Reel models: what each column shows and how entries map to and from a Date.
@@ -188,7 +210,6 @@ function buildConfig(options: {
   const twelve = hourCycle === 12
   const timeFormat = new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", hourCycle: twelve ? "h12" : "h23" })
   const dayShort = new Intl.DateTimeFormat(locale, { weekday: "short", month: "short", day: "numeric" })
-  const dayLong = new Intl.DateTimeFormat(locale, { weekday: "long", month: "long", day: "numeric" })
   const fullDate = new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", year: "numeric" })
   const fullDateDay = new Intl.DateTimeFormat(locale, { weekday: "long", month: "long", day: "numeric", year: "numeric" })
   const monthName = new Intl.DateTimeFormat(locale, { month: "long" })
@@ -204,6 +225,13 @@ function buildConfig(options: {
     if (size <= 31) return capitalize(relative.format(days, "day"))
     if (size < 365) return capitalize(relative.format(Math.round(days / 30.44), "month"))
     return capitalize(relative.format(Math.round(days / 365.25), "year"))
+  }
+  /** The headline says yesterday, today or tomorrow, a weekday name within the coming week, then a short date. */
+  const headlineDay = (date: Date) => {
+    const days = dayDiff(today, date)
+    if (Math.abs(days) <= 1) return capitalize(relative.format(days, "day"))
+    if (days > 1 && days < 7) return capitalize(weekdayLong.format(date))
+    return dayShort.format(date)
   }
   const dayCount = Math.max(1, dayDiff(minDay, maxDay) + 1)
   const yearCount = Math.max(1, maxDay.getFullYear() - minYear + 1)
@@ -230,7 +258,7 @@ function buildConfig(options: {
         cyclic: false,
         align: "end",
         page: 7,
-        label: entry => (isToday(entry) ? relativeDay(dateOf(entry)) : dayShort.format(dateOf(entry)).replace(/,/g, "")),
+        label: entry => (isToday(entry) ? relativeDay(dateOf(entry)) : dayShort.format(dateOf(entry))),
         spoken: entry => (isToday(entry) ? `${relativeDay(dateOf(entry))}, ${dayShort.format(dateOf(entry))}` : dayShort.format(dateOf(entry))),
         numeric: entry => entry,
         match: (query, from) => {
@@ -437,8 +465,8 @@ function buildConfig(options: {
     const time = timeFormat.format(date)
     if (mode === "time") return { primary: time, secondary: "", spoken: time }
     if (mode === "date") return { primary: fullDate.format(date), secondary: relativeDay(date), spoken: `${fullDateDay.format(date)}, ${relativeDay(date)}` }
-    const primary = `${relativeDay(date)} ${labels.at} ${time}`
-    const secondary = dayLong.format(date)
+    const primary = `${headlineDay(date)} ${labels.at} ${time}`
+    const secondary = fullDateDay.format(date)
     return { primary, secondary, spoken: `${primary}, ${secondary}` }
   }
 
@@ -448,17 +476,22 @@ function buildConfig(options: {
 /** One slot's text, transform and opacities for a reel resting at `pos`. Shared by the first render and the loop. */
 function project(reel: Reel, pos: number, slot: number, valid: (entry: number) => boolean) {
   const at = Math.round(pos) + slot - HALF
-  const angle = (at - pos) * STEP
+  const angle = (at - pos) / RADIUS_ROWS
   const inRange = reel.cyclic || (at >= 0 && at < reel.count)
   const entry = reel.cyclic ? mod(at, reel.count) : at
-  const facing = Math.abs(angle) < 90 ? Math.cos((angle * Math.PI) / 180) : 0
-  const dim = inRange && !valid(entry) ? 0.32 : 1
+  const text = inRange ? reel.label(entry) : " "
+  // Past the visible half turn a node is hidden and left untransformed.
+  if (!inRange || Math.abs(angle) > Math.PI / 2) return { text, transform: "none", base: "0", lens: "0" }
+  const cos = Math.cos(angle)
+  const dim = valid(entry) ? 1 : 0.32
+  // The node rises on the sine, shrinks with the perspective of an eye EYE radii away and flattens with the cosine.
+  const depth = EYE / (EYE + 1 - cos)
+  const rise = RADIUS_ROWS * Math.sin(angle)
   return {
-    text: inRange ? reel.label(entry) : " ",
-    // Entries rise on a sine and compress with the cosine of their angle; perspective does the rest.
-    transform: `translateY(-50%) rotateX(${(-angle).toFixed(3)}deg) translateZ(var(--reel-radius))`,
-    base: inRange ? (facing ** 1.5 * dim).toFixed(3) : "0",
-    lens: inRange && facing > 0 ? dim.toFixed(3) : "0",
+    text,
+    transform: `translateY(calc(var(--reel-row) * ${rise.toFixed(4)})) scale(${depth.toFixed(4)}, ${(depth * cos).toFixed(4)})`,
+    base: (cos ** 1.5 * dim).toFixed(3),
+    lens: dim.toFixed(3),
   }
 }
 
@@ -466,12 +499,20 @@ function project(reel: Reel, pos: number, slot: number, valid: (entry: number) =
    The engine: one requestAnimationFrame loop for every reel, writing straight to recycled nodes.
    --------------------------------------------------------------------------------------------------------------- */
 
+interface Spring {
+  k: number
+  c: number
+}
+
 interface ReelMotion {
   pos: number
   vel: number
   phase: "rest" | "drag" | "glide" | "spring"
+  /** Where a spring or a glide lands. */
   target: number
-  glide: { from: number; to: number; tau: number; t: number } | null
+  spring: Spring
+  /** Decay rate of the glide, per second. */
+  rate: number
   /** Seconds to wait before moving, for the intro and quick pick stagger. */
   delay: number
 }
@@ -493,7 +534,7 @@ class ReelEngine {
   band: HTMLElement | null = null
   primary: HTMLElement | null = null
   secondary: HTMLElement | null = null
-  row = 36
+  row = 42
   speed = 1
   still = false
   visible = true
@@ -524,7 +565,9 @@ class ReelEngine {
       this.committed = date.getTime()
       this.anchor = date
     }
-    this.motions = config.indicesOf(this.anchor).map(index => ({ pos: index, vel: 0, phase: "rest", target: index, glide: null, delay: 0 }))
+    this.motions = config
+      .indicesOf(this.anchor)
+      .map(index => ({ pos: index, vel: 0, phase: "rest", target: index, spring: SPRING_STEP, rate: GLIDE_SLOW, delay: 0 }))
     this.shown = []
     this.drawAll()
     this.refresh(true)
@@ -592,7 +635,7 @@ class ReelEngine {
     if (this.quiet) return
     const summary = config.summary(config.compose(entries, this.anchor))
     this.setText(this.primary, summary.primary)
-    this.setText(this.secondary, summary.secondary || " ")
+    this.setText(this.secondary, summary.secondary || " ")
   }
 
   /** The spoken value changes only when a reel rests, so a spinning reel never floods a screen reader. */
@@ -650,36 +693,34 @@ class ReelEngine {
   }
 
   private step(motion: ReelMotion, reel: number, dt: number) {
-    if (motion.phase === "glide" && motion.glide) {
-      // An exponential glide solved to land exactly on an entry; the last half row goes to the spring.
-      const glide = motion.glide
-      glide.t += dt
-      const decay = Math.exp(-glide.t / glide.tau)
-      motion.pos = glide.from + (glide.to - glide.from) * (1 - decay)
-      motion.vel = ((glide.to - glide.from) / glide.tau) * decay
-      if (Math.abs(glide.to - motion.pos) <= 0.5) {
-        motion.phase = "spring"
-        motion.target = glide.to
-        motion.glide = null
-      }
+    if (motion.phase === "glide") {
+      // A plain exponential decay toward a whole entry: no spring phase, so it never overshoots.
+      const remaining = (motion.target - motion.pos) * Math.exp(-motion.rate * this.speed * dt)
+      motion.pos = motion.target - remaining
+      motion.vel = remaining * motion.rate * this.speed
+      if (Math.abs(remaining) < 0.01) this.land(motion, reel)
       return
     }
-    // A critically damped spring, solved exactly for this frame so it behaves the same at any frame rate.
-    const omega = OMEGA * this.speed
-    const offset = motion.pos - motion.target
-    const decay = Math.exp(-omega * dt)
-    const next = (offset + (motion.vel + omega * offset) * dt) * decay
-    motion.vel = (motion.vel - omega * (motion.vel + omega * offset) * dt) * decay
-    motion.pos = motion.target + next
-    if (Math.abs(next) < 0.004 && Math.abs(motion.vel) < 0.05) {
-      const model = this.config!.reels[reel]
-      // Cyclic reels drift back to the first lap so positions stay small.
-      const lap = model.cyclic ? Math.floor(motion.target / model.count) * model.count : 0
-      motion.target -= lap
-      motion.pos = motion.target
-      motion.vel = 0
-      motion.phase = "rest"
+    // A damped spring, integrated in small steps so it behaves the same at any frame rate.
+    const k = motion.spring.k * this.speed * this.speed
+    const c = motion.spring.c * this.speed
+    const steps = Math.ceil(dt / 0.002)
+    const h = dt / steps
+    for (let i = 0; i < steps; i++) {
+      motion.vel += (-k * (motion.pos - motion.target) - c * motion.vel) * h
+      motion.pos += motion.vel * h
     }
+    if (Math.abs(motion.pos - motion.target) < 0.002 && Math.abs(motion.vel) < 0.02) this.land(motion, reel)
+  }
+
+  private land(motion: ReelMotion, reel: number) {
+    const model = this.config!.reels[reel]
+    // Cyclic reels drift back to the first lap so positions stay small.
+    const lap = model.cyclic ? Math.floor(motion.target / model.count) * model.count : 0
+    motion.target -= lap
+    motion.pos = motion.target
+    motion.vel = 0
+    motion.phase = "rest"
   }
 
   /** Commits once every reel rests, after turning any impossible day back to a real one. */
@@ -690,7 +731,7 @@ class ReelEngine {
     const fix = config.repair(entries, this.anchor)
     if (fix) {
       if ("reel" in fix) this.spinTo(fix.reel, fix.entry)
-      else this.spinAll(fix.date, 0)
+      else this.spinAll(fix.date)
       return
     }
     if (this.quiet) {
@@ -707,17 +748,15 @@ class ReelEngine {
   /** Where the reel is heading: its spring or glide target, or the entry under the lens. */
   private heading(reel: number) {
     const motion = this.motions[reel]
-    if (motion.phase === "spring") return Math.round(motion.target)
-    if (motion.phase === "glide" && motion.glide) return motion.glide.to
+    if (motion.phase === "spring" || motion.phase === "glide") return Math.round(motion.target)
     return Math.round(motion.pos)
   }
 
-  private aim(reel: number, target: number, delay = 0) {
+  private aim(reel: number, target: number, options: { delay?: number; spring?: Spring; rate?: number } = {}) {
     const motion = this.motions[reel]
     const model = this.config?.reels[reel]
     if (!motion || !model || motion.phase === "drag") return
     const next = model.cyclic ? target : clamp(target, 0, model.count - 1)
-    motion.glide = null
     motion.target = next
     if (this.still) {
       motion.pos = next
@@ -729,9 +768,15 @@ class ReelEngine {
       this.refresh()
       return
     }
-    // Pressing again mid-spin moves the target; the spring keeps its velocity and adds to the motion.
-    motion.phase = "spring"
-    motion.delay = delay
+    if (options.rate) {
+      motion.phase = "glide"
+      motion.rate = options.rate
+    } else {
+      // Pressing again mid-spin moves the target; the spring keeps its velocity and adds to the motion.
+      motion.phase = "spring"
+      motion.spring = options.spring ?? SPRING_STEP
+    }
+    motion.delay = options.delay ?? 0
     this.kick()
   }
 
@@ -740,7 +785,7 @@ class ReelEngine {
     if (this.still) this.settle()
   }
 
-  spinTo(reel: number, entry: number, delay = 0) {
+  spinTo(reel: number, entry: number, options: { delay?: number; spring?: Spring; rate?: number } = {}) {
     const model = this.config?.reels[reel]
     if (!model) return
     const heading = this.heading(reel)
@@ -748,31 +793,36 @@ class ReelEngine {
       // The short way around.
       let delta = mod(entry - mod(heading, model.count), model.count)
       if (delta > model.count / 2) delta -= model.count
-      this.aim(reel, heading + delta, delay)
-    } else this.aim(reel, entry, delay)
+      this.aim(reel, heading + delta, options)
+    } else this.aim(reel, entry, options)
     if (this.still) this.settle()
   }
 
-  spinAll(date: Date, stagger: number) {
+  /** Spins every reel to `date` on the calmer spring; quick picks wait a beat and start one reel after another. */
+  spinAll(date: Date, picked = false) {
     const config = this.config
     if (!config) return
     const indices = config.indicesOf(date)
     // Parts of the moment that have no reel (the time in date mode, the day in time mode) come along too.
     this.anchor = new Date(date)
-    indices.forEach((index, reel) => this.spinTo(reel, index, (reel * stagger) / this.speed))
+    indices.forEach((index, reel) =>
+      this.spinTo(reel, index, { spring: SPRING_PICK, delay: picked ? (PICK_DELAY + reel * PICK_STAGGER) / this.speed : 0 }),
+    )
   }
 
-  /** Before the picker is first seen, every reel waits a few entries away, ready to spin in. */
+  /** Before the picker is first seen, every reel waits a few entries back, ready to glide forward into place. */
   prepareIntro() {
     // Effects can run twice in development; the reels step away only once.
     if (this.introDone || this.introReady) return
     this.introReady = true
     this.motions.forEach((motion, reel) => {
       const model = this.config!.reels[reel]
-      const away = model.cyclic ? motion.pos - 4 : motion.pos - 4 >= 0 ? motion.pos - 4 : Math.min(model.count - 1, motion.pos + 4)
+      const away = model.kind === "period" ? 1 : model.kind === "minute" ? 9 : 7
+      const back = motion.pos - away
       motion.target = motion.pos
-      motion.pos = away
-      motion.phase = "spring"
+      motion.pos = model.cyclic || back >= 0 ? back : Math.min(model.count - 1, motion.pos + away)
+      motion.phase = "glide"
+      motion.rate = GLIDE_FAST
       motion.delay = Number.POSITIVE_INFINITY
     })
     this.quiet = true
@@ -782,8 +832,8 @@ class ReelEngine {
   startIntro() {
     if (this.introDone) return
     this.introDone = true
-    this.motions.forEach((motion, reel) => {
-      if (motion.delay === Number.POSITIVE_INFINITY) motion.delay = (reel * STAGGER * 1.5) / this.speed
+    this.motions.forEach(motion => {
+      if (motion.delay === Number.POSITIVE_INFINITY) motion.delay = INTRO_DELAY / this.speed
     })
     this.kick()
   }
@@ -792,7 +842,6 @@ class ReelEngine {
     const motion = this.motions[reel]
     if (!motion) return
     motion.phase = "drag"
-    motion.glide = null
     motion.vel = 0
     motion.delay = 0
     this.drags.set(reel, { id, y, origin: motion.pos, moved: false, samples: [{ y, t: time }] })
@@ -803,15 +852,10 @@ class ReelEngine {
     const motion = this.motions[reel]
     const model = this.config?.reels[reel]
     if (!drag || drag.id !== id || !motion || !model) return
-    if (!drag.moved && Math.abs(y - drag.y) < 4) return
-    if (!drag.moved) {
-      // Re-anchor past the slop so the reel does not jump by it.
-      drag.moved = true
-      drag.y = y
-    }
+    if (Math.abs(y - drag.y) >= TAP_SLOP) drag.moved = true
+    // 1:1 in arc length from the first pixel; past the first or last entry it stretches like rubber.
     const raw = drag.origin + (drag.y - y) / this.row
     const last = model.count - 1
-    // 1:1 inside the reel; past the first or last entry it stretches like rubber.
     motion.pos = model.cyclic ? raw : raw < 0 ? -rubber(-raw) : raw > last ? last + rubber(raw - last) : raw
     drag.samples.push({ y, t: time })
     if (drag.samples.length > 12) drag.samples.shift()
@@ -829,9 +873,9 @@ class ReelEngine {
     motion.phase = "rest"
     if (!drag.moved) {
       // A tap turns to the entry under the pointer, found back through the cylinder's sine.
-      const sine = clamp(offset / (this.row * RADIUS_ROWS), -1, 1)
-      const steps = cancelled ? 0 : Math.round((Math.asin(sine) * 180) / Math.PI / STEP)
-      this.aim(reel, Math.round(motion.pos) + steps)
+      const radius = RADIUS_ROWS * this.row
+      const rows = cancelled ? 0 : Math.round((Math.asin(clamp(offset / radius, -1, 1)) * radius) / this.row)
+      this.aim(reel, Math.round(drag.origin) + rows)
       if (this.still || motion.phase === "rest") this.settle()
       return
     }
@@ -852,27 +896,22 @@ class ReelEngine {
       this.settle()
       return
     }
-    motion.vel = velocity
-    const outside = !model.cyclic && (motion.pos < 0 || motion.pos > last)
-    const nearest = model.cyclic ? Math.round(motion.pos) : clamp(Math.round(motion.pos), 0, last)
-    if (outside || Math.abs(velocity) < 0.8) {
-      // Past an end, or barely moving: the spring bounces back or snaps to the nearest entry.
+    if (!model.cyclic && (motion.pos < 0 || motion.pos > last)) {
+      // Past an end the rubber band springs back to the edge.
+      motion.vel = velocity
       motion.phase = "spring"
-      motion.target = nearest
+      motion.spring = SPRING_BACK
+      motion.target = motion.pos < 0 ? 0 : last
       this.kick()
       return
     }
-    // Project the flick, land on a whole entry, and solve the glide's time constant so it starts at the flick's speed.
-    let to = Math.round(motion.pos + velocity * (GLIDE / this.speed))
+    // Land on the entry nearest to where the flick would be after PROJECTION seconds, decaying straight into it.
+    let to = Math.round(motion.pos + velocity * PROJECTION)
     if (!model.cyclic) to = clamp(to, 0, last)
-    const tau = (to - motion.pos) / velocity
-    if (tau > 0.06 && tau < 2) {
-      motion.phase = "glide"
-      motion.glide = { from: motion.pos, to, tau, t: 0 }
-    } else {
-      motion.phase = "spring"
-      motion.target = to
-    }
+    const fast = clamp((Math.abs(velocity) - GLIDE_SLOW_SPEED) / (GLIDE_FAST_SPEED - GLIDE_SLOW_SPEED), 0, 1)
+    motion.phase = "glide"
+    motion.target = to
+    motion.rate = GLIDE_SLOW + (GLIDE_FAST - GLIDE_SLOW) * fast
     this.kick()
   }
 
@@ -888,11 +927,11 @@ class ReelEngine {
       if (steps) this.spinBy(reel, steps)
       return
     }
-    const from = motion.phase === "spring" ? motion.target : motion.phase === "glide" && motion.glide ? motion.glide.to : motion.pos
+    const from = motion.phase === "spring" || motion.phase === "glide" ? motion.target : motion.pos
     const next = from + delta / this.row
     motion.target = model.cyclic ? next : clamp(next, -0.3, model.count - 0.7)
     motion.phase = "spring"
-    motion.glide = null
+    motion.spring = SPRING_STEP
     motion.delay = 0
     // Scrolling moves the target freely; once it pauses, the target snaps to a whole entry on the same spring.
     window.clearTimeout(this.wheelTimers.get(reel))
@@ -907,6 +946,11 @@ class ReelEngine {
       }, 110),
     )
     this.kick()
+  }
+
+  /** Home and End sweep through every entry between on a quick glide. */
+  jump(reel: number, entry: number) {
+    this.spinTo(reel, entry, { rate: GLIDE_JUMP })
   }
 
   type(reel: number, key: string, time: number) {
@@ -924,7 +968,7 @@ class ReelEngine {
     if (hit !== null) this.spinTo(reel, hit)
   }
 
-  /** Each reel is as wide as its widest entry in the lens font. */
+  /** Each reel is as wide as its widest entry in the lens font, plus its side padding. */
   measure() {
     const config = this.config
     if (!config || typeof document === "undefined") return
@@ -937,10 +981,13 @@ class ReelEngine {
       const sample = this.lens[reel]?.[HALF]
       if (!column || !sample) return
       const style = getComputedStyle(sample)
+      const box = getComputedStyle(column)
       context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`
       let widest = 0
-      for (let entry = 0; entry < model.count; entry++) widest = Math.max(widest, context.measureText(model.label(entry)).width)
-      column.style.width = `${Math.ceil(widest + 2)}px`
+      // Canvas has no tabular figures, so every digit is measured as a zero, the widest of them.
+      for (let entry = 0; entry < model.count; entry++) widest = Math.max(widest, context.measureText(model.label(entry).replace(/\d/g, "0")).width)
+      const padding = parseFloat(box.paddingLeft) + parseFloat(box.paddingRight)
+      column.style.width = `${Math.ceil(widest + padding)}px`
     })
   }
 }
@@ -967,8 +1014,10 @@ type ConfirmState = "idle" | "pending" | "success" | "failure"
 const lensClip = "inset(calc(50% - var(--reel-row) / 2) 0 calc(50% - var(--reel-row) / 2) 0)"
 const baseMask =
   "linear-gradient(to bottom, #000 calc(50% - var(--reel-row) / 2), transparent calc(50% - var(--reel-row) / 2), transparent calc(50% + var(--reel-row) / 2), #000 calc(50% + var(--reel-row) / 2))"
-const slotClass =
-  "absolute inset-x-0 top-1/2 block h-(--reel-row) leading-(--reel-row) whitespace-nowrap tabular-nums [backface-visibility:hidden] will-change-transform"
+/** Nodes sit at the vertical center; the engine moves them along the cylinder with translateY and scale. */
+const slotClass = "absolute inset-x-0 top-[calc(50%-var(--reel-row)/2)] block h-(--reel-row) leading-(--reel-row) whitespace-nowrap tabular-nums will-change-transform"
+/** The stage fades its top and bottom quarter so the drum turns away into the card. */
+const stageMask = "linear-gradient(transparent, #000 24%, #000 76%, transparent)"
 const alignClass = { start: "text-left", center: "text-center", end: "text-right" } as const
 
 /** A 3D reel date and time picker, like the wheels on a phone. */
@@ -1045,6 +1094,8 @@ export function DateReel({
       if (valueTime === undefined) setInner(date)
       onChange?.(date)
       setAnnouncement(config.summary(date).spoken)
+      // A new moment clears a finished confirmation, so the button offers to confirm again.
+      setStatus(previous => (previous === "pending" ? previous : "idle"))
     }
   })
 
@@ -1058,7 +1109,7 @@ export function DateReel({
   useLayoutEffect(() => {
     if (valueTime === undefined || valueTime === reels().committed) return
     reels().committed = valueTime
-    reels().spinAll(new Date(valueTime), 0)
+    reels().spinAll(new Date(valueTime))
   }, [valueTime])
 
   // Width and row height follow the container query and the loaded font.
@@ -1154,8 +1205,8 @@ export function DateReel({
       ArrowDown: () => reels().spinBy(reel, -1),
       PageUp: () => reels().spinBy(reel, model.page),
       PageDown: () => reels().spinBy(reel, -model.page),
-      Home: () => reels().spinTo(reel, 0),
-      End: () => reels().spinTo(reel, model.count - 1),
+      Home: () => reels().jump(reel, 0),
+      End: () => reels().jump(reel, model.count - 1),
       ArrowLeft: () => focus(reel - 1),
       ArrowRight: () => focus(reel + 1),
     }
@@ -1191,68 +1242,84 @@ export function DateReel({
   const resolve = (preset: DateReelPreset) => normalize(typeof preset.value === "function" ? preset.value(new Date(today)) : preset.value, minuteStep)
   const matches = (date: Date) => config.indicesOf(date).every((index, reel) => index === currentIndices[reel])
 
+  const busy = useRef(false)
   const confirm = async () => {
-    if (!onConfirm || status === "pending") return
+    if (!onConfirm || busy.current) return
+    busy.current = true
     window.clearTimeout(statusTimer.current)
     const date = reels().now()
-    const done = (next: ConfirmState, words: string) => {
+    const finish = (next: ConfirmState, words: string) => {
+      window.clearTimeout(statusTimer.current)
       setStatus(next)
       setAnnouncement(words)
-      statusTimer.current = window.setTimeout(() => setStatus("idle"), 2000)
     }
     try {
       const result = onConfirm(date)
       if (result && typeof (result as Promise<void>).then === "function") {
-        setStatus("pending")
+        // Pending shows only when the promise takes a moment, so a quick save goes straight to done.
+        statusTimer.current = window.setTimeout(() => setStatus("pending"), PENDING_DELAY)
         await result
       }
-      done("success", `${wordsFor("success")}. ${config.summary(date).spoken}`)
+      finish("success", `${wordsFor("success")}. ${config.summary(date).spoken}`)
     } catch {
-      done("failure", wordsFor("failure"))
+      finish("failure", wordsFor("failure"))
+    } finally {
+      busy.current = false
     }
   }
   const wordsFor = (state: ConfirmState) =>
     state === "pending" ? words.confirming : state === "success" ? words.confirmed : state === "failure" ? words.failed : words.confirm
 
-  // Hidden labels keep the same resting values either way (so server and client render alike); reduced motion only fades.
+  // Labels roll 4px and fade in place; hidden labels keep the same resting values either way, so server and client render alike.
   const swap = reduced
-    ? { duration: motionTokens.duration.fast, y: { duration: 0 }, filter: { duration: 0 } }
-    : { duration: motionTokens.duration.standard, ease: [...motionTokens.ease.enter] as [number, number, number, number] }
+    ? { duration: motionTokens.duration.fast, y: { duration: 0 } }
+    : { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.enter] as [number, number, number, number] }
 
   return (
     <div
       ref={rootRef}
       role="group"
       aria-label={label}
-      className={cn("@container w-full rounded-surface border border-border bg-surface-raised text-foreground shadow-raised", className)}
-      style={{ ...style, ["--reel-accent" as string]: accent ?? "var(--accent)" }}
+      className={cn("@container w-full rounded-surface border border-border bg-surface text-foreground", className)}
+      style={{
+        ...style,
+        ["--reel-accent" as string]: accent ?? "var(--accent)",
+        ["--reel-accent-strong" as string]: accent ? `color-mix(in oklab, ${accent}, var(--foreground))` : "var(--accent-strong)",
+      }}
     >
       <div
         className={cn(
-          "flex flex-col gap-4 p-4 @[26rem]:p-5",
-          "[--reel-row:34px] @[24rem]:[--reel-row:38px] @[32rem]:[--reel-row:42px]",
-          "[--reel-radius:calc(var(--reel-row)*3.196)] [--reel-perspective:calc(var(--reel-row)*18)]",
+          "grid gap-4 p-4 @[26rem]:p-6",
+          "[--reel-row:36px] [--reel-pad:8px] @[26rem]:[--reel-row:42px] @[26rem]:[--reel-pad:12px]",
         )}
       >
         {/* The visual summary is hidden from assistive technology; the live region below speaks the committed moment. */}
-        <div aria-hidden="true" className="grid gap-0.5">
-          {title ? <p className="m-0 text-sm leading-body text-text-secondary">{title}</p> : null}
-          <p ref={node => void (reels().primary = node)} className="m-0 truncate text-lg leading-tight font-medium tracking-body @[26rem]:text-xl">
+        <div aria-hidden="true" className="grid gap-1 px-1">
+          {title ? <p className="m-0 text-sm leading-[1.1] tracking-[-0.03em] text-text-secondary">{title}</p> : null}
+          <p ref={node => void (reels().primary = node)} className="m-0 truncate text-[22px] leading-[1.25] font-medium tabular-nums">
             {firstSummary.primary}
           </p>
           {mode === "time" ? null : (
-            <p ref={node => void (reels().secondary = node)} className="m-0 truncate text-sm leading-body text-text-muted">
-              {firstSummary.secondary || " "}
+            <p ref={node => void (reels().secondary = node)} className="m-0 truncate text-sm leading-[1.4] text-text-secondary">
+              {firstSummary.secondary || " "}
             </p>
           )}
         </div>
 
-        <div className="relative flex h-[calc(var(--reel-row)*5.6)] items-stretch justify-center gap-[0.8em] overflow-hidden text-[18px] @[24rem]:text-[20px] @[32rem]:text-[22px] supports-[overflow:clip]:overflow-clip">
+        <div
+          className="relative flex h-[calc(var(--reel-row)*5.6)] items-stretch justify-center overflow-hidden text-[18px] @[26rem]:text-[22px] supports-[overflow:clip]:overflow-clip"
+          style={{ maskImage: stageMask, WebkitMaskImage: stageMask }}
+        >
           {/* One glass lens spans the full width under every reel. */}
           <span
             ref={node => void (reels().band = node)}
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 top-1/2 h-(--reel-row) -translate-y-1/2 rounded-[12px] bg-surface-muted shadow-[inset_0_0_0_1px_var(--border-subtle)]"
+            className={cn(
+              "pointer-events-none absolute inset-x-0 top-1/2 h-(--reel-row) -translate-y-1/2 rounded-[12px]",
+              "bg-[color-mix(in_oklab,var(--surface-muted)_92%,transparent)] dark:bg-[color-mix(in_oklab,var(--surface-raised)_88%,transparent)]",
+              "shadow-[inset_0_0_0_1px_var(--border),inset_0_1px_0_color-mix(in_oklab,var(--background)_70%,transparent),var(--shadow-resting)]",
+              "dark:shadow-[inset_0_0_0_1px_var(--border),inset_0_1px_0_color-mix(in_oklab,var(--foreground)_6%,transparent),var(--shadow-resting)]",
+            )}
           />
           {config.reels.map((reel, index) => (
             <div
@@ -1265,58 +1332,56 @@ export function DateReel({
               aria-valuemax={reel.numeric(reel.count - 1)}
               aria-valuenow={reel.numeric(currentIndices[index])}
               aria-valuetext={reel.spoken(currentIndices[index])}
-              className="group/reel relative h-full flex-none cursor-grab touch-pan-x outline-none select-none active:cursor-grabbing"
-              style={{ width: `${Math.max(...Array.from({ length: Math.min(reel.count, 40) }, (_, entry) => reel.label(entry).length)) * 0.62 + 0.2}em` }}
+              className="group/reel relative h-full flex-none cursor-grab touch-pan-x px-(--reel-pad) outline-none select-none active:cursor-grabbing"
+              style={{
+                width: `calc(${Math.max(...Array.from({ length: Math.min(reel.count, 40) }, (_, entry) => reel.label(entry).length)) * 0.56}em + var(--reel-pad) * 2)`,
+              }}
               onKeyDown={onKeyDown(index)}
               onPointerDown={onPointerDown(index)}
               onPointerMove={onPointerMove(index)}
               onPointerUp={onPointerEnd(index)}
               onPointerCancel={onPointerEnd(index)}
             >
-              {/* Muted copy everywhere but the lens. */}
-              <div aria-hidden="true" className="absolute inset-0 text-text-muted [perspective:var(--reel-perspective)]" style={{ maskImage: baseMask, WebkitMaskImage: baseMask }}>
-                <div className="absolute inset-0 [transform-style:preserve-3d] [transform:translateZ(calc(var(--reel-radius)*-1))]">
-                  {layout[index]?.map((slot, at) => (
-                    <span
-                      key={at}
-                      ref={node => {
-                        ;(reels().base[index] ??= [])[at] = node
-                      }}
-                      className={cn(slotClass, alignClass[reel.align])}
-                      style={{ transform: slot.transform, opacity: slot.base }}
-                    >
-                      {slot.text}
-                    </span>
-                  ))}
-                </div>
+              {/* The drum in the secondary ink everywhere but the lens. */}
+              <div aria-hidden="true" className="absolute inset-y-0 inset-x-(--reel-pad) text-text-secondary" style={{ maskImage: baseMask, WebkitMaskImage: baseMask }}>
+                {layout[index]?.map((slot, at) => (
+                  <span
+                    key={at}
+                    ref={node => {
+                      ;(reels().base[index] ??= [])[at] = node
+                    }}
+                    className={cn(slotClass, alignClass[reel.align])}
+                    style={{ transform: slot.transform, opacity: slot.base }}
+                  >
+                    {slot.text}
+                  </span>
+                ))}
               </div>
-              {/* A crisp copy clipped to the lens; the focused reel shows its entry in the accent. */}
+              {/* A crisp copy clipped to the lens; a keyboard-focused reel shows its entry in the accent. */}
               <div
                 aria-hidden="true"
-                className="absolute inset-0 font-medium text-foreground transition-colors duration-160 ease-standard [perspective:var(--reel-perspective)] group-focus/reel:text-(--reel-accent) motion-reduce:transition-none"
+                className="absolute inset-y-0 inset-x-(--reel-pad) font-medium text-foreground transition-colors duration-160 ease-standard group-focus-visible/reel:text-(--reel-accent) motion-reduce:transition-none"
                 style={{ clipPath: lensClip }}
               >
-                <div className="absolute inset-0 [transform-style:preserve-3d] [transform:translateZ(calc(var(--reel-radius)*-1))]">
-                  {layout[index]?.map((slot, at) => (
-                    <span
-                      key={at}
-                      ref={node => {
-                        ;(reels().lens[index] ??= [])[at] = node
-                      }}
-                      className={cn(slotClass, alignClass[reel.align])}
-                      style={{ transform: slot.transform, opacity: slot.lens }}
-                    >
-                      {slot.text}
-                    </span>
-                  ))}
-                </div>
+                {layout[index]?.map((slot, at) => (
+                  <span
+                    key={at}
+                    ref={node => {
+                      ;(reels().lens[index] ??= [])[at] = node
+                    }}
+                    className={cn(slotClass, alignClass[reel.align])}
+                    style={{ transform: slot.transform, opacity: slot.lens }}
+                  >
+                    {slot.text}
+                  </span>
+                ))}
               </div>
             </div>
           ))}
         </div>
 
         {picks.length || onConfirm ? (
-          <div className="flex flex-col gap-3 @[30rem]:flex-row @[30rem]:items-center @[30rem]:justify-between">
+          <div className="flex flex-col gap-3 border-t border-border pt-4 @[26rem]:flex-row @[26rem]:items-center @[26rem]:justify-between">
             {picks.length ? (
               <div role="group" aria-label={words.presets} className="flex flex-wrap gap-2">
                 {picks.map(preset => {
@@ -1327,12 +1392,12 @@ export function DateReel({
                       type="button"
                       aria-pressed={matches(date)}
                       className={cn(
-                        "inline-flex h-8 cursor-pointer items-center rounded-pill border border-border bg-transparent px-3 text-sm leading-body text-text-secondary outline-none [-webkit-tap-highlight-color:transparent]",
+                        "inline-flex h-9 grow cursor-pointer items-center justify-center rounded-pill border border-border bg-transparent px-3 text-sm leading-body text-text-secondary outline-none @[26rem]:grow-0 [-webkit-tap-highlight-color:transparent]",
                         "transition-[color,background-color,border-color] duration-160 ease-standard motion-reduce:transition-none",
-                        "pointer-fine:hover:bg-surface-muted pointer-fine:hover:text-foreground focus-visible:bg-surface-muted focus-visible:text-foreground",
-                        "aria-pressed:border-transparent aria-pressed:bg-[color-mix(in_oklab,var(--reel-accent)_14%,transparent)] aria-pressed:text-(--reel-accent)",
+                        "pointer-fine:hover:not-aria-pressed:bg-surface-muted pointer-fine:hover:not-aria-pressed:text-foreground focus-visible:not-aria-pressed:bg-surface-muted focus-visible:not-aria-pressed:text-foreground",
+                        "aria-pressed:border-[color-mix(in_oklab,var(--reel-accent)_38%,transparent)] aria-pressed:bg-[color-mix(in_oklab,var(--reel-accent)_10%,transparent)] aria-pressed:text-(--reel-accent)",
                       )}
-                      onClick={() => reels().spinAll(date, STAGGER)}
+                      onClick={() => reels().spinAll(date, true)}
                     >
                       {preset.label}
                     </button>
@@ -1343,8 +1408,13 @@ export function DateReel({
             {onConfirm ? (
               <button
                 type="button"
+                aria-disabled={status === "pending" || undefined}
                 aria-busy={status === "pending" || undefined}
-                className={cn(buttonVariants({ variant: "primary" }), "grid min-w-28 @max-[30rem]:min-h-11 @max-[30rem]:w-full")}
+                className={cn(
+                  "grid h-11 w-full cursor-pointer place-items-center rounded-pill bg-(--reel-accent) px-7 text-sm leading-body font-medium whitespace-nowrap text-accent-foreground outline-none @[26rem]:h-9 @[26rem]:w-auto [-webkit-tap-highlight-color:transparent]",
+                  "transition-[background-color] duration-160 ease-standard aria-busy:cursor-progress motion-reduce:transition-none",
+                  "pointer-fine:hover:bg-(--reel-accent-strong) focus-visible:bg-(--reel-accent-strong) aria-busy:bg-(--reel-accent-strong)",
+                )}
                 onClick={confirm}
               >
                 {/* Every state shares one grid cell, so the button keeps the width of its longest label. */}
@@ -1354,11 +1424,7 @@ export function DateReel({
                     aria-hidden={state === status ? undefined : true}
                     className="col-start-1 row-start-1"
                     initial={false}
-                    animate={
-                      state === status
-                        ? { opacity: 1, y: 0, filter: "blur(0px)" }
-                        : { opacity: 0, y: 4, filter: `blur(${motionTokens.blur.soft}px)` }
-                    }
+                    animate={state === status ? { opacity: 1, y: 0 } : { opacity: 0, y: 4 }}
                     transition={swap}
                   >
                     {wordsFor(state)}
@@ -1369,7 +1435,7 @@ export function DateReel({
           </div>
         ) : null}
       </div>
-      <p aria-live="polite" aria-atomic="true" className="sr-only">
+      <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {announcement}
       </p>
     </div>

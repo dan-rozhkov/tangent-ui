@@ -24,20 +24,15 @@ function Folio({ number, children }: { number: number; children?: ReactNode }) {
 const pages = [
   <div key="cover" className="relative size-full">
     <Photo id="terracotta-waves" />
-    <div className="absolute inset-0 bg-[linear-gradient(to_bottom,oklch(0%_0_0/.35),transparent_40%,transparent_70%,oklch(0%_0_0/.4))]" />
-    <div className="absolute inset-x-5 top-5 flex items-baseline justify-between text-[10px] tracking-wide text-[oklch(100%_0_0/.85)] uppercase">
-      <span>Issue 07</span>
-      <span>Autumn</span>
+    <div className="absolute inset-0 bg-[linear-gradient(to_bottom,transparent_55%,oklch(0%_0_0/.38))]" />
+    <div className="absolute inset-x-5 bottom-5 flex flex-col gap-1 text-[oklch(98%_0_0)]">
+      <span className="text-xs opacity-85">Issue 07</span>
+      <h2 className="m-0 text-[22px] leading-tight font-medium">Quiet rooms</h2>
     </div>
-    <h2 className="absolute inset-x-5 bottom-5 m-0 font-display text-[40px] leading-[0.95] font-medium tracking-display text-[oklch(100%_0_0)]">
-      Quiet
-      <br />
-      rooms
-    </h2>
   </div>,
   <div key="contents" className="relative flex size-full flex-col gap-4 p-6">
     <p className="m-0 text-[10px] tracking-wide text-text-muted uppercase">In this issue</p>
-    <ol className="m-0 flex list-none flex-col gap-3 p-0 text-sm">
+    <ol className="m-0 flex list-none flex-col gap-2 p-0 text-[13px]">
       {[
         ["Light that stays", 3],
         ["A room for one chair", 4],
@@ -45,7 +40,7 @@ const pages = [
         ["Linen, slowly", 6],
         ["Notes from Lisbon", 7],
       ].map(([title, page]) => (
-        <li key={title} className="flex items-baseline gap-2 border-b border-border pb-2">
+        <li key={title} className="flex items-baseline gap-2 border-b border-border pb-1.5">
           <span className="flex-1">{title}</span>
           <span className="text-xs text-text-muted tabular-nums">{page}</span>
         </li>
@@ -103,5 +98,5 @@ const pages = [
 ]
 
 export default function Demo() {
-  return <PageCurl label="Quiet rooms, issue 7" pages={pages} style={{ width: 520, maxWidth: "100%" }} />
+  return <PageCurl label="Quiet rooms, issue 7" pages={pages} style={{ width: 460, maxWidth: "100%" }} />
 }

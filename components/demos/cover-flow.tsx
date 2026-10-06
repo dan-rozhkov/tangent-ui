@@ -30,15 +30,13 @@ const places: Place[] = [
   place("lisbon-rooftops", "Old town stairs", "Lisbon", "6 km", "Best in October"),
   place("lisbon-tram", "Tram 28 line", "Lisbon", "7 km", "Best in November"),
   place("terracotta-waves", "Red walls", "Marrakech", "4 km", "Best in December"),
-  place("concert-hall", "Steel curves", "Los Angeles", "3 km", "Best in October"),
-  place("pool-house", "Desert modern", "Palm Springs", "9 km", "Best in November"),
 ]
 
 export default function Demo() {
   const [index, setIndex] = useState(2)
 
   return (
-    <div className="w-full max-w-[720px]">
+    <div className="w-full max-w-[522px]">
       <CoverFlow
         label="Walks for this fall"
         items={places}
@@ -46,10 +44,10 @@ export default function Demo() {
         onIndexChange={setIndex}
         renderCaption={(item) => (
           <>
-            <span className="max-w-full truncate text-base leading-6 font-medium">{item.title}</span>
-            <span className="max-w-full truncate text-sm leading-5 text-text-secondary">
+            <p className="m-0 max-w-full truncate text-lg leading-[1.3] font-medium">{item.title}</p>
+            <p className="m-0 max-w-full truncate text-sm leading-[1.4] text-text-secondary">
               {item.subtitle} · {item.meta} · {item.season}
-            </span>
+            </p>
           </>
         )}
       />

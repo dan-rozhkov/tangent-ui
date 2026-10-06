@@ -28,7 +28,7 @@ export default function Demo() {
       <SegmentedControl label="Reels" options={modes} value={mode} onValueChange={next => setMode(next as DateReelMode)} />
       <DateReel
         key={mode}
-        className="max-w-[26rem]"
+        className="max-w-[32.5rem]"
         mode={mode}
         title={mode === "date" ? "Birthday" : "Send later"}
         today={TODAY}

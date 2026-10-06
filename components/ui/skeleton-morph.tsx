@@ -59,8 +59,19 @@ const Region = createContext<RegionContext | null>(null)
 
 const px = (value: number | string) => (typeof value === "number" ? `${value}px` : value)
 
-/** Bars are a quiet mix of the strong border into the surface, the same tone as Skeleton. */
-const barTone = "bg-[color-mix(in_oklab,var(--border-strong)_38%,var(--surface))]"
+/** Skeleton shapes share the muted surface, so they read as quiet slots in the card. */
+const barTone = "bg-surface-muted"
+
+/** Text bars are this tall, centred in a box of the text's own line height so the skeleton keeps the loaded line boxes. */
+const BAR = 12
+
+/** The shell eases to its new height, and placeholders stretch to their content, on one medium critically damped spring. */
+const SHELL = { type: "spring", stiffness: 256, damping: 32 } as const
+const STRETCH = { type: "spring", stiffness: 290, damping: 34 } as const
+/** Placeholders fade on a much stiffer spring, so each one is gone well before the shell settles. */
+const FADE = { type: "spring", stiffness: 900, damping: 60 } as const
+/** The first placeholder starts to fade this long after the content lands; the rest follow it by `stagger`. */
+const FADE_LEAD = 0.06
 
 /** Pins the shell's height while blocks resolve and springs it to the new natural height, clipping while it moves so the card border never jumps. */
 function useShellHeight(reduce: boolean) {
@@ -68,6 +79,7 @@ function useShellHeight(reduce: boolean) {
   const height = useMotionValue(0)
   const controls = useRef<AnimationPlaybackControls | undefined>(undefined)
   const pinned = useRef(false)
+  const target = useRef(0)
 
   const settle = useCallback(() => {
     pinned.current = false
@@ -92,6 +104,8 @@ function useShellHeight(reduce: boolean) {
     node.style.height = ""
     const next = node.getBoundingClientRect().height
     node.style.height = `${current}px`
+    // Every block lands in the same commit, so later calls see the same target; leave a running ease alone.
+    if (controls.current && Math.abs(target.current - next) < 0.5) return
     controls.current?.stop()
     if (Math.abs(next - current) < 0.5) {
       // Nothing to ease; later blocks may still change the height, so let go after this frame.
@@ -101,9 +115,10 @@ function useShellHeight(reduce: boolean) {
       })
       return
     }
-    // Keeps the velocity of a running ease, so a second block resolving mid-flight retargets smoothly.
+    target.current = next
+    // Keeps the velocity of a running ease, so a resize mid-flight retargets smoothly.
     controls.current = animate(height, next, {
-      ...motionTokens.spring.smooth,
+      ...SHELL,
       onUpdate: value => {
         if (root.current) root.current.style.height = `${value}px`
       },
@@ -125,9 +140,9 @@ function useShellHeight(reduce: boolean) {
 }
 
 /**
- * A loading region whose skeleton blocks become the real content. Blocks resolve one after another in reading order,
- * each placeholder stretching to its content's measured box while the content sharpens in underneath, and the shell
- * eases to its new height.
+ * A loading region whose skeleton blocks become the real content. Loading swaps in at once with a slow pulse; on
+ * resolve the content lands underneath, each placeholder stretches to its content's measured box and fades in reading
+ * order, and the shell eases to its new height.
  */
 export function SkeletonMorph({ loading, children, stagger = 0.04, loadingLabel = "Loading", as, className, style }: SkeletonMorphProps) {
   const Root = (as ?? "div") as ElementType
@@ -151,24 +166,44 @@ export function SkeletonMorph({ loading, children, stagger = 0.04, loadingLabel 
   )
 }
 
-/** A calm opacity pulse with a soft sweep riding across it. Both stop as soon as the block resolves. */
-function Bar({ className, style, reduce, index }: { className?: string; style?: CSSProperties; reduce: boolean; index: number }) {
+/** One slow pulse, opacity 1 to .55 and back, shared by every shape so they all breathe in phase. */
+const PULSE = { duration: 1.4, ease: [...motionTokens.ease.inOut], repeat: Infinity, repeatType: "mirror" } as const
+
+function Bar({ className, style, reduce }: { className?: string; style?: CSSProperties; reduce: boolean }) {
   return (
     <motion.span
-      className={cn("relative block overflow-hidden", barTone, className)}
+      className={cn("block", barTone, className)}
       style={style}
-      animate={reduce ? undefined : { opacity: [1, 0.6, 1] }}
-      transition={{ duration: 1.8, ease: [...motionTokens.ease.inOut], repeat: Infinity, delay: index * 0.09 }}
-    >
-      {!reduce && (
-        <motion.span
-          className="absolute inset-y-0 left-0 block w-full bg-[linear-gradient(90deg,transparent,color-mix(in_oklab,var(--surface)_55%,transparent),transparent)]"
-          initial={{ x: "-100%" }}
-          animate={{ x: "100%" }}
-          transition={{ duration: 1.6, ease: [...motionTokens.ease.inOut], repeat: Infinity, repeatDelay: 0.6, delay: index * 0.09 }}
-        />
-      )}
-    </motion.span>
+      initial={false}
+      animate={reduce ? { opacity: 1 } : { opacity: [1, 0.55] }}
+      transition={reduce ? { duration: 0 } : PULSE}
+    />
+  )
+}
+
+/** Text skeleton: one line box per line, each holding a 12px bar centred in it; the last of several lines is shorter. */
+function Lines({ count, lineHeight, shape, reduce, pulse }: { count: number; lineHeight: number; shape: string; reduce: boolean; pulse: boolean }) {
+  const bar = Math.min(BAR, lineHeight)
+  return (
+    <span className="flex size-full flex-col">
+      {Array.from({ length: count }, (_, line) => {
+        const style: CSSProperties = {
+          top: `calc(50% - ${bar / 2}px)`,
+          height: bar,
+          borderRadius: shape,
+          width: count > 1 && line === count - 1 ? "62%" : "100%",
+        }
+        return (
+          <span key={line} className="relative block min-h-0 flex-1">
+            {pulse ? (
+              <Bar reduce={reduce} className="absolute left-0" style={style} />
+            ) : (
+              <span className={cn("absolute left-0 block", barTone)} style={style} />
+            )}
+          </span>
+        )
+      })}
+    </span>
   )
 }
 
@@ -209,8 +244,9 @@ function inkBox(root: HTMLElement): Box {
 }
 
 /**
- * One piece of the layout. It is a size-matched skeleton while loading; on resolve the placeholder stretches to the
- * content's measured box and fades while the content sharpens in, in place.
+ * One piece of the layout. It is a size-matched skeleton while loading. On resolve the real content lands at once
+ * underneath, and the placeholder stretches in place to the content's measured box while it fades away, in reading
+ * order.
  */
 export function MorphBlock({ children, width = "100%", height, radius = 6, lines, lineHeight = 20, as = "div", className, style }: MorphBlockProps) {
   const region = useContext(Region)
@@ -228,36 +264,34 @@ export function MorphBlock({ children, width = "100%", height, radius = 6, lines
   }
   /** The skeleton's box, read just before it gives way to the content. */
   const from = useRef<{ width: number; height: number } | null>(null)
+  /** This block's place among its region's blocks, which sets when its placeholder fades. */
+  const order = useRef(0)
 
   const overlayLeft = useMotionValue(0)
   const overlayTop = useMotionValue(0)
   const overlayWidth = useMotionValue(0)
   const overlayHeight = useMotionValue(0)
   const overlayOpacity = useMotionValue(1)
-  const contentOpacity = useMotionValue(1)
-  const contentBlur = useMotionValue(`blur(0px)`)
 
   const lineCount = lines && lines > 0 ? Math.floor(lines) : 0
   const skeletonHeight = height ?? (lineCount ? lineCount * lineHeight : 12)
   const shape = radius === "circle" ? "9999px" : px(radius)
 
+  // Every block gives way in the same commit: pin the shell at the skeleton's height, then swap in the content.
   useLayoutEffect(() => {
     if (loading || phase !== "skeleton") return
     const node = block.current
-    // Resolve in DOM order: this block's place among its region's blocks sets its delay.
     const all = region?.root.current ? Array.from(region.root.current.querySelectorAll("[data-morph-block]")) : []
-    const order = Math.max(0, node ? all.indexOf(node) : 0)
-    const timer = window.setTimeout(() => {
-      const box = block.current?.getBoundingClientRect()
-      from.current = box ? { width: box.width, height: box.height } : null
-      region?.hold()
-      setPhase("morphing")
-    }, order * (region?.stagger ?? 0) * 1000)
-    return () => window.clearTimeout(timer)
+    order.current = Math.max(0, node ? all.indexOf(node) : 0)
+    const box = node?.getBoundingClientRect()
+    from.current = box ? { width: box.width, height: box.height } : null
+    region?.hold()
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the skeleton is measured and the shell pinned before the content replaces it
+    setPhase("morphing")
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the phase only matters at the moment loading flips
   }, [loading])
 
-  // The content is in the layout now: measure it, let the shell ease, then stretch the placeholder over it.
+  // The content is in the layout now: measure it, let the shell ease, then stretch the placeholder over it and fade it out.
   useLayoutEffect(() => {
     if (phase !== "morphing") return
     const node = block.current
@@ -270,38 +304,28 @@ export function MorphBlock({ children, width = "100%", height, radius = 6, lines
     }
     const outer = node.getBoundingClientRect()
     const target = inkBox(inner)
-    const to = { left: target.left - outer.left, top: target.top - outer.top, width: target.width, height: target.height }
+    // Text keeps its line boxes: the bars stretch to the run's width but stay as tall as the lines they sit in.
+    const lineBox = lineCount ? inner.getBoundingClientRect() : target
+    const to = { left: target.left - outer.left, top: lineBox.top - outer.top, width: target.width, height: lineBox.height }
 
+    overlayLeft.jump(0)
+    overlayTop.jump(0)
+    overlayWidth.jump(start.width)
+    overlayHeight.jump(start.height)
+    overlayOpacity.jump(1)
     const runs: AnimationPlaybackControls[] = []
     if (reduce) {
-      overlayLeft.jump(0)
-      overlayTop.jump(0)
-      overlayWidth.jump(start.width)
-      overlayHeight.jump(start.height)
-      overlayOpacity.jump(1)
-      contentOpacity.jump(0)
-      contentBlur.jump("blur(0px)")
-      const fade = { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] } as const
-      runs.push(animate(overlayOpacity, 0, fade), animate(contentOpacity, 1, { ...fade, onComplete: () => setPhase("done") }))
+      // No stretch and no stagger: every placeholder crossfades off the content together.
+      runs.push(animate(overlayOpacity, 0, { duration: 0.115, ease: [0, 0, 0.58, 1], onComplete: () => setPhase("done") }))
     } else {
-      overlayLeft.jump(0)
-      overlayTop.jump(0)
-      overlayWidth.jump(start.width)
-      overlayHeight.jump(start.height)
-      overlayOpacity.jump(1)
-      contentOpacity.jump(0)
-      contentBlur.jump(`blur(${motionTokens.blur.soft}px)`)
-      const stretch = motionTokens.spring.smooth
       runs.push(
-        animate(overlayLeft, to.left, stretch),
-        animate(overlayTop, to.top, stretch),
-        animate(overlayWidth, to.width, stretch),
-        animate(overlayHeight, to.height, stretch),
-        animate(overlayOpacity, 0, { duration: motionTokens.duration.standard + 0.08, ease: [...motionTokens.ease.standard] }),
-        animate(contentOpacity, 1, { duration: motionTokens.duration.standard, ease: [...motionTokens.ease.enter], delay: 0.04 }),
-        animate(contentBlur, "blur(0px)", {
-          duration: motionTokens.duration.considered * 0.75,
-          ease: [...motionTokens.ease.enter],
+        animate(overlayLeft, to.left, STRETCH),
+        animate(overlayTop, to.top, STRETCH),
+        animate(overlayWidth, to.width, STRETCH),
+        animate(overlayHeight, to.height, STRETCH),
+        animate(overlayOpacity, 0, {
+          ...FADE,
+          delay: FADE_LEAD + order.current * (region?.stagger ?? 0),
           onComplete: () => setPhase("done"),
         }),
       )
@@ -311,27 +335,10 @@ export function MorphBlock({ children, width = "100%", height, radius = 6, lines
   }, [phase])
 
   const isSkeleton = phase === "skeleton"
-  const bars = lineCount
-    ? Array.from({ length: lineCount }, (_, line) => (
-        <span key={line} className="flex flex-1 items-center" style={{ minHeight: 0 }}>
-          <Bar
-            reduce={reduce}
-            index={line}
-            className="w-full"
-            style={{
-              height: Math.max(6, Math.round(lineHeight * 0.55)),
-              borderRadius: shape,
-              width: lineCount > 1 && line === lineCount - 1 ? "62%" : "100%",
-            }}
-          />
-        </span>
-      ))
-    : null
-
   const skeleton = lineCount ? (
-    <span className="flex size-full flex-col">{bars}</span>
+    <Lines count={lineCount} lineHeight={lineHeight} shape={shape} reduce={reduce} pulse />
   ) : (
-    <Bar reduce={reduce} index={0} className="size-full" style={{ borderRadius: shape }} />
+    <Bar reduce={reduce} className="size-full" style={{ borderRadius: shape }} />
   )
 
   return (
@@ -347,13 +354,9 @@ export function MorphBlock({ children, width = "100%", height, radius = 6, lines
         </span>
       ) : (
         <>
-          <motion.span
-            ref={content}
-            className="block"
-            style={phase === "done" ? undefined : { opacity: contentOpacity, filter: contentBlur }}
-          >
+          <span ref={content} className="block">
             {children}
-          </motion.span>
+          </span>
           {phase === "morphing" && (
             <motion.span
               aria-hidden="true"
@@ -361,20 +364,7 @@ export function MorphBlock({ children, width = "100%", height, radius = 6, lines
               style={{ left: overlayLeft, top: overlayTop, width: overlayWidth, height: overlayHeight, opacity: overlayOpacity, borderRadius: shape }}
             >
               {lineCount ? (
-                <span className="flex size-full flex-col">
-                  {Array.from({ length: lineCount }, (_, line) => (
-                    <span key={line} className="flex flex-1 items-center">
-                      <span
-                        className={cn("block", barTone)}
-                        style={{
-                          height: Math.max(6, Math.round(lineHeight * 0.55)),
-                          borderRadius: shape,
-                          width: lineCount > 1 && line === lineCount - 1 ? "62%" : "100%",
-                        }}
-                      />
-                    </span>
-                  ))}
-                </span>
+                <Lines count={lineCount} lineHeight={lineHeight} shape={shape} reduce={reduce} pulse={false} />
               ) : (
                 <span className={cn("block size-full", barTone)} />
               )}

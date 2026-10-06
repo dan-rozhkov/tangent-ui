@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react"
-import type { MotionValue, TargetAndTransition, Transition } from "motion/react"
+import { animate, motion, useMotionTemplate, useMotionValue, useReducedMotion, useTransform } from "motion/react"
+import type { MotionValue, Transition } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -39,40 +39,61 @@ export interface CoverFlowProps<T extends CoverFlowItem = CoverFlowItem> {
 
 /* ---------- rail geometry, in card widths ---------- */
 
-/** Distance from the front card to its neighbors, then between each further card. */
-const NEAR = 0.66
-const FAR = 0.25
-/** How far each step recedes, how much it shrinks and dims, and how far it turns. */
-const RECEDE = 0.3
-const SHRINK = 0.07
-const DIM = 0.2
-const TURN = 46
-/** The photo drifts inside its frame by this share of the card width per step. */
-const DRIFT = 0.07
-/** Cards past this distance are hidden. */
-const VISIBLE = 4.5
+/** Sideways spacing: to the first neighbor, then to the second, then between every further card. */
+const STEP_NEAR = 0.8015
+const STEP_MID = 0.3687
+const STEP_FAR = 0.129
+/** On a narrow stage the first neighbor never sits farther than this share of the stage width. */
+const STEP_STAGE = 0.28
+/** Depth: to the first neighbor, then per card until it stops receding at the third. */
+const DEPTH_NEAR = 0.3807
+const DEPTH_FAR = 0.1403
+const DEPTH_STOP = 3
+/** Side cards face the front card at this angle, fully turned one card away. */
+const TURN = 45
+/** The veil darkens a card with distance, the edge shades its far side. */
+const VEIL_NEAR = 0.42
+const VEIL_FAR = 0.16
+const VEIL_MAX = 0.74
+const EDGE = 0.45
+/** Cards fade out between these distances and are hidden past the second. */
+const FADE_FROM = 2
+const FADE_TO = 2.7
 /** Share of the card height mirrored under it. */
-const REFLECTION = 0.34
+const REFLECTION = 0.15
+/** Room under the card for its reflection and shadows, and the gap above it (`--cf-top`), in px. */
+const STAGE_EXTRA = 50
+const CARD_TOP = 12
 
 /* ---------- gesture ---------- */
 
-/** Pointer travel for one card under the finger, in card widths. */
-const DRAG_STEP = 0.5
-const SLOP = 5
+/** Pointer travel before the rail starts to follow, in px. Past it the rail moves 1:1 with the pointer. */
+const SLOP = 6.7
+/** Rubber band past the ends: iOS resistance constant, and the limit as a share of the card width. */
+const RUBBER = 0.55
+const RUBBER_LIMIT = 0.5
 /** A release coasts this many seconds of its velocity before the card is chosen. */
-const PROJECTION = 0.28
+const PROJECTION = 0.32
 /** Release speed in px/s that always moves at least one card. */
-const FLICK = 380
+const FLICK = 200
 /** Reduced motion: a drag this long steps one card. */
 const REDUCED_STEP = 40
 /** Quiet time after the last wheel event before the rail settles. */
 const WHEEL_IDLE = 90
+/** Keys, clicks and ticks: critically damped, about 17 rad/s. */
+const STEP_SPRING = { type: "spring", stiffness: 289, damping: 34, restDelta: 0.0005 } as const
+/** Releases settle softer than a step and keep the throw's velocity, about 9 rad/s, critically damped. */
+const RELEASE_STIFFNESS = 81
+/** Caption items slide this far, in px, from the side the rail travels toward. */
+const CAPTION_SHIFT = 18
+/** Tick pitch and thumb width, in px. */
+const TICK = 16
+const THUMB = 12
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
-/** Past the first and last card the rail resists like a rubber band, never more than a third of a card. */
-const rubber = (value: number, max: number) =>
-  value < 0 ? -(1 - 1 / (-value * 1.6 + 1)) * 0.35 : value > max ? max + (1 - 1 / ((value - max) * 1.6 + 1)) * 0.35 : value
+/** iOS reciprocal resistance: the first pixels follow almost 1:1, and the band tends to `limit` however far you pull. */
+const band = (overshoot: number, limit: number) => (limit * overshoot * RUBBER) / (overshoot * RUBBER + limit)
 
 function velocityOf(samples: { t: number; x: number }[], now: number) {
   const recent = samples.filter((sample) => now - sample.t <= 90)
@@ -82,14 +103,11 @@ function velocityOf(samples: { t: number; x: number }[], now: number) {
   return (last.x - first.x) / ((last.t - first.t) / 1000)
 }
 
-/** The landing spring follows the release: a hard throw travels farther, so it gets a little longer and a hint of give. */
-function landing(distance: number, velocity: number): Transition {
-  return {
-    type: "spring",
-    visualDuration: clamp(0.34 + Math.abs(distance) * 0.07, 0.34, 0.75),
-    bounce: Math.abs(velocity) > 6 ? 0.1 : 0,
-    velocity,
-  }
+/** Sideways spacings in px for a card width and stage width. Narrow stages squeeze every step by the same share. */
+function steps(w: number, stage: number) {
+  const near = Math.min(STEP_NEAR * w, STEP_STAGE * stage || STEP_NEAR * w)
+  const squeeze = near / (STEP_NEAR * w || 1)
+  return { near, mid: STEP_MID * w * squeeze, far: STEP_FAR * w * squeeze }
 }
 
 /* ---------- card ---------- */
@@ -101,37 +119,40 @@ interface CardProps {
   front: boolean
   pos: MotionValue<number>
   width: MotionValue<number>
+  stage: MotionValue<number>
   /** 1 under reduced motion. A motion value, so the first client render matches the server. */
   still: MotionValue<number>
   onSelect: (index: number) => void
 }
 
-function Card({ item, index, count, front, pos, width, still, onSelect }: CardProps) {
-  const distance = useTransform(() => index - pos.get())
+function Card({ item, index, count, front, pos, width, stage, still, onSelect }: CardProps) {
+  const offset = useTransform(() => index - pos.get())
   const x = useTransform(() => {
-    const d = distance.get()
-    const a = Math.abs(d)
-    return Math.sign(d) * (a < 1 ? a * NEAR : NEAR + (a - 1) * FAR) * width.get()
+    const o = offset.get()
+    const a = Math.abs(o)
+    const s = steps(width.get(), stage.get())
+    const along = a <= 1 ? a * s.near : a <= 2 ? s.near + (a - 1) * s.mid : s.near + s.mid + (a - 2) * s.far
+    return Math.sign(o) * along
   })
-  const z = useTransform(() => -Math.min(Math.abs(distance.get()), 3.5) * RECEDE * width.get())
-  const scale = useTransform(() => 1 - Math.min(Math.abs(distance.get()), 3.5) * SHRINK)
-  // Cards turn their faces toward the front card; the turn is full by one step away.
-  const rotateY = useTransform(() => -clamp(distance.get(), -1, 1) * TURN * (1 - still.get()))
-  const dim = useTransform(() => Math.min(Math.abs(distance.get()) * DIM, 0.62))
-  const zIndex = useTransform(() => Math.round(100 - Math.abs(distance.get()) * 10))
-  const visibility = useTransform(() => (Math.abs(distance.get()) > VISIBLE ? "hidden" : "visible"))
-  // The photo slides against the direction of travel, so it seems to sit a little behind the glass of the frame.
-  const drift = useTransform(() => clamp(distance.get(), -1.6, 1.6) * DRIFT * width.get() * (1 - still.get()))
-
-  const photo = (mirrored: boolean) => (
-    <motion.img
-      src={item.image}
-      alt=""
-      draggable={false}
-      className={cn("absolute top-0 left-[-12%] h-full w-[124%] max-w-none object-cover", mirrored && "-scale-y-100")}
-      style={{ x: drift, objectPosition: item.imagePosition }}
-    />
-  )
+  const z = useTransform(() => {
+    const a = Math.abs(offset.get())
+    const w = width.get()
+    return a <= 1 ? -a * DEPTH_NEAR * w : -(DEPTH_NEAR + (Math.min(a, DEPTH_STOP) - 1) * DEPTH_FAR) * w
+  })
+  // Left cards turn right and right cards turn left, so every face looks at the front card. Full by one card away.
+  const rotateY = useTransform(() => -clamp(offset.get(), -1, 1) * TURN * (1 - still.get()))
+  const veil = useTransform(() => {
+    const a = Math.abs(offset.get())
+    return a <= 1 ? a * VEIL_NEAR : Math.min(VEIL_NEAR + (a - 1) * VEIL_FAR, VEIL_MAX)
+  })
+  const edge = useTransform(() => EDGE * Math.min(1, Math.abs(offset.get())))
+  const reflection = useTransform(() => 1 - edge.get())
+  const zIndex = useTransform(() => Math.round(100 - Math.abs(offset.get()) * 10))
+  const opacity = useTransform(() => clamp(1 - (Math.abs(offset.get()) - FADE_FROM) / (FADE_TO - FADE_FROM), 0, 1))
+  const visibility = useTransform(() => (Math.abs(offset.get()) >= FADE_TO ? "hidden" : "visible"))
+  // The edge shade sits on the side turned away from the viewer.
+  const edgeAngle = useTransform(() => (offset.get() > 0 ? 270 : 90))
+  const edgeImage = useMotionTemplate`linear-gradient(${edgeAngle}deg, transparent 40%, oklch(0% 0 0 / .5))`
 
   return (
     <motion.div
@@ -139,34 +160,72 @@ function Card({ item, index, count, front, pos, width, still, onSelect }: CardPr
       aria-roledescription="slide"
       aria-label={`${index + 1} of ${count}: ${item.title}`}
       aria-hidden={front ? undefined : true}
-      className={cn("absolute top-0 left-1/2 ml-[calc(var(--cf-card)/-2)] size-(--cf-card)", !front && "cursor-pointer")}
-      style={{ x, z, scale, rotateY, zIndex, visibility, transformStyle: "preserve-3d" }}
+      className={cn("absolute top-(--cf-top) left-1/2 ml-[calc(var(--cf-w)/-2)] h-(--cf-h) w-(--cf-w)", !front && "cursor-pointer")}
+      style={{ x, z, rotateY, zIndex, opacity, visibility }}
       onClick={() => onSelect(index)}
     >
-      {/* Contact shadow: a dark, tight ellipse where the card meets the floor, and a softer one around it. */}
+      {/* A soft ground shade around the card, then a tight contact shadow where it meets the floor. */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-[6%] -bottom-3 h-6 rounded-[50%] bg-[radial-gradient(closest-side,oklch(0%_0_0/.38),transparent)] blur-[6px] dark:bg-[radial-gradient(closest-side,oklch(0%_0_0/.7),transparent)]"
+        className="pointer-events-none absolute top-[4%] left-[-3%] h-[98%] w-[106%] bg-[radial-gradient(closest-side,oklch(0%_0_0/.14),oklch(0%_0_0/.056)_55%,transparent)] dark:bg-[radial-gradient(closest-side,oklch(0%_0_0/.34),oklch(0%_0_0/.136)_55%,transparent)]"
       />
-      <div className="relative size-full overflow-hidden rounded-panel bg-surface-muted shadow-[0_22px_40px_-22px_oklch(0%_0_0/.55),0_2px_6px_-2px_oklch(0%_0_0/.18)]">
-        {photo(false)}
-        {front ? <span className="sr-only">{item.alt ?? item.title}</span> : null}
-        <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-panel shadow-[inset_0_0_0_.5px_oklch(100%_0_0/.18)]" />
-        <motion.span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-black" style={{ opacity: dim }} />
-      </div>
       {/* A quiet reflection on the floor: the bottom of the photo, mirrored and faded out. */}
-      <div
+      <motion.span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-[calc(100%+3px)] overflow-hidden rounded-t-panel opacity-30 dark:opacity-25"
-        style={{
-          height: `${REFLECTION * 100}%`,
-          maskImage: "linear-gradient(to bottom, oklch(0% 0 0 / .55), transparent 85%)",
-          WebkitMaskImage: "linear-gradient(to bottom, oklch(0% 0 0 / .55), transparent 85%)",
-        }}
+        className="pointer-events-none absolute inset-x-0 top-full overflow-hidden rounded-t-(--cf-r) [mask-image:linear-gradient(oklch(0%_0_0/.28),transparent_88%)]"
+        style={{ height: `${REFLECTION * 100}%`, opacity: reflection }}
       >
-        <div className="absolute inset-x-0 top-0 h-(--cf-card)">{photo(true)}</div>
-        <motion.span className="absolute inset-0 bg-black" style={{ opacity: dim }} />
-      </div>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={item.image}
+          alt=""
+          draggable={false}
+          className="absolute inset-x-0 top-0 h-(--cf-h) w-full max-w-none -scale-y-100 object-cover"
+          style={{ objectPosition: item.imagePosition }}
+        />
+      </motion.span>
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute top-[calc(100%-8px)] left-[5%] h-4 w-[90%] bg-[radial-gradient(closest-side,oklch(0%_0_0/.2232),oklch(0%_0_0/.0781)_60%,transparent)] dark:bg-[radial-gradient(closest-side,oklch(0%_0_0/.4092),oklch(0%_0_0/.1432)_60%,transparent)]"
+      />
+      <span className="absolute inset-0 block overflow-hidden rounded-(--cf-r) bg-surface-muted">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={item.image}
+          alt=""
+          draggable={false}
+          className="size-full object-cover"
+          style={{ objectPosition: item.imagePosition }}
+        />
+        <motion.span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[oklch(0%_0_0/.62)] dark:bg-[oklch(0%_0_0/.9)]" style={{ opacity: veil }} />
+        <motion.span aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ opacity: edge, backgroundImage: edgeImage }} />
+      </span>
+    </motion.div>
+  )
+}
+
+/* ---------- caption ---------- */
+
+interface CaptionProps {
+  index: number
+  current: number
+  still: boolean
+  children: ReactNode
+}
+
+/** Every caption stays mounted in one cell; the current one is shown and the rest wait on the side they would come from. */
+function Caption({ index, current, still, children }: CaptionProps) {
+  const shown = index === current
+  const side = Math.sign(index - current)
+  return (
+    <motion.div
+      aria-hidden={shown ? undefined : true}
+      className="flex max-w-full min-w-0 flex-col items-center [grid-area:1/1]"
+      initial={false}
+      animate={{ opacity: shown ? 1 : 0, x: still ? 0 : side * CAPTION_SHIFT }}
+      transition={still ? { duration: motionTokens.duration.fast } : STEP_SPRING}
+    >
+      {children}
     </motion.div>
   )
 }
@@ -175,7 +234,7 @@ function Card({ item, index, count, front, pos, width, still, onSelect }: CardPr
 
 /**
  * A depth rail for browsing a short collection of images one at a time. The front card stands forward while the rest
- * recede to either side, and each image drifts inside its frame as the rail moves.
+ * recede to either side, turned toward it.
  */
 export function CoverFlow<T extends CoverFlowItem>({
   items,
@@ -193,14 +252,10 @@ export function CoverFlow<T extends CoverFlowItem>({
   /* ---------- index ---------- */
   const [inner, setInner] = useState(() => clamp(defaultIndex, 0, last))
   const current = clamp(index ?? inner, 0, last)
-  // The caption rises in from the side the rail travelled toward.
-  const [shown, setShown] = useState({ index: current, direction: 0 })
-  if (shown.index !== current) setShown({ index: current, direction: Math.sign(current - shown.index) })
-  const [settled, setSettled] = useState(current)
 
   const pos = useMotionValue(current)
-  const width = useMotionValue(240)
-  const fade = useMotionValue(1)
+  const width = useMotionValue(168)
+  const stage = useMotionValue(0)
   const still = useMotionValue(0)
   useEffect(() => still.set(reduced ? 1 : 0), [reduced, still])
   const target = useRef(current)
@@ -218,26 +273,25 @@ export function CoverFlow<T extends CoverFlowItem>({
     latest.current.onIndexChange?.(next)
   }, [])
 
-  /** Moves the rail to a card: a spring that carries any release velocity, or a jump with a short fade. */
+  /** Moves the rail to a card: a step spring, or a softer one that carries a release's velocity, or a jump. */
   const glide = useCallback(
-    (next: number, velocity = 0) => {
+    (next: number, velocity?: number) => {
       running.current?.stop()
       if (reduced) {
         pos.jump(next)
-        if (next !== settled) {
-          fade.jump(0.55)
-          animate(fade, 1, { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] })
-        }
-      } else {
-        running.current = animate(pos, next, landing(next - pos.get(), velocity))
+        return
       }
-      setSettled(next)
+      const transition: Transition =
+        velocity === undefined
+          ? STEP_SPRING
+          : { type: "spring", stiffness: RELEASE_STIFFNESS, damping: 2 * Math.sqrt(RELEASE_STIFFNESS), velocity, restDelta: 0.0005 }
+      running.current = animate(pos, next, transition)
     },
-    [fade, pos, reduced, settled],
+    [pos, reduced],
   )
 
   const go = useCallback(
-    (next: number, velocity = 0) => {
+    (next: number, velocity?: number) => {
       const clamped = clamp(next, 0, last)
       commit(clamped)
       glide(clamped, velocity)
@@ -258,13 +312,30 @@ export function CoverFlow<T extends CoverFlowItem>({
   const probeRef = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => {
     const probe = probeRef.current
-    if (!probe) return
-    width.set(probe.offsetWidth)
+    const node = stageRef.current
+    if (!probe || !node) return
+    const measure = () => {
+      width.set(probe.offsetWidth)
+      stage.set(node.offsetWidth)
+    }
+    measure()
     if (typeof ResizeObserver === "undefined") return
-    const observer = new ResizeObserver(() => width.set(probe.offsetWidth))
+    const observer = new ResizeObserver(measure)
     observer.observe(probe)
+    observer.observe(node)
     return () => observer.disconnect()
-  }, [width])
+  }, [stage, width])
+
+  /** px of travel per card: the spacing to the first neighbor, so a drag keeps the card under the pointer. */
+  const pitch = () => steps(width.get(), stage.get()).near || 1
+  /** Maps an unbounded rail position to the shown one, with the rubber band past either end. */
+  const resist = (raw: number) => {
+    const unit = pitch()
+    const limit = width.get() * RUBBER_LIMIT
+    if (raw < 0) return -band(-raw * unit, limit) / unit
+    if (raw > last) return last + band((raw - last) * unit, limit) / unit
+    return raw
+  }
 
   /* ---------- keys ---------- */
   function onKeyDown(event: KeyboardEvent<HTMLElement>) {
@@ -286,6 +357,7 @@ export function CoverFlow<T extends CoverFlowItem>({
   function onPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
     if (event.button !== 0 || !event.isPrimary || count < 2) return
     running.current?.stop()
+    // Pick the rail up where it is; a release that never passed the slop puts it back on its card.
     drag.current = {
       id: event.pointerId,
       startX: event.clientX,
@@ -304,7 +376,7 @@ export function CoverFlow<T extends CoverFlowItem>({
       // Vertical swipes belong to the page.
       if (Math.abs(event.clientY - state.startY) > Math.abs(dx) && Math.abs(event.clientY - state.startY) > SLOP) {
         drag.current = null
-        if (!reduced) go(Math.round(pos.get()))
+        if (!reduced) go(target.current)
         return
       }
       if (Math.abs(dx) < SLOP) return
@@ -315,8 +387,9 @@ export function CoverFlow<T extends CoverFlowItem>({
     state.samples.push({ t: event.timeStamp, x: event.clientX })
     if (state.samples.length > 12) state.samples.shift()
     if (reduced) return
-    pos.set(rubber(state.origin - dx / (width.get() * DRAG_STEP), last))
-    // The front card follows the finger, so listeners hear each card the drag passes over.
+    const travel = dx - Math.sign(dx) * SLOP
+    pos.set(resist(state.origin - travel / pitch()))
+    // The front card follows the pointer, so listeners hear each card the drag passes over.
     commit(clamp(Math.round(pos.get()), 0, last))
   }
   function onPointerUp(event: ReactPointerEvent<HTMLDivElement>) {
@@ -339,7 +412,7 @@ export function CoverFlow<T extends CoverFlowItem>({
       return
     }
     const velocity = velocityOf(state.samples, event.timeStamp)
-    const unit = -velocity / (width.get() * DRAG_STEP)
+    const unit = -velocity / pitch()
     let next = Math.round(pos.get() + unit * PROJECTION)
     // A quick flick always moves at least one card, even when it would round back.
     if (Math.abs(velocity) > FLICK && next === state.from) next = state.from - Math.sign(velocity)
@@ -349,20 +422,25 @@ export function CoverFlow<T extends CoverFlowItem>({
   /* ---------- sideways trackpad scroll ---------- */
   const goRef = useRef(go)
   const commitRef = useRef(commit)
+  const resistRef = useRef(resist)
+  const pitchRef = useRef(pitch)
   useLayoutEffect(() => {
     goRef.current = go
     commitRef.current = commit
+    resistRef.current = resist
+    pitchRef.current = pitch
   })
   useEffect(() => {
-    const stage = stageRef.current
-    if (!stage) return
+    const node = stageRef.current
+    if (!node) return
     let idle: number | undefined
     let samples: { t: number; x: number }[] = []
     let travelled = 0
     let stepped = false
     let start = 0
+    let raw = 0
     const onWheel = (event: WheelEvent) => {
-      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? stage.offsetWidth : 1
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? node.offsetWidth : 1
       const dx = event.deltaX * unit
       const dy = event.deltaY * unit
       // Only sideways scrolls belong to the rail; vertical ones scroll the page.
@@ -376,6 +454,7 @@ export function CoverFlow<T extends CoverFlowItem>({
         travelled = 0
         stepped = false
         start = target.current
+        raw = pos.get()
       }
       travelled += dx
       if (reduced) {
@@ -387,7 +466,8 @@ export function CoverFlow<T extends CoverFlowItem>({
           interacting.current = true
         }
       } else {
-        const next = rubber(pos.get() + dx / (width.get() * DRAG_STEP), last)
+        raw += dx / pitchRef.current()
+        const next = resistRef.current(raw)
         pos.set(next)
         samples.push({ t: event.timeStamp, x: next })
         if (samples.length > 12) samples.shift()
@@ -401,15 +481,15 @@ export function CoverFlow<T extends CoverFlowItem>({
         const first = recent[0]
         const end = recent[recent.length - 1]
         const velocity = first && end && end.t > first.t ? (end.x - first.x) / ((end.t - first.t) / 1000) : 0
-        goRef.current(Math.round(pos.get() + velocity * 0.12), velocity)
+        goRef.current(Math.round(pos.get() + velocity * PROJECTION), velocity)
       }, WHEEL_IDLE)
     }
-    stage.addEventListener("wheel", onWheel, { passive: false })
+    node.addEventListener("wheel", onWheel, { passive: false })
     return () => {
-      stage.removeEventListener("wheel", onWheel)
+      node.removeEventListener("wheel", onWheel)
       window.clearTimeout(idle)
     }
-  }, [last, pos, reduced, width])
+  }, [last, pos, reduced])
 
   const select = useCallback(
     (next: number) => {
@@ -419,122 +499,102 @@ export function CoverFlow<T extends CoverFlowItem>({
     [go],
   )
 
-  const item = items[shown.index]
-  const announced = items[settled]
-  const caption: { initial: TargetAndTransition; animate: TargetAndTransition; exit: TargetAndTransition } = reduced
-    ? {
-        // Same keys as the full branch, so the first render matches the server whichever branch the client picks.
-        initial: { opacity: 0, x: 0, y: 0, filter: "blur(0px)" },
-        animate: { opacity: 1, x: 0, y: 0, filter: "blur(0px)", transition: { duration: motionTokens.duration.fast } },
-        exit: { opacity: 0, transition: { duration: motionTokens.duration.instant } },
-      }
-    : {
-        initial: { opacity: 0, x: shown.direction * 14, y: 6, filter: `blur(${motionTokens.blur.soft}px)` },
-        animate: {
-          opacity: 1,
-          x: 0,
-          y: 0,
-          filter: "blur(0px)",
-          transition: { duration: motionTokens.duration.standard, ease: [...motionTokens.ease.enter] },
-        },
-        exit: {
-          opacity: 0,
-          x: shown.direction * -10,
-          filter: `blur(${motionTokens.blur.subtle}px)`,
-          transition: { duration: motionTokens.duration.instant, ease: [...motionTokens.ease.exit] },
-        },
-      }
+  // The tick thumb rides the rail itself, so it slides on the same spring as the cards.
+  const thumbX = useTransform(() => clamp(pos.get(), 0, last) * TICK + (TICK - THUMB) / 2)
+  const announced = items[current]
 
   return (
     <section
       aria-roledescription="carousel"
       aria-label={label}
-      tabIndex={0}
-      className={cn("@container relative flex w-full flex-col items-center gap-3 outline-none select-none", "[--cf-card:clamp(168px,38cqw,272px)]", className)}
-      onKeyDown={onKeyDown}
+      className={cn(
+        "@container grid w-full gap-4 select-none",
+        // Card width from the container, a 4 by 5 height, and a radius that scales with the card.
+        "[--cf-top:12px] [--cf-w:clamp(160px,31cqw,272px)] [--cf-h:calc(var(--cf-w)*1.25)] [--cf-r:calc(var(--cf-w)*0.085)]",
+        className,
+      )}
     >
       <div
         ref={stageRef}
-        className="relative w-full cursor-grab touch-pan-y overflow-hidden [-webkit-tap-highlight-color:transparent] active:cursor-grabbing"
+        tabIndex={0}
+        className="relative w-full cursor-grab touch-pan-y outline-none [-webkit-tap-highlight-color:transparent] [overflow:clip_visible]"
         style={{
-          // The reflection fades out well before its end, so the stage only keeps the part that shows.
-          height: `calc(var(--cf-card) * ${1 + REFLECTION * 0.6} + 24px)`,
-          perspective: "calc(var(--cf-card) * 4.4)",
-          // The far cards fade into the sides instead of being cut by the stage edge.
-          maskImage: "linear-gradient(to right, transparent, #000 9%, #000 91%, transparent)",
-          WebkitMaskImage: "linear-gradient(to right, transparent, #000 9%, #000 91%, transparent)",
+          height: `calc(var(--cf-h) + ${STAGE_EXTRA}px)`,
+          perspective: "calc(var(--cf-w) * 3.4)",
+          // The eye sits level with the floor line, so the reflections read as lying on it.
+          perspectiveOrigin: `50% calc(var(--cf-h) + ${CARD_TOP - 4}px)`,
         }}
+        onKeyDown={onKeyDown}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         onLostPointerCapture={onPointerUp}
       >
-        <div ref={probeRef} aria-hidden="true" className="invisible absolute size-(--cf-card)" />
-        <motion.div className="absolute inset-x-0 top-4 h-(--cf-card)" style={{ opacity: fade, transformStyle: "preserve-3d" }}>
-          {items.map((entry, i) => (
-            <Card
-              key={entry.id}
-              item={entry}
-              index={i}
-              count={count}
-              front={i === current}
-              pos={pos}
-              width={width}
-              still={still}
-              onSelect={select}
-            />
-          ))}
-        </motion.div>
+        <div ref={probeRef} aria-hidden="true" className="pointer-events-none invisible absolute h-0 w-(--cf-w)" />
+        {items.map((entry, i) => (
+          <Card
+            key={entry.id}
+            item={entry}
+            index={i}
+            count={count}
+            front={i === current}
+            pos={pos}
+            width={width}
+            stage={stage}
+            still={still}
+            onSelect={select}
+          />
+        ))}
       </div>
 
-      <div className="relative grid min-h-12 w-full justify-items-center overflow-hidden px-4 text-center">
-        <AnimatePresence initial={false} mode="popLayout">
-          {item ? (
-            <motion.div key={item.id} className="flex max-w-full flex-col items-center [grid-area:1/1]" {...caption}>
+      <div className="grid justify-items-center gap-3">
+        <div className="grid min-h-12 w-full justify-items-center overflow-hidden px-4 text-center">
+          {items.map((entry, i) => (
+            <Caption key={entry.id} index={i} current={current} still={reduced}>
               {renderCaption ? (
-                renderCaption(item, shown.index)
+                renderCaption(entry, i)
               ) : (
                 <>
-                  <span className="max-w-full truncate text-base leading-6 font-medium">{item.title}</span>
-                  {item.subtitle || item.meta ? (
-                    <span className="max-w-full truncate text-sm leading-5 text-text-secondary">
-                      {[item.subtitle, item.meta].filter(Boolean).join(" · ")}
-                    </span>
+                  <p className="m-0 max-w-full truncate text-lg leading-[1.3] font-medium">{entry.title}</p>
+                  {entry.subtitle || entry.meta ? (
+                    <p className="m-0 max-w-full truncate text-sm leading-[1.4] text-text-secondary">
+                      {[entry.subtitle, entry.meta].filter(Boolean).join(" · ")}
+                    </p>
                   ) : null}
                 </>
               )}
-            </motion.div>
-          ) : null}
-        </AnimatePresence>
-      </div>
-
-      {count > 1 ? (
-        <div className="flex items-center">
-          {items.map((entry, i) => (
-            <button
-              key={entry.id}
-              type="button"
-              tabIndex={-1}
-              aria-label={`Show ${entry.title}`}
-              aria-current={i === current ? "true" : undefined}
-              className="group grid h-6 w-4 cursor-pointer place-items-center border-0 bg-transparent p-0 outline-none"
-              onClick={() => go(i)}
-            >
-              <span
-                className={cn(
-                  "block h-1 rounded-pill transition-[width,background-color] duration-240 ease-standard motion-reduce:transition-none",
-                  i === current ? "w-3 bg-foreground" : "w-1 bg-border-strong group-hover:bg-text-muted",
-                )}
-              />
-            </button>
+            </Caption>
           ))}
         </div>
-      ) : null}
 
-      <div aria-live="polite" aria-atomic="true" className="sr-only">
-        {announced ? `${settled + 1} of ${count}: ${announced.title}` : ""}
+        {count > 1 ? (
+          <div aria-label={`${label} position`} className="relative flex items-center">
+            {items.map((entry, i) => (
+              <button
+                key={entry.id}
+                type="button"
+                tabIndex={-1}
+                aria-label={`Show ${entry.title}`}
+                aria-current={i === current ? "true" : undefined}
+                className="group grid h-6 w-4 cursor-pointer place-items-center border-0 bg-transparent p-0 outline-none"
+                onClick={() => go(i)}
+              >
+                <span className="block size-1 rounded-pill bg-border-strong transition-colors duration-240 ease-standard group-hover:bg-text-muted motion-reduce:transition-none" />
+              </button>
+            ))}
+            <motion.span
+              aria-hidden="true"
+              className="pointer-events-none absolute top-[9.5px] left-0 h-[5px] w-3 rounded-pill bg-foreground"
+              style={{ x: thumbX }}
+            />
+          </div>
+        ) : null}
       </div>
+
+      <p aria-live="polite" aria-atomic="true" className="sr-only">
+        {announced ? `${announced.title}, ${current + 1} of ${count}` : ""}
+      </p>
     </section>
   )
 }

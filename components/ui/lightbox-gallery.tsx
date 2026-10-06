@@ -37,25 +37,38 @@ export interface LightboxGalleryProps {
 }
 
 /** Corner radius in px. The flight divides it by the current scale, so it reads the same at every size. */
-const RADIUS = 14
-/** Room between slides, so a neighbour never peeks in from the edge of the viewport. */
-const GUTTER = 32
+const RADIUS = 12
 const MAX_ZOOM = 4
-const STEP_ZOOM = 1.6
-const DOUBLE_ZOOM = 2.5
-/** A drag down past this many px, or a fling faster than FLING px/s, dismisses. */
+/** `+` and `-` multiply or divide the zoom by this. */
+const STEP_ZOOM = 1.5
+/** Ctrl+wheel zooms by exp(-deltaY * WHEEL_ZOOM), so a notch feels the same at every zoom. */
+const WHEEL_ZOOM = 0.003
+/** A drag down past this many px, or a downward fling faster than FLING px/s, dismisses. */
 const DISMISS = 110
-const FLING = 650
-/** How far a released swipe or pan keeps travelling, in seconds of its velocity. */
+const FLING = 600
+/** While dragging down, scale, veil and chrome each fall linearly with the distance: per px, and the px at which they reach 0. */
+const DRAG_SHRINK = 0.00074
+const DRAG_VEIL = 636
+const DRAG_CHROME = 254
+/** A sideways release moves on past this share of the stage, or on a flick faster than SWIPE_FLING px/s. */
+const SWIPE_SHARE = 0.3
+const SWIPE_FLING = 500
+/** How far a released pan keeps travelling, in seconds of its velocity. */
 const PROJECT = 0.2
+
+/* Flights are critically damped: out of the grid a little quicker than `smooth`, home again on `smooth`'s stiffer cousin. */
+const openFlight = { type: "spring", stiffness: 289, damping: 37 } as const
+const closeFlight = { type: "spring", stiffness: 196, damping: 28 } as const
+/** A cancelled dismiss drag springs home a touch underdamped, so it lands with a little weight. */
+const dragReturn = { type: "spring", stiffness: 272, damping: 26 } as const
+const outCubic = [0.33, 1, 0.68, 1] as [number, number, number, number]
 /** Grid and placeholder share one sizes string, so the viewer's placeholder is the grid file the browser already has. */
 const GRID_SIZES = "(max-width: 640px) 50vw, 33vw"
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 /** Past an edge, travel approaches `limit` px instead of following the pointer. */
 const rubber = (distance: number, limit = 120) => (1 - 1 / ((distance * 0.55) / limit + 1)) * limit
-const fade = { duration: motionTokens.duration.standard, ease: [...motionTokens.ease.standard] as [number, number, number, number] }
-const quick = { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] as [number, number, number, number] }
+const fade = { duration: 0.1, ease: [...motionTokens.ease.standard] as [number, number, number, number] }
 
 const nameOf = (image: LightboxImage) => image.title ?? image.alt
 
@@ -175,6 +188,8 @@ export function LightboxGallery({ images, minColumnWidth = 150, gap = 8, label =
   )
 }
 
+type Range = readonly [number, number]
+
 interface Rect {
   x: number
   y: number
@@ -218,11 +233,13 @@ function Viewer({
   const photoRef = useRef<HTMLDivElement>(null)
   const thumbs = useRef<(HTMLButtonElement | null)[]>([])
   const [stage, setStage] = useState<Rect | null>(null)
-  const [viewportWidth, setViewportWidth] = useState(0)
+  const [viewport, setViewport] = useState({ w: 0, h: 0 })
   const [zoomed, setZoomed] = useState(false)
   const [closing, setClosing] = useState(false)
   const count = images.length
-  const pitch = viewportWidth + GUTTER
+  const viewportWidth = viewport.w
+  /** Slides sit one viewport apart; the frame padding keeps a neighbour from peeking in. */
+  const pitch = viewportWidth
 
   /* The flight (fx, fy, fs), the dismiss drag (dx, dy) and the zoom (z, px, py) are separate values composed into one
      transform, so a drag can pick up a flight mid-air and a close can start from wherever the photo is. */
@@ -237,18 +254,17 @@ function Viewer({
   const track = useMotionValue(0)
   const shade = useMotionValue(0)
   const chrome = useMotionValue(0)
-  const stageHeight = useMotionValue(1)
 
-  const shrink = useTransform(() => 1 - clamp(dy.get() / stageHeight.get(), 0, 1) * 0.35)
+  const shrink = useTransform(() => Math.max(0.4, 1 - Math.max(0, dy.get()) * DRAG_SHRINK))
   const x = useTransform(() => fx.get() + dx.get() + px.get())
   const y = useTransform(() => fy.get() + dy.get() + py.get())
   const scale = useTransform(() => fs.get() * shrink.get() * z.get())
   const radius = useTransform(() => RADIUS / Math.max(0.05, scale.get()))
   useMotionValueEvent(z, "change", value => setZoomed(value > 1.01))
 
-  const stateRef = useRef({ index, stage, pitch, reduced, closing: false })
+  const stateRef = useRef({ index, stage, pitch, viewport, reduced, closing: false })
   useLayoutEffect(() => {
-    stateRef.current = { index, stage, pitch, reduced, closing: stateRef.current.closing }
+    stateRef.current = { index, stage, pitch, viewport, reduced, closing: stateRef.current.closing }
   })
 
   useLayoutEffect(() => {
@@ -261,38 +277,44 @@ function Viewer({
           ? previous
           : { x: box.left, y: box.top, w: box.width, h: box.height },
       )
-      setViewportWidth(node.parentElement?.clientWidth ?? window.innerWidth)
-      stageHeight.set(Math.max(1, box.height))
+      const w = node.parentElement?.clientWidth ?? window.innerWidth
+      const h = node.parentElement?.clientHeight ?? window.innerHeight
+      setViewport(previous => (previous.w === w && previous.h === h ? previous : { w, h }))
     }
     measure()
     window.addEventListener("resize", measure)
     return () => window.removeEventListener("resize", measure)
-  }, [stageHeight])
+  }, [])
 
   const fitFor = useCallback((at: number, box: Rect | null = stateRef.current.stage) => fitIn(images[at], box), [images])
 
-  // Opening: the photo starts exactly over its grid slot and springs out to fit the stage.
+  /* Opening: the photo starts exactly over its grid slot and springs out to fit the stage. This runs on mount, before
+     the slides exist, so their first painted frame is already the grid slot rather than the fitted rect. */
   const opened = useRef(false)
   useLayoutEffect(() => {
-    if (!stage || opened.current) return
+    const node = stageRef.current
+    if (!node || opened.current) return
     opened.current = true
-    track.jump(-index * pitch)
+    const box = node.getBoundingClientRect()
+    track.jump(-index * (node.parentElement?.clientWidth ?? window.innerWidth))
     const slot = slotFor(index)?.getBoundingClientRect()
-    const fit = fitFor(index, stage)
+    const fit = fitFor(index, { x: box.left, y: box.top, w: box.width, h: box.height })
     if (reduced || !slot || !fit || !slot.width) {
       animate(shade, 1, fade)
       animate(chrome, 1, fade)
       return
     }
+    // One uniform scale and translate on one spring, so the photo never stretches on the way out.
     fs.jump(slot.width / fit.w)
     fx.jump(slot.left + slot.width / 2 - (fit.x + fit.w / 2))
     fy.jump(slot.top + slot.height / 2 - (fit.y + fit.h / 2))
-    animate(fs, 1, motionTokens.spring.morph)
-    animate(fx, 0, motionTokens.spring.morph)
-    animate(fy, 0, motionTokens.spring.morph)
-    animate(shade, 1, { duration: motionTokens.duration.standard, ease: [...motionTokens.ease.enter] })
-    animate(chrome, 1, { duration: motionTokens.duration.standard, ease: [...motionTokens.ease.enter], delay: 0.08 })
-  }, [chrome, fitFor, fs, fx, fy, index, pitch, reduced, shade, slotFor, stage, track])
+    animate(fs, 1, openFlight)
+    animate(fx, 0, openFlight)
+    animate(fy, 0, openFlight)
+    // The backdrop is nearly opaque before the photo is halfway out; the chrome follows a beat later.
+    animate(shade, 1, { duration: 0.24, ease: [...motionTokens.ease.enter] })
+    animate(chrome, 1, { duration: 0.19, ease: outCubic, delay: 0.02 })
+  }, [chrome, fitFor, fs, fx, fy, index, reduced, shade, slotFor, track])
 
   // Slides glide to the current index; a resize only re-places them.
   const placed = useRef({ pitch: 0, index: -1 })
@@ -318,9 +340,16 @@ function Viewer({
     return () => controls.stop()
   }, [index, pitch, px, py, reduced, track, viewportWidth, z])
 
-  // The current thumbnail stays in view.
+  // The current thumbnail sits at the center of the strip. The first placement is instant.
+  const stripRef = useRef<HTMLDivElement>(null)
+  const centered = useRef(false)
   useEffect(() => {
-    thumbs.current[index]?.scrollIntoView({ block: "nearest", inline: "center", behavior: reduced ? "auto" : "smooth" })
+    const strip = stripRef.current
+    const thumb = thumbs.current[index]
+    if (!strip || !thumb) return
+    const left = thumb.offsetLeft + thumb.offsetWidth / 2 - strip.clientWidth / 2
+    strip.scrollTo({ left, behavior: reduced || !centered.current ? "auto" : "smooth" })
+    centered.current = true
   }, [index, reduced])
 
   const close = useCallback(
@@ -330,7 +359,7 @@ function Viewer({
       state.closing = true
       setClosing(true)
       const finish = () => onClosed()
-      animate(chrome, 0, quick)
+      animate(chrome, 0, { duration: 0.05, ease: "linear" })
       if (state.reduced) {
         animate(shade, 0, { ...fade, onComplete: finish })
         return
@@ -357,11 +386,10 @@ function Viewer({
         animate(fs, fs.get() * 0.9, fade)
         return
       }
-      const flight = { ...motionTokens.spring.smooth, visualDuration: 0.36 }
-      animate(fx, slot.left + slot.width / 2 - (fit.x + fit.w / 2), flight)
-      animate(fy, slot.top + slot.height / 2 - (fit.y + fit.h / 2), { ...flight, velocity })
-      animate(fs, slot.width / fit.w, { ...flight, onComplete: finish })
-      animate(shade, 0, { duration: motionTokens.duration.standard, ease: [...motionTokens.ease.standard] })
+      animate(fx, slot.left + slot.width / 2 - (fit.x + fit.w / 2), closeFlight)
+      animate(fy, slot.top + slot.height / 2 - (fit.y + fit.h / 2), { ...closeFlight, velocity })
+      animate(fs, slot.width / fit.w, { ...closeFlight, onComplete: finish })
+      animate(shade, 0, { duration: 0.26, ease: outCubic })
     },
     [chrome, dx, dy, fitFor, fs, fx, fy, onClosed, px, py, shade, slotFor, track, z],
   )
@@ -377,16 +405,31 @@ function Viewer({
     [count, onIndexChange],
   )
 
-  /** Keeps the zoomed photo covering the stage on each axis it overflows. */
+  /** Pan limits per axis: a photo larger than the viewport keeps covering it, a smaller one stays inside it. */
   const panBounds = useCallback(
-    (zoom: number) => {
+    (zoom: number): { x: Range; y: Range } => {
       const fit = fitFor(stateRef.current.index)
-      const box = stateRef.current.stage
-      if (!fit || !box) return { x: 0, y: 0 }
-      return { x: Math.max(0, (fit.w * zoom - box.w) / 2), y: Math.max(0, (fit.h * zoom - box.h) / 2) }
+      const { w, h } = stateRef.current.viewport
+      if (!fit || !w || !h) return { x: [0, 0], y: [0, 0] }
+      const axis = (start: number, size: number, room: number): Range => {
+        const center = start + size / 2
+        const a = (size * zoom) / 2 - center
+        const b = room - center - (size * zoom) / 2
+        return [Math.min(0, a, b), Math.max(0, a, b)]
+      }
+      return { x: axis(fit.x, fit.w, w), y: axis(fit.y, fit.h, h) }
     },
     [fitFor],
   )
+
+  /** The double click and the zoom button fill the viewport's width; a photo that nearly does already doubles. */
+  const fillZoom = useCallback(() => {
+    const fit = fitFor(stateRef.current.index)
+    const width = stateRef.current.viewport.w
+    if (!fit || !width) return 2
+    const fill = width / fit.w
+    return clamp(fill >= 1.5 ? fill : 2, 1, MAX_ZOOM)
+  }, [fitFor])
 
   /** Zooms to `target` keeping the screen point (sx, sy) still; the stage center when omitted. */
   const zoomTo = useCallback(
@@ -400,8 +443,8 @@ function Viewer({
       const sy = (point?.y ?? cy) - cy
       const ratio = next / z.get()
       const bounds = panBounds(next)
-      const nx = clamp(sx - (sx - px.get()) * ratio, -bounds.x, bounds.x)
-      const ny = clamp(sy - (sy - py.get()) * ratio, -bounds.y, bounds.y)
+      const nx = clamp(sx - (sx - px.get()) * ratio, ...bounds.x)
+      const ny = clamp(sy - (sy - py.get()) * ratio, ...bounds.y)
       if (instant || stateRef.current.reduced) {
         for (const value of [z, px, py]) value.stop()
         z.jump(next)
@@ -409,9 +452,9 @@ function Viewer({
         py.jump(ny)
         return
       }
-      animate(z, next, motionTokens.spring.smooth)
-      animate(px, nx, motionTokens.spring.smooth)
-      animate(py, ny, motionTokens.spring.smooth)
+      animate(z, next, motionTokens.spring.snappy)
+      animate(px, nx, motionTokens.spring.snappy)
+      animate(py, ny, motionTokens.spring.snappy)
     },
     [fitFor, panBounds, px, py, z],
   )
@@ -444,7 +487,7 @@ function Viewer({
       if (!event.ctrlKey && !event.metaKey) return
       event.preventDefault()
       if (stateRef.current.closing) return
-      zoomTo(z.get() * Math.exp(-event.deltaY * 0.01), { x: event.clientX, y: event.clientY }, true)
+      zoomTo(z.get() * Math.exp(-event.deltaY * WHEEL_ZOOM), { x: event.clientX, y: event.clientY }, true)
     }
     node.addEventListener("wheel", wheel, { passive: false })
     return () => node.removeEventListener("wheel", wheel)
@@ -470,10 +513,10 @@ function Viewer({
   const settleZoom = () => {
     const next = clamp(z.get(), 1, MAX_ZOOM)
     const bounds = panBounds(next)
-    const transition = stateRef.current.reduced ? { duration: 0 } : motionTokens.spring.smooth
+    const transition = stateRef.current.reduced ? { duration: 0 } : motionTokens.spring.snappy
     animate(z, next, transition)
-    animate(px, clamp(px.get(), -bounds.x, bounds.x), transition)
-    animate(py, clamp(py.get(), -bounds.y, bounds.y), transition)
+    animate(px, clamp(px.get(), ...bounds.x), transition)
+    animate(py, clamp(py.get(), ...bounds.y), transition)
   }
 
   const onPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
@@ -528,15 +571,12 @@ function Viewer({
     if (state.samples.length > 12) state.samples.shift()
     if (state.kind === "pending") {
       if (Math.hypot(deltaX, deltaY) < 6) return
-      for (const value of [track, dx, dy, px, py, fx, fy, fs, shade]) value.stop()
+      for (const value of [track, dx, dy, px, py, fx, fy, fs, shade, chrome]) value.stop()
       state.kind = z.get() > 1.01 ? "pan" : Math.abs(deltaX) > Math.abs(deltaY) ? "swipe" : "dismiss"
-      // Re-anchor so the move does not jump by the slop distance.
-      state.x = event.clientX
-      state.y = event.clientY
+      // No re-anchoring: once the direction is known the photo catches up and then follows the pointer 1:1.
       state.track = track.get()
       state.px = px.get()
       state.py = py.get()
-      return
     }
     const { index: at, pitch: step } = stateRef.current
     if (state.kind === "swipe") {
@@ -552,14 +592,16 @@ function Viewer({
       const down = deltaY >= 0 ? deltaY : -rubber(-deltaY, 60)
       dy.set(down)
       dx.set(deltaX)
-      const progress = clamp(down / (stageHeight.get() * 0.75), 0, 1)
-      shade.set(1 - progress)
-      chrome.set(1 - clamp(progress * 3, 0, 1))
+      // Scale (in `shrink`), veil and chrome are straight lines in the distance, the chrome going first.
+      const distance = Math.max(0, down)
+      shade.set(clamp(1 - distance / DRAG_VEIL, 0, 1))
+      chrome.set(clamp(1 - distance / DRAG_CHROME, 0, 1))
       return
     }
     // Pan: free inside the bounds, rubber beyond them.
     const bounds = panBounds(z.get())
-    const bend = (value: number, limit: number) => (value > limit ? limit + rubber(value - limit, 80) : value < -limit ? -limit - rubber(-limit - value, 80) : value)
+    const bend = (value: number, [low, high]: Range) =>
+      value > high ? high + rubber(value - high, 80) : value < low ? low - rubber(low - value, 80) : value
     px.set(bend(state.px + deltaX, bounds.x))
     py.set(bend(state.py + deltaY, bounds.y))
   }
@@ -588,7 +630,7 @@ function Viewer({
         const previous = lastTap.current
         if (previous && event.timeStamp - previous.t < 320 && Math.hypot(event.clientX - previous.x, event.clientY - previous.y) < 30) {
           lastTap.current = null
-          zoomTo(z.get() > 1.01 ? 1 : DOUBLE_ZOOM, { x: event.clientX, y: event.clientY })
+          zoomTo(z.get() > 1.01 ? 1 : fillZoom(), { x: event.clientX, y: event.clientY })
         } else lastTap.current = { t: event.timeStamp, x: event.clientX, y: event.clientY }
         return
       }
@@ -599,9 +641,11 @@ function Viewer({
     }
     if (state.kind === "swipe") {
       const offset = track.get() + at * step
-      const projected = offset + (still ? 0 : velocity.x * PROJECT)
-      const threshold = Math.min(stateRef.current.stage?.w ?? step, step) * 0.35
-      const direction = projected < -threshold ? 1 : projected > threshold ? -1 : 0
+      const threshold = step * SWIPE_SHARE
+      // Far enough, or a flick in the same direction, moves on; a flick back against the drag cancels it.
+      const flick = Math.abs(velocity.x) > SWIPE_FLING ? Math.sign(velocity.x) : 0
+      const direction =
+        flick !== 0 && Math.sign(offset) === flick ? -flick : flick === 0 && Math.abs(offset) > threshold ? -Math.sign(offset) : 0
       const next = clamp(at + direction, 0, count - 1)
       if (next !== at) {
         swipeVelocity.current = still ? 0 : velocity.x
@@ -611,22 +655,23 @@ function Viewer({
     }
     if (state.kind === "dismiss") {
       if (dy.get() > DISMISS || (dy.get() > 0 && velocity.y > FLING)) return close(Math.max(0, velocity.y))
-      animate(dx, 0, spring(velocity.x))
-      animate(dy, 0, spring(velocity.y))
-      animate(shade, 1, still ? { duration: 0 } : motionTokens.spring.smooth)
-      animate(chrome, 1, still ? { duration: 0 } : quick)
+      const back = (velocityValue: number) => (still ? { duration: 0 } : { ...dragReturn, velocity: velocityValue })
+      animate(dx, 0, back(velocity.x))
+      animate(dy, 0, back(velocity.y))
+      animate(shade, 1, still ? { duration: 0 } : { duration: 0.15, ease: outCubic })
+      animate(chrome, 1, still ? { duration: 0 } : { duration: 0.15, ease: outCubic })
       return
     }
     // A released pan glides on with its momentum and lands inside the bounds.
     const bounds = panBounds(z.get())
-    animate(px, clamp(px.get() + (still ? 0 : velocity.x * PROJECT), -bounds.x, bounds.x), spring(velocity.x))
-    animate(py, clamp(py.get() + (still ? 0 : velocity.y * PROJECT), -bounds.y, bounds.y), spring(velocity.y))
+    animate(px, clamp(px.get() + (still ? 0 : velocity.x * PROJECT), ...bounds.x), spring(velocity.x))
+    animate(py, clamp(py.get() + (still ? 0 : velocity.y * PROJECT), ...bounds.y), spring(velocity.y))
   }
 
   const onDoubleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     const photo = photoRef.current?.getBoundingClientRect()
     if (!photo || event.clientX < photo.left || event.clientX > photo.right || event.clientY < photo.top || event.clientY > photo.bottom) return
-    zoomTo(z.get() > 1.01 ? 1 : DOUBLE_ZOOM, { x: event.clientX, y: event.clientY })
+    zoomTo(z.get() > 1.01 ? 1 : fillZoom(), { x: event.clientX, y: event.clientY })
   }
 
   const image = images[index]
@@ -636,10 +681,10 @@ function Viewer({
     <div className="absolute inset-0">
       <motion.div aria-hidden="true" className="absolute inset-0 bg-background" style={{ opacity: shade }} />
       {/* The stage is laid out in CSS so chrome sizes and breakpoints stay in one place; slides are placed from its box. */}
-      <div ref={stageRef} aria-hidden="true" className="pointer-events-none absolute inset-x-4 top-16 bottom-32 sm:inset-x-20" />
+      <div ref={stageRef} aria-hidden="true" className="pointer-events-none absolute inset-x-3 top-[68px] bottom-[140px] sm:inset-x-[72px] sm:top-[72px] sm:bottom-[148px]" />
       <div
         ref={surfaceRef}
-        className={cn("absolute inset-0 touch-none select-none", zoomed ? "cursor-grab active:cursor-grabbing" : "cursor-default")}
+        className={cn("absolute inset-0 touch-none select-none", zoomed && "cursor-grab active:cursor-grabbing [&_*]:cursor-[inherit]")}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -664,6 +709,7 @@ function Viewer({
                   width={fit.w}
                   height={fit.h}
                   photoRef={isCurrent ? photoRef : undefined}
+                  className={isCurrent ? "cursor-zoom-in" : undefined}
                   transform={isCurrent ? { x, y, scale, radius } : undefined}
                 />
               )
@@ -673,22 +719,22 @@ function Viewer({
       </div>
 
       <motion.div className={cn("pointer-events-none absolute inset-0", closing && "[&_*]:pointer-events-none!")} style={{ opacity: chrome }}>
-        <div className="pointer-events-auto absolute inset-x-0 top-0 flex h-16 items-center justify-between gap-3 px-4">
+        <div className="pointer-events-auto absolute inset-x-0 top-0 flex h-14 items-center justify-between gap-3 pr-3 pl-[22px] sm:h-16">
           <p aria-live="polite" aria-atomic="true" className="m-0 min-w-16 text-sm tabular-nums text-text-secondary">
             {index + 1} of {count}
           </p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               type="button"
-              aria-label="Zoom"
+              aria-label="Zoom in"
               aria-pressed={zoomed}
-              className={roundButton}
-              onClick={() => zoomTo(zoomed ? 1 : DOUBLE_ZOOM)}
+              className={iconButton}
+              onClick={() => zoomTo(zoomed ? 1 : fillZoom())}
             >
-              {zoomed ? <ZoomOut size={18} strokeWidth={1.75} aria-hidden="true" /> : <ZoomIn size={18} strokeWidth={1.75} aria-hidden="true" />}
+              {zoomed ? <ZoomOut size={20} strokeWidth={1.75} aria-hidden="true" /> : <ZoomIn size={20} strokeWidth={1.75} aria-hidden="true" />}
             </button>
-            <button type="button" aria-label="Close" data-lightbox-close="" className={roundButton} onClick={() => close()}>
-              <X size={18} strokeWidth={1.75} aria-hidden="true" />
+            <button type="button" aria-label="Close viewer" data-lightbox-close="" className={iconButton} onClick={() => close()}>
+              <X size={20} strokeWidth={1.75} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -696,26 +742,32 @@ function Viewer({
           type="button"
           aria-label="Previous photo"
           disabled={index === 0}
-          className={cn(roundButton, sideButton, "left-4")}
+          className={cn(navButton, "left-4")}
           onClick={() => go(-1)}
         >
-          <ChevronLeft size={20} strokeWidth={1.75} aria-hidden="true" />
+          <ChevronLeft size={18} strokeWidth={1.75} aria-hidden="true" />
         </button>
         <button
           type="button"
           aria-label="Next photo"
           disabled={index === count - 1}
-          className={cn(roundButton, sideButton, "right-4")}
+          className={cn(navButton, "right-4")}
           onClick={() => go(1)}
         >
-          <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" />
+          <ChevronRight size={18} strokeWidth={1.75} aria-hidden="true" />
         </button>
-        <div className="pointer-events-auto absolute inset-x-0 bottom-0 flex h-32 flex-col items-center justify-end gap-2.5 pb-4">
-          <div className="min-h-10 max-w-[min(32rem,calc(100%-2rem))] text-center">
-            {image?.title ? <p className="m-0 truncate text-sm leading-body font-medium">{image.title}</p> : null}
-            {image?.caption ? <p className="m-0 truncate text-xs leading-body text-text-secondary">{image.caption}</p> : null}
+        <div className="pointer-events-auto absolute inset-x-0 bottom-0 flex h-32 flex-col items-center justify-end pb-4 sm:h-[140px]">
+          <div className="flex min-h-[62px] max-w-[min(32rem,calc(100%-2rem))] flex-col items-center justify-end pb-2.5 text-center">
+            {image?.title ? <p className="m-0 max-w-full truncate text-sm leading-[1.4] font-medium">{image.title}</p> : null}
+            {image?.caption ? <p className="m-0 max-w-full truncate text-xs leading-[1.4] text-text-secondary">{image.caption}</p> : null}
           </div>
-          <div role="group" aria-label="Photos" className="flex max-w-[calc(100%-2rem)] gap-1.5 overflow-x-auto px-1 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {/* Half a strip of padding on each side lets the first and last thumbnails reach the center too. */}
+          <div
+            ref={stripRef}
+            role="group"
+            aria-label="All photos"
+            className="flex h-[52px] w-full touch-pan-x items-center gap-1 overflow-x-auto px-[calc(50%-18px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
             {images.map((thumb, at) => (
               <button
                 key={`${thumb.src}-${at}`}
@@ -723,12 +775,12 @@ function Viewer({
                   thumbs.current[at] = node
                 }}
                 type="button"
-                aria-label={`Photo ${at + 1}, ${nameOf(thumb)}`}
+                aria-label={`Show ${nameOf(thumb)}`}
                 aria-current={at === index ? "true" : undefined}
                 className={cn(
-                  "relative size-10 flex-none cursor-pointer overflow-hidden rounded-[8px] bg-surface-muted opacity-56 outline-none [-webkit-tap-highlight-color:transparent]",
-                  "transition-[opacity,scale] duration-160 ease-standard pointer-fine:hover:opacity-84 focus-visible:opacity-84 motion-reduce:transition-none",
-                  "aria-[current='true']:scale-[1.08] aria-[current='true']:opacity-100",
+                  "relative h-12 w-9 flex-none cursor-pointer overflow-hidden rounded-[8px] bg-surface-muted opacity-50 outline-none [-webkit-tap-highlight-color:transparent]",
+                  "[transition:width_.24s_var(--ease-standard),opacity_.16s_var(--ease-standard)] pointer-fine:hover:opacity-75 focus-visible:opacity-75 motion-reduce:transition-none",
+                  "aria-[current='true']:w-[38.4px] aria-[current='true']:opacity-100",
                 )}
                 onClick={() => onIndexChange(at)}
               >
@@ -742,14 +794,17 @@ function Viewer({
   )
 }
 
-/** 40px round controls on the muted surface. No focus ring: focus brightens the fill instead. */
-const roundButton = [
-  "pointer-events-auto grid size-10 cursor-pointer place-items-center rounded-pill bg-surface-muted text-foreground outline-none [-webkit-tap-highlight-color:transparent]",
-  "transition-[background-color,opacity] duration-160 ease-standard pointer-fine:hover:not-disabled:bg-border focus-visible:bg-border motion-reduce:transition-none",
-  "aria-pressed:bg-foreground aria-pressed:text-background disabled:cursor-default disabled:opacity-40",
+/** 40px bare round icons in the top bar. No focus ring: focus fills them like a hover does. */
+const iconButton = [
+  "pointer-events-auto grid size-10 cursor-pointer place-items-center rounded-pill text-foreground outline-none [-webkit-tap-highlight-color:transparent]",
+  "transition-[background-color,transform,opacity] duration-160 ease-standard pointer-fine:hover:bg-surface-muted focus-visible:bg-surface-muted motion-reduce:transition-none",
 ].join(" ")
-/** Side arrows hide below 640px, where swiping navigates. */
-const sideButton = "absolute top-1/2 -translate-y-1/2 max-sm:hidden"
+/** 44px raised arrows on the stage midline. They vanish at the ends and below 640px, where swiping navigates. */
+const navButton = [
+  "pointer-events-auto absolute top-1/2 grid size-11 -translate-y-1/2 cursor-pointer place-items-center rounded-pill bg-surface-raised text-foreground shadow-raised outline-none max-sm:hidden [-webkit-tap-highlight-color:transparent]",
+  "transition-[background-color,transform,opacity] duration-160 ease-standard focus-visible:bg-surface-muted motion-reduce:transition-none",
+  "disabled:pointer-events-none disabled:opacity-0",
+].join(" ")
 
 function Slide({
   image,
@@ -760,6 +815,7 @@ function Slide({
   height,
   photoRef,
   transform,
+  className,
 }: {
   image: LightboxImage
   current: boolean
@@ -769,6 +825,7 @@ function Slide({
   height: number
   photoRef?: { current: HTMLDivElement | null }
   transform?: { x: MotionValue<number>; y: MotionValue<number>; scale: MotionValue<number>; radius: MotionValue<number> }
+  className?: string
 }) {
   const [loaded, setLoaded] = useState(false)
   return (
@@ -776,7 +833,7 @@ function Slide({
       ref={photoRef}
       aria-hidden={current ? undefined : true}
       inert={!current}
-      className="absolute overflow-hidden bg-surface-muted will-change-transform"
+      className={cn("absolute overflow-hidden bg-surface-muted will-change-transform", className)}
       style={{ left, top, width, height, borderRadius: transform?.radius ?? RADIUS, x: transform?.x, y: transform?.y, scale: transform?.scale }}
     >
       {/* The grid's file is already cached, so the photo is never blank while the full size loads over it. */}
