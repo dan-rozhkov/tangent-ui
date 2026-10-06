@@ -33,7 +33,7 @@ export function DemoStage({ name }: { name: string }) {
   return (
     <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_17rem]">
       {stage}
-      <aside aria-label="Tune" className="lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto">
+      <aside aria-label="Tune" data-tune className="overflow-hidden rounded-surface border border-border bg-surface lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto">
         <TunePanel />
       </aside>
     </div>
