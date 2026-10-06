@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useEffectEvent, useId, useRef, useState } from "react"
+import { useEffect, useEffectEvent, useId, useMemo, useRef, useState } from "react"
 import type {
   ButtonHTMLAttributes,
   KeyboardEvent as ReactKeyboardEvent,
@@ -10,7 +10,7 @@ import type {
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue, TargetAndTransition } from "motion/react"
 import { Trash2 } from "lucide-react"
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 /**
@@ -56,48 +56,55 @@ const faceClass = "inline-flex items-center gap-2 whitespace-nowrap"
 const fillClass =
   "pointer-events-none absolute -inset-px flex items-center justify-center rounded-control bg-(--hold-fill) text-(--hold-on-fill)"
 
-const enter = [...motionTokens.ease.enter] as [number, number, number, number]
-const standard = [...motionTokens.ease.standard] as [number, number, number, number]
-const rest: TargetAndTransition = {
-  opacity: 1,
-  y: 0,
-  scale: 1,
-  filter: "blur(0px)",
-}
-const textIn: TargetAndTransition = {
-  opacity: 0,
-  y: "0.3em",
-  filter: `blur(${motionTokens.blur.soft}px)`,
-}
-const textOut: TargetAndTransition = {
-  opacity: 0,
-  y: "-0.3em",
-  filter: `blur(${motionTokens.blur.subtle}px)`,
-  transition: { duration: motionTokens.duration.fast, ease: standard },
-}
-const iconIn: TargetAndTransition = {
-  opacity: 0,
-  scale: 0.6,
-  filter: `blur(${motionTokens.blur.subtle}px)`,
-}
-const iconOut: TargetAndTransition = {
-  ...iconIn,
-  transition: { duration: motionTokens.duration.fast, ease: standard },
-}
-const fadeIn: TargetAndTransition = { opacity: 0 }
-const fadeOut: TargetAndTransition = {
-  opacity: 0,
-  transition: { duration: motionTokens.duration.instant },
-}
-/** Scale rides the spring; opacity and blur tween so the blur never overshoots below zero. */
-const iconEnter = {
-  ...motionTokens.spring.snappy,
-  opacity: { duration: motionTokens.duration.fast, ease: enter },
-  filter: { duration: motionTokens.duration.fast, ease: enter },
+const bezier = (curve: readonly number[]) => [...curve] as [number, number, number, number]
+
+function motionFor(motionTokens: MotionTokens) {
+  const enter = bezier(motionTokens.ease.enter)
+  const standard = bezier(motionTokens.ease.standard)
+  const rest: TargetAndTransition = {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    filter: "blur(0px)",
+  }
+  const textIn: TargetAndTransition = {
+    opacity: 0,
+    y: "0.3em",
+    filter: `blur(${motionTokens.blur.soft}px)`,
+  }
+  const textOut: TargetAndTransition = {
+    opacity: 0,
+    y: "-0.3em",
+    filter: `blur(${motionTokens.blur.subtle}px)`,
+    transition: { duration: motionTokens.duration.fast, ease: standard },
+  }
+  const iconIn: TargetAndTransition = {
+    opacity: 0,
+    scale: 0.6,
+    filter: `blur(${motionTokens.blur.subtle}px)`,
+  }
+  const iconOut: TargetAndTransition = {
+    ...iconIn,
+    transition: { duration: motionTokens.duration.fast, ease: standard },
+  }
+  const fadeIn: TargetAndTransition = { opacity: 0 }
+  const fadeOut: TargetAndTransition = {
+    opacity: 0,
+    transition: { duration: motionTokens.duration.instant },
+  }
+  /** Scale rides the spring; opacity and blur tween so the blur never overshoots below zero. */
+  const iconEnter = {
+    ...motionTokens.spring.snappy,
+    opacity: { duration: motionTokens.duration.fast, ease: enter },
+    filter: { duration: motionTokens.duration.fast, ease: enter },
+  }
+  return { enter, rest, textIn, textOut, iconIn, iconOut, fadeIn, fadeOut, iconEnter }
 }
 
 /** The tick draws itself from its short stroke, the way a hand would write it. */
 function DrawnCheck({ reduced }: { reduced: boolean }) {
+  const motionTokens = useMotionTokens()
+  const { enter } = useMemo(() => motionFor(motionTokens), [motionTokens])
   return (
     <svg
       width={18}
@@ -134,6 +141,8 @@ type FaceProps = {
 
 /** Icon and label. The button renders it twice: once on the surface and once inside the fill, so the text changes colour exactly at the fill edge. */
 function Face({ icon, text, done, width, reduced, measure }: FaceProps) {
+  const motionTokens = useMotionTokens()
+  const { enter, rest, textIn, textOut, iconIn, iconOut, fadeIn, fadeOut, iconEnter } = useMemo(() => motionFor(motionTokens), [motionTokens])
   return (
     <span className={faceClass}>
       <span className="grid size-[18px] flex-none place-items-center">
@@ -179,6 +188,7 @@ function Face({ icon, text, done, width, reduced, measure }: FaceProps) {
 
 /** Springs the label frame to the width of new text, so the button morphs instead of snapping. A late web font or a reflow follows instantly. */
 function useLabelWidth(reduced: boolean) {
+  const motionTokens = useMotionTokens()
   const width = useMotionValue<number | "auto">("auto")
   const [node, setNode] = useState<HTMLSpanElement | null>(null)
   useEffect(() => {
@@ -200,7 +210,7 @@ function useLabelWidth(reduced: boolean) {
       observer.disconnect()
       sizing?.stop()
     }
-  }, [node, reduced, width])
+  }, [node, reduced, width, motionTokens])
   return [width, setNode] as const
 }
 
@@ -218,6 +228,7 @@ export function HoldToConfirm({
   ...props
 }: HoldToConfirmProps) {
   const reduced = useReducedMotion() ?? false
+  const motionTokens = useMotionTokens()
   const hintId = useId()
   const [ownDone, setOwnDone] = useState(false)
   const [completions, setCompletions] = useState(0)

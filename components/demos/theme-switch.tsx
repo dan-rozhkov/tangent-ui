@@ -2,6 +2,7 @@
 
 import { flushSync } from "react-dom"
 import { useTheme } from "next-themes"
+import { useDialKit } from "dialkit"
 
 import { ThemeSwitch, type Theme, type ThemeSwitchVariant } from "@/components/ui/theme-switch"
 import { motionTokens } from "@/lib/motion-tokens"
@@ -107,11 +108,25 @@ const variants: { variant: ThemeSwitchVariant; caption: string }[] = [
 
 export default function Demo() {
   const { theme, onThemeChange } = useThemeTransition()
+  const dials = useDialKit(
+    "Theme switcher",
+    {
+      iconOnly: false,
+      label: { type: "text", default: "", placeholder: "Accessible label (default: Switch to dark mode)" },
+    },
+    { id: "theme-switch" },
+  )
   return (
     <div className="flex flex-wrap items-start gap-6">
       {variants.map(({ variant, caption }) => (
         <div key={variant} className="grid justify-items-center gap-2">
-          <ThemeSwitch theme={theme} variant={variant} onThemeChange={onThemeChange} />
+          <ThemeSwitch
+            theme={theme}
+            variant={variant}
+            onThemeChange={onThemeChange}
+            iconOnly={dials.iconOnly}
+            label={dials.label || undefined}
+          />
           <span className="text-xs text-text-secondary">{caption}</span>
         </div>
       ))}

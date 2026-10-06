@@ -1,11 +1,12 @@
 "use client"
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { CSSProperties, FocusEvent, KeyboardEvent, PointerEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react"
 import type { TargetAndTransition, Transition, Variants } from "motion/react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { motionTokens as staticTokens } from "@/lib/motion-tokens"
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export type ExpandingButtonGroupSize = "sm" | "md"
@@ -53,49 +54,57 @@ const metrics = {
 /** Pixels the pointer must travel into a neighbouring action before the expansion moves to it. */
 const hysteresis = 4
 
-const enter = [...motionTokens.ease.enter] as [number, number, number, number]
-const standard = [...motionTokens.ease.standard] as [number, number, number, number]
-const inOut = [...motionTokens.ease.inOut] as [number, number, number, number]
+const bezier = (curve: readonly number[]) => [...curve] as [number, number, number, number]
+const inOut = bezier(staticTokens.ease.inOut)
 
-/** The label slides out from behind the icon as the width opens, and tucks back a little faster than it came. */
-const labelVariants: Variants = {
-  shown: { opacity: 1, x: 0, filter: "blur(0px)", transition: { duration: motionTokens.duration.standard, ease: enter, delay: 0.04 } },
-  hidden: {
+function motionFor(motionTokens: MotionTokens) {
+  const enter = bezier(motionTokens.ease.enter)
+  const standard = bezier(motionTokens.ease.standard)
+
+  /** The label slides out from behind the icon as the width opens, and tucks back a little faster than it came. */
+  const labelVariants: Variants = {
+    shown: { opacity: 1, x: 0, filter: "blur(0px)", transition: { duration: motionTokens.duration.standard, ease: enter, delay: 0.04 } },
+    hidden: {
+      opacity: 0,
+      x: -6,
+      filter: `blur(${motionTokens.blur.subtle}px)`,
+      transition: { duration: motionTokens.duration.instant, ease: standard },
+    },
+  }
+  const reducedLabelVariants: Variants = {
+    shown: { opacity: 1, x: 0, filter: "blur(0px)", transition: { duration: motionTokens.duration.instant } },
+    hidden: { opacity: 0, x: 0, filter: "blur(0px)", transition: { duration: motionTokens.duration.instant } },
+  }
+  const rest: TargetAndTransition = { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }
+  const textIn: TargetAndTransition = { opacity: 0, y: "0.5em", filter: `blur(${motionTokens.blur.soft}px)` }
+  const textOut: TargetAndTransition = {
     opacity: 0,
-    x: -6,
+    y: "-0.4em",
     filter: `blur(${motionTokens.blur.subtle}px)`,
-    transition: { duration: motionTokens.duration.instant, ease: standard },
-  },
+    transition: { duration: motionTokens.duration.fast, ease: standard },
+  }
+  const iconIn: TargetAndTransition = { opacity: 0, scale: 0.55, filter: `blur(${motionTokens.blur.subtle}px)` }
+  const iconOut: TargetAndTransition = { ...iconIn, transition: { duration: motionTokens.duration.fast, ease: standard } }
+  const fadeIn: TargetAndTransition = { ...rest, opacity: 0 }
+  const fadeOut: TargetAndTransition = { opacity: 0, transition: { duration: motionTokens.duration.instant } }
+  const textEnter: Transition = { duration: motionTokens.duration.standard, ease: enter }
+  /** Scale rides the spring; opacity and blur tween so blur never overshoots below zero. */
+  const iconEnter: Transition = {
+    ...motionTokens.spring.snappy,
+    opacity: { duration: motionTokens.duration.fast, ease: enter },
+    filter: { duration: motionTokens.duration.fast, ease: enter },
+  }
+  const instant: Transition = { duration: motionTokens.duration.instant }
+  return { enter, labelVariants, reducedLabelVariants, rest, textIn, textOut, iconIn, iconOut, fadeIn, fadeOut, textEnter, iconEnter, instant }
 }
-const reducedLabelVariants: Variants = {
-  shown: { opacity: 1, x: 0, filter: "blur(0px)", transition: { duration: motionTokens.duration.instant } },
-  hidden: { opacity: 0, x: 0, filter: "blur(0px)", transition: { duration: motionTokens.duration.instant } },
-}
-const rest: TargetAndTransition = { opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }
-const textIn: TargetAndTransition = { opacity: 0, y: "0.5em", filter: `blur(${motionTokens.blur.soft}px)` }
-const textOut: TargetAndTransition = {
-  opacity: 0,
-  y: "-0.4em",
-  filter: `blur(${motionTokens.blur.subtle}px)`,
-  transition: { duration: motionTokens.duration.fast, ease: standard },
-}
-const iconIn: TargetAndTransition = { opacity: 0, scale: 0.55, filter: `blur(${motionTokens.blur.subtle}px)` }
-const iconOut: TargetAndTransition = { ...iconIn, transition: { duration: motionTokens.duration.fast, ease: standard } }
-const fadeIn: TargetAndTransition = { ...rest, opacity: 0 }
-const fadeOut: TargetAndTransition = { opacity: 0, transition: { duration: motionTokens.duration.instant } }
-const textEnter: Transition = { duration: motionTokens.duration.standard, ease: enter }
-/** Scale rides the spring; opacity and blur tween so blur never overshoots below zero. */
-const iconEnter: Transition = {
-  ...motionTokens.spring.snappy,
-  opacity: { duration: motionTokens.duration.fast, ease: enter },
-  filter: { duration: motionTokens.duration.fast, ease: enter },
-}
-const instant: Transition = { duration: motionTokens.duration.instant }
+
 /** A busy action breathes on its icon: half opacity at the middle of each 1.1s beat. */
 const busyPulse: Transition = { duration: 1.1, times: [0, 0.5, 1], ease: [inOut, inOut], repeat: Infinity }
 
 /** The confirmation tick draws itself from its short stroke. */
 function DrawnCheck({ reduced }: { reduced: boolean }) {
+  const motionTokens = useMotionTokens()
+  const { enter } = useMemo(() => motionFor(motionTokens), [motionTokens])
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <motion.path
@@ -161,6 +170,9 @@ function itemClass({ size, expanded, done, busy, disabled, danger, measured }: {
 }
 
 function Item({ item, size, expanded, done, busy, tabStop, reduced, onPointerDown, onClick, onFocus }: ItemProps) {
+  const motionTokens = useMotionTokens()
+  const tokensMotion = useMemo(() => motionFor(motionTokens), [motionTokens])
+  const { labelVariants, reducedLabelVariants, rest, textIn, textOut, iconIn, iconOut, fadeIn, fadeOut, textEnter, iconEnter, instant } = tokensMotion
   const m = metrics[size]
   const labelRef = useRef<HTMLSpanElement>(null)
   const doneRef = useRef<HTMLSpanElement>(null)
@@ -200,7 +212,7 @@ function Item({ item, size, expanded, done, busy, tabStop, reduced, onPointerDow
       return
     }
     animate(width, target, motionTokens.spring.morph)
-  }, [target, measured, reduced, width])
+  }, [target, measured, reduced, width, motionTokens])
 
   const word = showDone ? (item.doneLabel ?? item.label) : item.label
   const disabled = !!item.disabled

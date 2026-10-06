@@ -21,7 +21,7 @@ import {
   useTransform,
 } from "motion/react"
 import { X } from "lucide-react"
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 /**
@@ -96,14 +96,6 @@ const FLICK = 320
 const STRETCH = 120
 /** How much of the full dim remains at the smallest detent. */
 const LOW_DIM = 0.78
-
-const settle = motionTokens.spring.smooth
-/** Leaving is shorter than arriving; a flick keeps its velocity through the same spring. */
-const leave = { ...motionTokens.spring.smooth, visualDuration: 0.3 }
-const fade = {
-  duration: motionTokens.duration.fast,
-  ease: [...motionTokens.ease.standard] as [number, number, number, number],
-}
 
 /** iOS-style resistance: follows the finger at first, then approaches STRETCH. */
 const rubber = (distance: number) => (1 - 1 / ((distance * 0.55) / STRETCH + 1)) * STRETCH
@@ -190,6 +182,19 @@ function Sheet({
 }: Omit<BottomSheetProps, "trigger" | "open" | "defaultOpen" | "onOpenChange"> & { onDismiss: () => void }) {
   const [isPresent, safeToRemove] = usePresence()
   const reduced = useReducedMotion() ?? false
+  const motionTokens = useMotionTokens()
+  const { settle, leave, fade } = useMemo(
+    () => ({
+      settle: motionTokens.spring.smooth,
+      /** Leaving is shorter than arriving; a flick keeps its velocity through the same spring. */
+      leave: { ...motionTokens.spring.smooth, visualDuration: 0.3 },
+      fade: {
+        duration: motionTokens.duration.fast,
+        ease: [...motionTokens.ease.standard] as [number, number, number, number],
+      },
+    }),
+    [motionTokens]
+  )
   const detentKey = detents.join(",")
   const stops = useMemo(
     () =>
@@ -215,6 +220,11 @@ function Sheet({
   const arrive = useRef<(() => void) | undefined>(undefined)
   const suppressClick = useRef(false)
   const mounted = useRef(false)
+  // The latest motion, read when a move starts. Retuning tokens must not re-run the presence effect and restart a flight.
+  const live = useRef({ settle, leave, fade })
+  useLayoutEffect(() => {
+    live.current = { settle, leave, fade }
+  })
 
   const offset = useCallback(
     (stop: Stop) => {
@@ -237,6 +247,7 @@ function Sheet({
   // Every move retargets the one motion value from wherever it is. A new target drops the previous arrival callback.
   const go = useCallback(
     (stop: Stop, velocity?: number, onArrive?: () => void) => {
+      const { settle, leave } = live.current
       aim.current = stop
       arrive.current = onArrive
       const target = offset(stop)
@@ -285,6 +296,7 @@ function Sheet({
   useLayoutEffect(() => {
     const sheet = sheetRef.current
     if (!sheet) return
+    const { fade } = live.current
     if (!mounted.current) {
       mounted.current = true
       height.set(sheet.offsetHeight - EXTENSION)

@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion, useReducedMotion } from "motion/react"
 import { Moon, Sun } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export type ThemeSwitchVariant = "reveal" | "eclipse" | "split" | "rise"
@@ -19,23 +19,26 @@ export interface ThemeSwitchProps {
   iconOnly?: boolean
 }
 
-/** Rotation and scale ride the spring; opacity and blur tween so the blur never overshoots below zero. */
-const iconSpring = {
-  ...motionTokens.spring.snappy,
-  opacity: {
+function createMotion(motionTokens: MotionTokens) {
+  /** Rotation and scale ride the spring; opacity and blur tween so the blur never overshoots below zero. */
+  const iconSpring = {
+    ...motionTokens.spring.snappy,
+    opacity: {
+      duration: motionTokens.duration.fast,
+      ease: [...motionTokens.ease.enter],
+    },
+    filter: {
+      duration: motionTokens.duration.fast,
+      ease: [...motionTokens.ease.enter],
+    },
+  } as const
+  const iconExit = {
     duration: motionTokens.duration.fast,
-    ease: [...motionTokens.ease.enter],
-  },
-  filter: {
-    duration: motionTokens.duration.fast,
-    ease: [...motionTokens.ease.enter],
-  },
-} as const
-const iconExit = {
-  duration: motionTokens.duration.fast,
-  ease: [...motionTokens.ease.standard],
-} as const
-const blur = `blur(${motionTokens.blur.subtle}px)`
+    ease: [...motionTokens.ease.standard],
+  } as const
+  const blur = `blur(${motionTokens.blur.subtle}px)`
+  return { iconSpring, iconExit, blur }
+}
 
 /* Each transition uses the same library Button, which owns the press scale; this file only animates the icon in place. */
 const switchClass = "group/theme-switch relative w-auto px-3 pointer-fine:hover:not-disabled:border-border-strong"
@@ -69,6 +72,8 @@ function useSettled() {
 
 /** Both icons turn the same way (clockwise into dark, back out of it), so the swap reads as one rotation rather than two fades. */
 function ThemeIcon({ theme, reduced, settled }: { theme: Theme; reduced: boolean; settled: boolean }) {
+  const motionTokens = useMotionTokens()
+  const { iconSpring, iconExit, blur } = useMemo(() => createMotion(motionTokens), [motionTokens])
   const Icon = theme === "light" ? Sun : Moon
   const angle = theme === "light" ? 30 : -30
   return (

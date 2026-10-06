@@ -8,7 +8,7 @@ import type { MotionValue } from "motion/react"
 import { ChevronLeft, X } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export type SheetStackMode = "auto" | "sheet" | "dialog"
@@ -134,13 +134,31 @@ const DIALOG_EXIT_SCALE = 0.97
 
 const rubber = (distance: number) => (1 - 1 / ((distance * 0.55) / STRETCH + 1)) * STRETCH
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
-const leave = { ...motionTokens.spring.smooth, visualDuration: 0.3 }
-const fade = { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] as [number, number, number, number] }
-/** Dialogs vanish quickly; their transform keeps settling underneath the fade. */
-const vanish = { duration: motionTokens.duration.instant, ease: [...motionTokens.ease.standard] as [number, number, number, number] }
+type Bezier = [number, number, number, number]
+/** Transitions derived from the motion tokens; recomputed only when the tokens change. */
+function useSheetMotion() {
+  const motionTokens = useMotionTokens()
+  const motion = useMemo(
+    () => ({
+      motionTokens,
+      leave: { ...motionTokens.spring.smooth, visualDuration: 0.3 },
+      fade: { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] as Bezier },
+      /** Dialogs vanish quickly; their transform keeps settling underneath the fade. */
+      vanish: { duration: motionTokens.duration.instant, ease: [...motionTokens.ease.standard] as Bezier },
+    }),
+    [motionTokens],
+  )
+  /** Effects and callbacks read this, so a retune changes later animations without re-running them. */
+  const latest = useRef(motion)
+  useLayoutEffect(() => {
+    latest.current = motion
+  }, [motion])
+  return { ...motion, latest }
+}
 
 /** Holds the stack of open sheets and renders the layer they appear in. Declare every Sheet inside one SheetStack. */
 export function SheetStack({ children, stack: stackProp, defaultStack = [], onStackChange, mode = "auto", breakpoint = 640, contained = false }: SheetStackProps) {
+  const { motionTokens, fade, latest } = useSheetMotion()
   const [inner, setInner] = useState(defaultStack)
   const stack = stackProp ?? inner
   const [layer, setLayer] = useState<HTMLDivElement | null>(null)
@@ -221,7 +239,7 @@ export function SheetStack({ children, stack: stackProp, defaultStack = [], onSt
     let controls: ReturnType<typeof animate> | null = null
     const spring = () => {
       controls = animate(topHeight, height.get(), {
-        ...motionTokens.spring.smooth,
+        ...latest.current.motionTokens.spring.smooth,
         onComplete: () => {
           following = true
           topHeight.set(height.get())
@@ -242,7 +260,7 @@ export function SheetStack({ children, stack: stackProp, defaultStack = [], onSt
       controls?.stop()
       off()
     }
-  }, [heights, top, topHeight])
+  }, [heights, latest, top, topHeight])
 
   // Each sheet has already picked up the drag it was showing; the shared pull starts fresh for the new top.
   useLayoutEffect(() => {
@@ -304,6 +322,7 @@ const headerButton = [
 ].join(" ")
 
 function SheetPanel({ id, title, description, children, footer, dismissible = true, className, ref, level, parent }: SheetProps & { level: number; parent?: string }) {
+  const { latest } = useSheetMotion()
   const context = useContext(StackContext)!
   const { layerHeight, topHeight, pull, heights, wide } = context
   const [isPresent, safeToRemove] = usePresence()
@@ -365,7 +384,7 @@ function SheetPanel({ id, title, description, children, footer, dismissible = tr
       const natural = header.offsetHeight + content.offsetHeight + (footerRef.current?.offsetHeight ?? 0) + borders
       const target = Math.max(0, Math.min(natural, limit))
       if (!height.get() || reduced) height.jump(target)
-      else if (target !== height.get()) animate(height, target, motionTokens.spring.smooth)
+      else if (target !== height.get()) animate(height, target, latest.current.motionTokens.spring.smooth)
     }
     fit()
     const off = layerHeight.on("change", fit)
@@ -378,7 +397,7 @@ function SheetPanel({ id, title, description, children, footer, dismissible = tr
       off()
       observer.disconnect()
     }
-  }, [height, layerHeight, level, panel, peek, reduced, wide])
+  }, [height, latest, layerHeight, level, panel, peek, reduced, wide])
 
   // Depth changes start from what is on screen, including the drag pull the stack was showing.
   useLayoutEffect(() => {
@@ -387,8 +406,8 @@ function SheetPanel({ id, title, description, children, footer, dismissible = tr
     if (current === depth) return
     depthValue.jump(current - pull.get() * clamp(current, 0, 1))
     if (reduced) depthValue.jump(depth)
-    else animate(depthValue, depth, motionTokens.spring.smooth)
-  }, [depth, depthValue, isPresent, pull, reduced])
+    else animate(depthValue, depth, latest.current.motionTokens.spring.smooth)
+  }, [depth, depthValue, isPresent, latest, pull, reduced])
 
   // Enter, leave, and a reopen caught mid-exit all retarget the same values from wherever they are.
   useLayoutEffect(() => {
@@ -401,18 +420,18 @@ function SheetPanel({ id, title, description, children, footer, dismissible = tr
         flung.current = null
         if (reduced) {
           offset.jump(0)
-          animate(presence, 1, fade)
+          animate(presence, 1, latest.current.fade)
           return
         }
         // A sheet starts exactly one height below its resting place, so it is just out of view.
         if (offset.get() === 2000) offset.jump(height.get())
         if (wide) {
           if (presence.get() === 0) edgeScale.jump(DIALOG_ENTER_SCALE)
-          animate(presence, 1, { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.enter] })
-          animate(offset, 0, motionTokens.spring.smooth)
+          animate(presence, 1, { duration: latest.current.motionTokens.duration.fast, ease: [...latest.current.motionTokens.ease.enter] })
+          animate(offset, 0, latest.current.motionTokens.spring.smooth)
         } else {
           presence.jump(1)
-          animate(offset, 0, motionTokens.spring.smooth)
+          animate(offset, 0, latest.current.motionTokens.spring.smooth)
         }
       }
       if (height.get() > 0) return enter()
@@ -430,19 +449,19 @@ function SheetPanel({ id, title, description, children, footer, dismissible = tr
     }
     const velocity = flung.current ?? undefined
     if (reduced) {
-      animate(presence, 0, { ...fade, onComplete: safeToRemove })
+      animate(presence, 0, { ...latest.current.fade, onComplete: safeToRemove })
       return
     }
     if (wide) {
       // A flung dialog keeps travelling with its velocity while it fades; otherwise it settles back a few pixels.
       const target = velocity ? offset.get() + Math.max(80, velocity * 0.2) : closed()
       edgeScale.jump(DIALOG_EXIT_SCALE)
-      animate(offset, target, velocity ? { ...leave, velocity } : motionTokens.spring.smooth)
-      animate(presence, 0, { ...vanish, onComplete: safeToRemove })
+      animate(offset, target, velocity ? { ...latest.current.leave, velocity } : latest.current.motionTokens.spring.smooth)
+      animate(presence, 0, { ...latest.current.vanish, onComplete: safeToRemove })
       return
     }
-    animate(offset, closed(), { ...leave, ...(velocity === undefined ? null : { velocity }), onComplete: safeToRemove })
-  }, [edgeScale, height, isPresent, offset, panel, presence, reduced, safeToRemove, wide])
+    animate(offset, closed(), { ...latest.current.leave, ...(velocity === undefined ? null : { velocity }), onComplete: safeToRemove })
+  }, [edgeScale, height, isPresent, latest, offset, panel, presence, reduced, safeToRemove, wide])
 
   /* Everything on screen is one function of the motion values, so drags and depth changes never re-render React. */
   const effective = useTransform(() => {
@@ -518,10 +537,10 @@ function SheetPanel({ id, title, description, children, footer, dismissible = tr
         context.pop()
         return
       }
-      animate(offset, 0, { ...motionTokens.spring.smooth, velocity: travelled < 0 ? 0 : velocity })
-      animate(pull, 0, motionTokens.spring.smooth)
+      animate(offset, 0, { ...latest.current.motionTokens.spring.smooth, velocity: travelled < 0 ? 0 : velocity })
+      animate(pull, 0, latest.current.motionTokens.spring.smooth)
     },
-    [context, height, offset, pull],
+    [context, height, latest, offset, pull],
   )
 
   function pointerDown(event: ReactPointerEvent<HTMLDivElement>) {

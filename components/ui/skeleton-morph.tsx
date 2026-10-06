@@ -5,7 +5,7 @@ import type { CSSProperties, ElementType, ReactNode } from "react"
 import { animate, motion, useMotionValue, useReducedMotion } from "motion/react"
 import type { AnimationPlaybackControls } from "motion/react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface SkeletonMorphProps {
@@ -166,10 +166,10 @@ export function SkeletonMorph({ loading, children, stagger = 0.04, loadingLabel 
   )
 }
 
-/** One slow pulse, opacity 1 to .55 and back, shared by every shape so they all breathe in phase. */
-const PULSE = { duration: 1.4, ease: [...motionTokens.ease.inOut], repeat: Infinity, repeatType: "mirror" } as const
-
 function Bar({ className, style, reduce }: { className?: string; style?: CSSProperties; reduce: boolean }) {
+  const motionTokens = useMotionTokens()
+  /** One slow pulse, opacity 1 to .55 and back, shared by every shape so they all breathe in phase. */
+  const PULSE = useMemo(() => ({ duration: 1.4, ease: [...motionTokens.ease.inOut], repeat: Infinity, repeatType: "mirror" }) as const, [motionTokens.ease.inOut])
   return (
     <motion.span
       className={cn("block", barTone, className)}

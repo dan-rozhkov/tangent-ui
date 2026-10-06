@@ -6,7 +6,7 @@ import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } fr
 import type { AnimationPlaybackControls, Transition } from "motion/react"
 import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface PageCurlProps {
@@ -144,7 +144,6 @@ const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
 const TURN: Transition = { type: "spring", stiffness: 64, damping: 12.8, delay: 0.07 }
 /** A released drag keeps its momentum on a critically damped spring. */
 const RELEASE: Transition = { type: "spring", stiffness: 196, damping: 28 }
-const SETTLE: Transition = motionTokens.spring.smooth
 /** The tease rises a little slower than it settles, so the corner reads as being lifted, not flicked. */
 const TEASE_RISE: Transition = { type: "spring", stiffness: 121, damping: 21 }
 const TEASE_FALL: Transition = RELEASE
@@ -160,7 +159,6 @@ const HOVER_LIFT = { x: -0.1478, y: -0.0815 }
 const HOVER_ZONE = 0.13
 /** How long the page waits after the pointer leaves a lifted corner before laying it down, in seconds. */
 const HOVER_LEAVE = 0.058
-const leave: Transition = { ...motionTokens.spring.smooth, delay: HOVER_LEAVE }
 /** Peak lift of the curve a programmatic turn follows, as a fraction of the page height. */
 const TURN_RISE = 0.16
 /** A release turns the page when the corner, carried this many seconds further by its velocity, is past this share of the page. */
@@ -212,6 +210,9 @@ export function PageCurl({
   style,
 }: PageCurlProps) {
   const reduce = useReducedMotion() ?? false
+  const motionTokens = useMotionTokens()
+  const SETTLE: Transition = motionTokens.spring.smooth
+  const leave: Transition = { ...motionTokens.spring.smooth, delay: HOVER_LEAVE }
   const total = pages.length
   const last = Math.max(0, Math.floor(total / 2))
   const [inner, setInner] = useState(() => Math.min(Math.max(0, defaultSpread), last))
@@ -309,7 +310,7 @@ export function PageCurl({
       })
       slideRun.current = { to, controls }
     },
-    [offsetFor, slide],
+    [offsetFor, slide, SETTLE],
   )
 
   /** Writes the fold for the current corner position straight to the DOM; no React render per frame. */

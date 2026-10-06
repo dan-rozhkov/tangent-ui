@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   AnimatePresence,
   animate,
@@ -12,7 +12,7 @@ import {
   useTransform,
   type Variants,
 } from "motion/react"
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 type GaugeTone = "accent" | "success" | "warning" | "danger"
@@ -64,7 +64,7 @@ const styles = {
 }
 
 /** Copy enters from the side the value moved toward: a rise comes up from below, a fall drops from above. */
-const rise: Variants = {
+const riseFor = (motionTokens: MotionTokens): Variants => ({
   hidden: (direction: number) => ({
     opacity: 0,
     y: `${0.3 * direction}em`,
@@ -88,9 +88,9 @@ const rise: Variants = {
       ease: [...motionTokens.ease.standard],
     },
   }),
-}
+})
 // Same keys as `rise` so the settled style is identical whichever branch renders on the server.
-const fade: Variants = {
+const fadeFor = (motionTokens: MotionTokens): Variants => ({
   hidden: { opacity: 0, y: 0, filter: "blur(0px)" },
   shown: {
     opacity: 1,
@@ -104,16 +104,19 @@ const fade: Variants = {
     filter: "blur(0px)",
     transition: { duration: motionTokens.duration.instant },
   },
-}
+})
 /** The first fill is slower and never overshoots, like a ring closing when the view opens. */
-const reveal = {
+const revealFor = (motionTokens: MotionTokens) => ({
   ...motionTokens.spring.smooth,
   visualDuration: motionTokens.duration.considered * 1.6,
-}
+})
 
 /** New copy rises in while the old copy leaves, popped out of flow so the line never holds both. */
 function Swap({ text, direction = 1 }: { text: string; direction?: number }) {
   const reduceMotion = !!useReducedMotion()
+  const motionTokens = useMotionTokens()
+  const rise = useMemo(() => riseFor(motionTokens), [motionTokens])
+  const fade = useMemo(() => fadeFor(motionTokens), [motionTokens])
   return (
     <span className={styles.swap}>
       <AnimatePresence mode="popLayout" initial={false} custom={direction}>
@@ -165,6 +168,7 @@ export function Gauge({
   const sizer = useRef<HTMLSpanElement>(null)
   const inView = useInView(ref, { once: true, amount: 0.5 })
   const reduceMotion = !!useReducedMotion()
+  const motionTokens = useMotionTokens()
   const sweep = useMotionValue(0)
   const count = useMotionValue(0)
   const digitsWidth = useMotionValue<number | "auto">("auto")
@@ -195,6 +199,7 @@ export function Gauge({
       return () => cancelAnimationFrame(frame)
     }
     if (!inView) return
+    const reveal = revealFor(motionTokens)
     const arc = animate(
       sweep,
       percentage,
@@ -208,7 +213,7 @@ export function Gauge({
       arc.stop()
       number.stop()
     }
-  }, [count, filled, inView, percentage, reduceMotion, sweep])
+  }, [count, filled, inView, motionTokens, percentage, reduceMotion, sweep])
 
   // The state arrives as the first fill lands. After that it follows the number on screen, so the color and label change exactly as the count crosses a threshold.
   useMotionValueEvent(count, "change", (current) => {
@@ -238,7 +243,7 @@ export function Gauge({
     })
     observer.observe(node)
     return () => observer.disconnect()
-  }, [digitsWidth, reduceMotion])
+  }, [digitsWidth, motionTokens, reduceMotion])
 
   return (
     <figure

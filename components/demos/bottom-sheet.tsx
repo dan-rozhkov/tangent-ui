@@ -1,5 +1,7 @@
 "use client"
 
+import { useDialKit } from "dialkit"
+
 import { BottomSheet, BottomSheetClose } from "@/components/ui/bottom-sheet"
 import { Button } from "@/components/ui/button"
 
@@ -12,12 +14,26 @@ const bookings = [
 ]
 
 export default function Demo() {
+  const dial = useDialKit(
+    "Bottom sheet",
+    {
+      title: "Lisbon, 3 nights",
+      description: "Oct 12 to Oct 15",
+      detents: {
+        peek: [0.4, 0.1, 0.8, 0.05],
+        full: [0.9, 0.5, 1, 0.01],
+      },
+      initialDetent: [0, 0, 1, 1],
+    },
+    { id: "bottom-sheet" }
+  )
   return (
     <BottomSheet
       trigger={<Button>Trip details</Button>}
-      title="Lisbon, 3 nights"
-      description="Oct 12 to Oct 15"
-      detents={[0.4, 0.9]}
+      title={dial.title}
+      description={dial.description}
+      detents={[dial.detents.peek, dial.detents.full]}
+      initialDetent={dial.initialDetent}
     >
       <div className="grid gap-5">
         <p className="m-0 text-text-secondary">Flights, hotel, and bookings. Drag the sheet up to see everything.</p>

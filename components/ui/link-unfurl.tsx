@@ -9,7 +9,8 @@ import { AnimatePresence, animate, motion, useReducedMotion } from "motion/react
 import type { AnimationPlaybackControls, Transition } from "motion/react"
 import { ArrowUp, Check, ChevronUp, Globe, Link2, X } from "lucide-react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { motionTokens as presets } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface LinkUnfurlPreview {
@@ -62,10 +63,9 @@ type Part = "slot" | "card" | "plate" | "body" | "img" | "fav"
  */
 type Ctrl = { p: number; v: number; target: number; drag: boolean; foldAt: number; removed: boolean } & Partial<Record<Part, HTMLElement | null>>
 
-const { blur, duration } = motionTokens
 type Bezier = [number, number, number, number]
-const enter = [...motionTokens.ease.enter] as Bezier
-const standard = [...motionTokens.ease.standard] as Bezier
+const enter = [...presets.ease.enter] as Bezier
+const standard = [...presets.ease.standard] as Bezier
 /** Space below each card in the lane. */
 const GAP = 10
 const CARD_RADIUS = 18
@@ -133,6 +133,7 @@ const CHIP_CLASS = "inline-block max-w-full align-top select-none [-webkit-user-
  * follows on a stiff spring.
  */
 function ChipFace({ link, still, onActivate }: { link: Link; still: boolean; onActivate: (id: string) => void }) {
+  const { blur, duration } = useMotionTokens()
   const { status, preview, open } = link
   const loading = status === "loading"
   const ready = status === "ready" && !!preview
@@ -197,7 +198,7 @@ function ChipFace({ link, still, onActivate }: { link: Link; still: boolean; onA
           className="pointer-events-none absolute inset-y-0 left-0 -z-10 w-[135px] bg-[linear-gradient(90deg,transparent,color-mix(in_oklab,var(--foreground)_9%,transparent),transparent)]"
           initial={{ x: -135 }}
           animate={{ x: [-135, 258] }}
-          transition={{ duration: 1.2, ease: [...motionTokens.ease.inOut] as Bezier, repeat: Infinity }}
+          transition={{ duration: 1.2, ease: [...presets.ease.inOut] as Bezier, repeat: Infinity }}
           aria-hidden="true"
         />
       )}
@@ -340,6 +341,7 @@ export function LinkUnfurl({
   className,
   style,
 }: LinkUnfurlProps) {
+  const { duration } = useMotionTokens()
   const reduced = useReducedFlag()
   const still = reduced || paused
   const uid = useId()

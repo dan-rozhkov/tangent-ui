@@ -5,7 +5,7 @@ import type { KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from
 import { animate, motion, useMotionTemplate, useMotionValue, useReducedMotion, useTransform } from "motion/react"
 import type { MotionValue, Transition } from "motion/react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface CoverFlowItem {
@@ -215,6 +215,7 @@ interface CaptionProps {
 
 /** Every caption stays mounted in one cell; the current one is shown and the rest wait on the side they would come from. */
 function Caption({ index, current, still, children }: CaptionProps) {
+  const motionTokens = useMotionTokens()
   const shown = index === current
   const side = Math.sign(index - current)
   return (

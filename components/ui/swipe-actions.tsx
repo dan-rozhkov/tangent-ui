@@ -21,7 +21,7 @@ import {
 } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue } from "motion/react"
 import { MoreHorizontal } from "lucide-react"
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface SwipeAction {
@@ -187,6 +187,7 @@ export function SwipeActionsRow({
   children,
   className,
 }: SwipeActionsRowProps) {
+  const motionTokens = useMotionTokens()
   const { openId, setOpenId, rows } = useContext(GroupContext)
   const id = useId()
   const reduced = useReducedMotion() ?? false

@@ -1,12 +1,12 @@
 "use client"
 
-import { useId, useLayoutEffect, useRef, useState } from "react"
+import { useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { ComponentPropsWithoutRef, CSSProperties, KeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react"
 import type { Transition, Variants } from "motion/react"
 import { ChevronDown as NavArrowDown } from "lucide-react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface ExpandableCardProps
@@ -40,20 +40,20 @@ export interface ExpandableCardProps
  * One morph: the box grows in width and height on the same spring, which never overshoots, so close is the exact mirror of open.
  * Size is animated for real (not with a scale), so the text, border, and corner radius never stretch.
  */
-const morph = motionTokens.spring.smooth
 /** On close the details fade out first, then the box starts to shrink; on open they fade in once the box has made room. */
 const closeHold = 0.06
 /** A close that reverses an open still in flight skips the hold, so the spring turns around with its velocity instead of stalling. */
-const settleTime = 450
-const boxTransition = (expanded: boolean, hold: boolean): Transition => (expanded || !hold ? morph : { ...morph, delay: closeHold })
-const contentTransition = (expanded: boolean): Transition =>
+const settleMargin = 50
+const boxTransition = (morph: Transition, expanded: boolean, hold: boolean): Transition =>
+  expanded || !hold ? morph : { ...morph, delay: closeHold }
+const contentTransition = (motionTokens: MotionTokens, expanded: boolean): Transition =>
   expanded
     ? { duration: motionTokens.duration.standard, ease: [...motionTokens.ease.standard], delay: 0.12 }
     : { duration: 0.1, ease: [...motionTokens.ease.standard] }
 const still: Transition = { duration: 0 }
 
 /** Changed words in the summary rise in; unchanged words hold still. */
-const wordMotion: Variants = {
+const wordMotionFor = (motionTokens: MotionTokens): Variants => ({
   enter: { opacity: 0, y: ".35em", filter: `blur(${motionTokens.blur.soft}px)` },
   center: {
     opacity: 1,
@@ -67,9 +67,11 @@ const wordMotion: Variants = {
     filter: `blur(${motionTokens.blur.subtle}px)`,
     transition: { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] },
   },
-}
+})
 
 function RollingText({ text, reduced }: { text: string; reduced: boolean }) {
+  const motionTokens = useMotionTokens()
+  const wordMotion = useMemo(() => wordMotionFor(motionTokens), [motionTokens])
   return (
     <span className="relative block">
       <span className="absolute size-px overflow-hidden whitespace-nowrap [clip-path:inset(50%)]">{text}</span>
@@ -114,6 +116,8 @@ export function ExpandableCard({
   const triggerRef = useRef<HTMLButtonElement>(null)
   const panelId = useId()
   const reduceMotion = useReducedMotion() ?? false
+  const motionTokens = useMotionTokens()
+  const morph: Transition = motionTokens.spring.smooth
 
   useLayoutEffect(() => {
     const track = trackRef.current
@@ -134,7 +138,7 @@ export function ExpandableCard({
   // The width lives in a motion value: the first measurement lands without motion, later changes spring from the current width and velocity.
   const boxWidthValue = useMotionValue<number | string>("100%")
   const placed = useRef(false)
-  const widthTransition = reduceMotion ? still : boxTransition(expanded, hold)
+  const widthTransition = reduceMotion ? still : boxTransition(morph, expanded, hold)
   useLayoutEffect(() => {
     if (boxWidth === undefined) return
     if (!placed.current) {
@@ -154,6 +158,8 @@ export function ExpandableCard({
 
   const toggle = (next: boolean) => {
     const now = performance.now()
+    // The box settles about one visual duration after a toggle, so the window follows the tuned spring (450ms by default).
+    const settleTime = (motionTokens.spring.smooth.visualDuration ?? 0.4) * 1000 + settleMargin
     setHold(now - lastToggle.current > settleTime)
     lastToggle.current = now
     setExpanded(next)
@@ -211,7 +217,7 @@ export function ExpandableCard({
             )}
             initial={false}
             animate={{ rotate: expanded ? 180 : 0 }}
-            transition={reduceMotion ? still : boxTransition(expanded, hold)}
+            transition={reduceMotion ? still : boxTransition(morph, expanded, hold)}
           >
             <NavArrowDown width={18} height={18} aria-hidden="true" />
           </motion.span>
@@ -224,14 +230,14 @@ export function ExpandableCard({
           inert={!expanded}
           initial={false}
           animate={{ height: expanded ? "auto" : 0 }}
-          transition={reduceMotion ? still : boxTransition(expanded, hold)}
+          transition={reduceMotion ? still : boxTransition(morph, expanded, hold)}
         >
           <motion.div
             className="max-w-none px-5 pt-4 pb-5"
             style={innerWidth === undefined ? undefined : { width: innerWidth - 2 }}
             initial={false}
             animate={{ opacity: expanded ? 1 : 0 }}
-            transition={reduceMotion ? still : contentTransition(expanded)}
+            transition={reduceMotion ? still : contentTransition(motionTokens, expanded)}
           >
             {children}
           </motion.div>

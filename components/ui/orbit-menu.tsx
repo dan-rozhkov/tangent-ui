@@ -6,7 +6,8 @@ import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, use
 import type { MotionValue } from "motion/react"
 import { Check, Ellipsis, X } from "lucide-react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { motionTokens as defaultTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface OrbitAction {
@@ -53,16 +54,13 @@ const NEIGHBOUR_SCALE = 1.05
 const TRIGGER_DRAG_SCALE = 0.865
 const TRIGGER_FOLLOW = 0.23
 const TRIGGER_FOLLOW_MAX = 22
-const enter = [...motionTokens.ease.enter] as [number, number, number, number]
-const standard = [...motionTokens.ease.standard] as [number, number, number, number]
+const enter = [...defaultTokens.ease.enter] as [number, number, number, number]
+const standard = [...defaultTokens.ease.standard] as [number, number, number, number]
 /** The swirl: each action travels the last part of the arc as it flies out, in radians (~40 degrees, as measured). */
 const SWIRL = 0.7
 /** Fly out: ~2% radial overshoot peaking ~440ms after an action starts. */
 const flyOut = { type: "spring", visualDuration: 0.45, bounce: 0.22 } as const
-/** Fold: critically damped, a touch quicker than smooth (~580ms for the whole arc). */
-const foldIn = { ...motionTokens.spring.smooth, visualDuration: 0.34 }
 const OPEN_STAGGER = 0.045
-const CLOSE_STAGGER = motionTokens.stagger.item * 0.6
 /** Border and fills measured on the open material: --border-strong at 55%, --surface-raised at 94% (actions) and 76%. */
 const ring = "border border-[color-mix(in_oklab,var(--border-strong)_55%,transparent)]"
 
@@ -114,6 +112,7 @@ function OrbitItem({
   onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => void
   onFocus: () => void
 }) {
+  const motionTokens = useMotionTokens()
   const progress = useMotionValue(0)
   const fade = useMotionValue(0)
   const blur = useMotionValue<number>(motionTokens.blur.soft)
@@ -125,7 +124,10 @@ function OrbitItem({
       const controls = animate(fade, open ? 1 : 0, { duration: motionTokens.duration.fast })
       return () => controls.stop()
     }
-    const delay = open ? index * OPEN_STAGGER : (count - 1 - index) * CLOSE_STAGGER
+    /** Fold: critically damped, a touch quicker than smooth (~580ms for the whole arc). */
+    const foldIn = { ...motionTokens.spring.smooth, visualDuration: 0.34 }
+    const closeStagger = motionTokens.stagger.item * 0.6
+    const delay = open ? index * OPEN_STAGGER : (count - 1 - index) * closeStagger
     // Measured: opacity lands within ~120ms of an action starting and the blur clears over ~200ms; on the way back in the
     // fade waits ~30ms, then drops linearly over ~110ms while the action is still travelling.
     const controls = open
@@ -140,7 +142,7 @@ function OrbitItem({
           animate(blur, motionTokens.blur.soft, { duration: 0.2, ease: "easeInOut", delay }),
         ]
     return () => controls.forEach((control) => control.stop())
-  }, [blur, count, fade, index, open, progress, reduced])
+  }, [blur, count, fade, index, motionTokens, open, progress, reduced])
 
   const zoom = useMotionValue(emphasis)
   useEffect(() => {
@@ -149,7 +151,7 @@ function OrbitItem({
       const controls = animate(zoom, emphasis, motionTokens.spring.snappy)
       return () => controls.stop()
     }
-  }, [emphasis, reduced, zoom])
+  }, [emphasis, motionTokens.spring.snappy, reduced, zoom])
 
   // Geometry lives in a motion value so the derived transforms always read the current props.
   const geometry = useMotionValue({ rad: toRad(angle), radius, reduced, leans })
@@ -216,6 +218,7 @@ function OrbitItem({
 
 /** Text in the pill crossfades while the pill springs to fit it. */
 function OrbitPill({ text, tone, reduced }: { text: string; tone: "neutral" | "danger" | "muted"; reduced: boolean }) {
+  const motionTokens = useMotionTokens()
   const measure = useRef<HTMLSpanElement>(null)
   const width = useMotionValue<number | "auto">("auto")
   const measured = useRef(false)
@@ -226,7 +229,7 @@ function OrbitPill({ text, tone, reduced }: { text: string; tone: "neutral" | "d
     if (!measured.current || reduced) width.jump(next)
     else animate(width, next, motionTokens.spring.morph)
     measured.current = true
-  }, [reduced, text, width])
+  }, [motionTokens.spring.morph, reduced, text, width])
   return (
     <motion.span
       className={cn(
@@ -276,6 +279,7 @@ export function OrbitMenu({
   onOpenChange,
   className,
 }: OrbitMenuProps) {
+  const motionTokens = useMotionTokens()
   const reduced = useReducedMotion() ?? false
   const menuId = useId()
   const root = useRef<HTMLDivElement>(null)

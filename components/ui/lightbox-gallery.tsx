@@ -8,7 +8,8 @@ import { animate, motion, useMotionValue, useMotionValueEvent, useReducedMotion,
 import type { MotionValue } from "motion/react"
 import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { motionTokens as presets } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface LightboxImage {
@@ -68,7 +69,7 @@ const GRID_SIZES = "(min-width: 900px) 260px, (min-width: 600px) 34vw, 50vw"
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 /** Past an edge, travel approaches `limit` px instead of following the pointer. */
 const rubber = (distance: number, limit = 120) => (1 - 1 / ((distance * 0.55) / limit + 1)) * limit
-const fade = { duration: 0.1, ease: [...motionTokens.ease.standard] as [number, number, number, number] }
+const fade = { duration: 0.1, ease: [...presets.ease.standard] as [number, number, number, number] }
 
 const nameOf = (image: LightboxImage) => image.title ?? image.alt
 
@@ -230,6 +231,7 @@ function Viewer({
   closeRef: { current: (velocity?: number) => void }
   keyRef: { current: (event: ReactKeyboardEvent<HTMLDivElement>) => void }
 }) {
+  const motionTokens = useMotionTokens()
   const reduced = useReducedMotion() ?? false
   const stageRef = useRef<HTMLDivElement>(null)
   const surfaceRef = useRef<HTMLDivElement>(null)
@@ -315,7 +317,7 @@ function Viewer({
     animate(fx, 0, openFlight)
     animate(fy, 0, openFlight)
     // The backdrop is nearly opaque before the photo is halfway out; the chrome follows a beat later.
-    animate(shade, 1, { duration: 0.24, ease: [...motionTokens.ease.enter] })
+    animate(shade, 1, { duration: 0.24, ease: [...presets.ease.enter] })
     animate(chrome, 1, { duration: 0.19, ease: outCubic, delay: 0.02 })
   }, [chrome, fitFor, fs, fx, fy, index, reduced, shade, slotFor, track])
 
@@ -341,7 +343,7 @@ function Viewer({
     swipeVelocity.current = 0
     const controls = animate(track, target, { ...motionTokens.spring.smooth, velocity })
     return () => controls.stop()
-  }, [index, pitch, px, py, reduced, track, viewportWidth, z])
+  }, [index, motionTokens.spring.smooth, pitch, px, py, reduced, track, viewportWidth, z])
 
   // The current thumbnail sits at the center of the strip. The first placement is instant.
   const stripRef = useRef<HTMLDivElement>(null)
@@ -459,7 +461,7 @@ function Viewer({
       animate(px, nx, motionTokens.spring.snappy)
       animate(py, ny, motionTokens.spring.snappy)
     },
-    [fitFor, panBounds, px, py, z],
+    [fitFor, motionTokens.spring.snappy, panBounds, px, py, z],
   )
 
   const onKeyDown = useCallback((event: ReactKeyboardEvent<HTMLDivElement>) => {

@@ -1,12 +1,12 @@
 "use client"
 
-import { useCallback, useEffect, useId, useImperativeHandle, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react"
+import { useCallback, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode, Ref } from "react"
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useReducedMotion } from "motion/react"
 import type { AnimationPlaybackControls, Transition, Variants } from "motion/react"
 import { CircleAlert, LoaderCircle } from "lucide-react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 /** Where the control is in its life: resting, asking, working, finished, or failed. */
@@ -60,10 +60,7 @@ export interface ConfirmMorphProps {
 }
 
 const TRAVEL = 12
-const { blur } = motionTokens
 type Bezier = [number, number, number, number]
-const enter = [...motionTokens.ease.enter] as Bezier
-const standard = [...motionTokens.ease.standard] as Bezier
 /** Duration springs restated as stiffness and damping so a retarget keeps the velocity already in flight. */
 const physical = (visualDuration: number, bounce: number): Transition => {
   const root = (2 * Math.PI) / (visualDuration * 1.2)
@@ -84,20 +81,24 @@ function useReducedFlag() {
 }
 
 /** Forward steps arrive from the right, backward steps from the left; the old face leaves the other way, blurred, so the eye reads one morph. */
-const faceVariants: Variants = {
-  hidden: (direction: number) => ({ opacity: 0, x: direction * TRAVEL, filter: `blur(${blur.soft}px)` }),
-  shown: {
-    opacity: 1,
-    x: 0,
-    filter: "blur(0px)",
-    transition: { x: SLIDE, opacity: { duration: 0.2, ease: enter, delay: 0.04 }, filter: { duration: 0.22, ease: enter, delay: 0.04 } },
-  },
-  gone: (direction: number) => ({
-    opacity: 0,
-    x: direction * -TRAVEL * 0.6,
-    filter: `blur(${blur.soft}px)`,
-    transition: { x: SLIDE, opacity: { duration: 0.12, ease: standard }, filter: { duration: 0.12, ease: standard } },
-  }),
+function faceMotion({ blur, ease }: MotionTokens): Variants {
+  const enter = [...ease.enter] as Bezier
+  const standard = [...ease.standard] as Bezier
+  return {
+    hidden: (direction: number) => ({ opacity: 0, x: direction * TRAVEL, filter: `blur(${blur.soft}px)` }),
+    shown: {
+      opacity: 1,
+      x: 0,
+      filter: "blur(0px)",
+      transition: { x: SLIDE, opacity: { duration: 0.2, ease: enter, delay: 0.04 }, filter: { duration: 0.22, ease: enter, delay: 0.04 } },
+    },
+    gone: (direction: number) => ({
+      opacity: 0,
+      x: direction * -TRAVEL * 0.6,
+      filter: `blur(${blur.soft}px)`,
+      transition: { x: SLIDE, opacity: { duration: 0.12, ease: standard }, filter: { duration: 0.12, ease: standard } },
+    }),
+  }
 }
 const fadeVariants: Variants = {
   hidden: { opacity: 0 },
@@ -180,6 +181,8 @@ function Face({
   children: ReactNode
   labelledBy?: string
 }) {
+  const motionTokens = useMotionTokens()
+  const faceVariants = useMemo(() => faceMotion(motionTokens), [motionTokens])
   const ref = useRef<HTMLDivElement>(null)
   const present = useIsPresent()
   useLayoutEffect(() => {
@@ -220,6 +223,8 @@ function Face({
 
 /** A success disc that pops in with a tick drawing across it, the moment the action lands. */
 function Check({ reduced }: { reduced: boolean }) {
+  const motionTokens = useMotionTokens()
+  const enter = [...motionTokens.ease.enter] as Bezier
   return (
     <svg className="size-[18px]" viewBox="0 0 18 18" fill="none" aria-hidden="true">
       <motion.circle

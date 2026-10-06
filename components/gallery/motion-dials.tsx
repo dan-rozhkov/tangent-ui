@@ -11,6 +11,7 @@ const { spring, duration, stagger, blur } = motionTokens
 // Slider ranges are wide enough to exaggerate a token, not so wide that the slider loses precision.
 const config = {
   springs: {
+    _collapsed: true,
     snappy: { ...spring.snappy },
     smooth: { ...spring.smooth },
     morph: { ...spring.morph },
@@ -43,26 +44,55 @@ const config = {
 
 type Spring = MotionTokens["spring"]["snappy"]
 
+/**
+ * Returns the dialed spring in the same form as its preset. The panel can switch a spring between
+ * duration/bounce and stiffness/damping, but components derive overrides from the preset's own fields
+ * (`{ ...smooth, visualDuration: 0.3 }`), and Motion lets stiffness win over duration when both are set.
+ */
+function sameForm(preset: Spring, dialed: Spring): Spring {
+  const byDuration = preset.visualDuration !== undefined
+  if (byDuration && dialed.visualDuration === undefined && dialed.stiffness !== undefined) {
+    const mass = dialed.mass ?? 1
+    const omega = Math.sqrt(dialed.stiffness / mass)
+    const ratio = (dialed.damping ?? 10) / (2 * Math.sqrt(dialed.stiffness * mass))
+    return { type: "spring", visualDuration: (2 * Math.PI) / (1.2 * omega), bounce: Math.min(1, Math.max(0, 1 - ratio)) }
+  }
+  if (!byDuration && dialed.stiffness === undefined && dialed.visualDuration !== undefined) {
+    const stiffness = ((2 * Math.PI) / (1.2 * dialed.visualDuration)) ** 2
+    return { type: "spring", stiffness, damping: 2 * (1 - (dialed.bounce ?? 0)) * Math.sqrt(stiffness) }
+  }
+  return dialed
+}
+
+/** Keeps an object's identity while its contents are unchanged, so one slider doesn't re-run effects keyed on other tokens. */
+function useStable<T>(value: T): T {
+  const key = JSON.stringify(value)
+  return useMemo(() => JSON.parse(key) as T, [key])
+}
+
 /** Registers the shared "Motion" panel and feeds its values to the demo below it. Replay remounts the demo. */
 export function MotionDials({ children }: { children: ReactNode }) {
   const [run, setRun] = useState(0)
-  const values = useDialKit("Motion", config, { id: "motion", onAction: () => setRun(n => n + 1) })
+  const values = useDialKit("Motion", config, { id: "motion", defaultCollapsed: true, onAction: () => setRun(n => n + 1) })
+
+  const snappy = useStable(sameForm(spring.snappy, values.springs.snappy as Spring))
+  const smooth = useStable(sameForm(spring.smooth, values.springs.smooth as Spring))
+  const morph = useStable(sameForm(spring.morph, values.springs.morph as Spring))
+  const gentle = useStable(sameForm(spring.gentle, values.springs.gentle as Spring))
+  const responsive = useStable(sameForm(spring.responsive, values.springs.responsive as Spring))
+  const durations = useStable(values.durations)
+  const staggers = useStable(values.stagger)
+  const blurs = useStable(values.blur)
 
   const tokens = useMemo<MotionTokens>(
     () => ({
-      duration: values.durations,
+      duration: durations,
       ease: motionTokens.ease,
-      spring: {
-        snappy: values.springs.snappy as Spring,
-        smooth: values.springs.smooth as Spring,
-        morph: values.springs.morph as Spring,
-        gentle: values.springs.gentle as Spring,
-        responsive: values.springs.responsive as Spring,
-      },
-      stagger: values.stagger,
-      blur: values.blur,
+      spring: { snappy, smooth, morph, gentle, responsive },
+      stagger: staggers,
+      blur: blurs,
     }),
-    [values],
+    [durations, snappy, smooth, morph, gentle, responsive, staggers, blurs],
   )
 
   return (

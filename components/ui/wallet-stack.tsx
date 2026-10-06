@@ -7,7 +7,7 @@ import type { MotionValue, TargetAndTransition, Transition } from "motion/react"
 
 import { ChevronLeft } from "lucide-react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export type WalletCardVariant = "metal" | "black" | "glass" | "color"
@@ -89,7 +89,6 @@ const PROJECTION = 0.25
 const FLICK = 500
 const TILT = 5
 /** One critically damped curve for fan, cycle, and open, so every card moves in step and none overshoots. */
-const glide = { ...motionTokens.spring.smooth, visualDuration: 0.45 }
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 const mix = (from: number, to: number, amount: number) => from + (to - from) * amount
@@ -281,6 +280,7 @@ interface StackCardProps {
 }
 
 function StackCard({ card, index, count, active, open, lifted, reduced, position, opened, fan, light, geometry, label, buttonRef, onActivate, onKeyDown, dragged }: StackCardProps) {
+  const motionTokens = useMotionTokens()
   const hoverTarget = useMotionValue(0)
   const hover = useSpring(hoverTarget, motionTokens.spring.smooth)
   const tiltX = useSpring(0, motionTokens.spring.snappy)
@@ -366,6 +366,8 @@ function StackCard({ card, index, count, active, open, lifted, reduced, position
  */
 export function WalletStack({ cards, label = "Wallet", currency = "USD", locale = "en-US", onSelectedChange, className }: WalletStackProps) {
   const reduced = useReducedMotion() ?? false
+  const motionTokens = useMotionTokens()
+  const glide = useMemo(() => ({ ...motionTokens.spring.smooth, visualDuration: 0.45 }), [motionTokens.spring.smooth])
   const count = cards.length
   const headingId = useId()
   const hintId = useId()
@@ -430,7 +432,7 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
       if (reduced) value.jump(target)
       else animate(value, target, { ...glide, ...(velocity === undefined ? null : { velocity }) })
     },
-    [reduced],
+    [glide, reduced],
   )
 
   const describe = (index: number) => `${cards[index].product}, card ${index + 1} of ${count}`
@@ -462,7 +464,7 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
       setLifted(next)
       settle(opened, 1)
     },
-    [bringToFront, cards, lifted, money, onSelectedChange, opened, reduced, settle],
+    [bringToFront, cards, lifted, money, motionTokens.duration.fast, motionTokens.ease.standard, onSelectedChange, opened, reduced, settle],
   )
 
   const close = useCallback(

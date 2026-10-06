@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import type { CSSProperties } from "react"
 import { animate, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react"
 import type { MotionValue } from "motion/react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export type MorphLoaderVariant = "dots" | "bars" | "ring" | "square"
@@ -51,7 +51,7 @@ const RING_BREATH = 14
 /** Half the side of the tumbling square. */
 const SQUARE_HALF = 9.5
 /** Each stroke rides a spring between snappy and morph: shapes read within about 350ms with a small settle. */
-const shapeSpring = { ...motionTokens.spring.morph, visualDuration: 0.35, bounce: 0.12 }
+const shapeSpringOf = (morph: ReturnType<typeof useMotionTokens>["spring"]["morph"]) => ({ ...morph, visualDuration: 0.35, bounce: 0.12 })
 const STROKES = [0, 1, 2, 3] as const
 const rad = (deg: number) => (deg * Math.PI) / 180
 
@@ -202,6 +202,8 @@ interface StrokeProps {
 }
 
 function Stroke({ index, pose, variant, status, strokeWidth, reduced, clock, amp, turn, pop }: StrokeProps) {
+  const motionTokens = useMotionTokens()
+  const shapeSpring = useMemo(() => shapeSpringOf(motionTokens.spring.morph), [motionTokens.spring.morph])
   // Each part of the stroke rides its own spring, so any shape morphs into any other and interruptions keep velocity.
   const x = useSpring(pose.x, shapeSpring)
   const y = useSpring(pose.y, shapeSpring)
@@ -238,7 +240,7 @@ function Stroke({ index, pose, variant, status, strokeWidth, reduced, clock, amp
     }
     const controls = animate(draw, 1, { duration: motionTokens.duration.fast })
     return () => controls.stop()
-  }, [draw, index, reduced, status])
+  }, [draw, index, reduced, status, motionTokens.ease.standard, motionTokens.duration.fast])
 
   const d = useTransform(() => {
     // Every value is read on each run, so Motion keeps all of them subscribed whatever the loop strength is.
@@ -285,6 +287,7 @@ export function MorphLoader({
   className,
   style,
 }: MorphLoaderProps) {
+  const motionTokens = useMotionTokens()
   const reduced = useReducedMotion() ?? false
   const clock = useMotionValue(0)
   /** Strength of the loop motion: 1 while loading, fading to 0 when the loader settles into a mark. */
@@ -332,7 +335,7 @@ export function MorphLoader({
       cancelAnimationFrame(frame)
       for (const control of controls) control.stop()
     }
-  }, [amp, clock, pop, reduced, status, turn, variant])
+  }, [amp, clock, pop, reduced, status, turn, variant, motionTokens])
 
   const text = status === "success" ? successLabel : status === "error" ? errorLabel : label
   const color = tone && status === "success" ? "var(--success)" : tone && status === "error" ? "var(--danger)" : undefined

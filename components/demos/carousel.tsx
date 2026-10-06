@@ -1,5 +1,7 @@
 "use client"
 
+import { useDialKit } from "dialkit"
+
 import { Carousel } from "@/components/ui/carousel"
 import { photo, type PhotoId } from "@/lib/media"
 
@@ -12,9 +14,23 @@ const suites: { id: PhotoId; name: string; detail: string }[] = [
 ]
 
 export default function Demo() {
+  const dial = useDialKit(
+    "Carousel",
+    {
+      interval: [5000, 1000, 10000, 250],
+      slideWidth: [340, 200, 480, 10],
+      autoplay: false,
+    },
+    { id: "carousel" }
+  )
   return (
     <div className="w-full max-w-xl">
-      <Carousel label="Harbour suites" interval={5000}>
+      <Carousel
+        label="Harbour suites"
+        interval={dial.interval}
+        slideSize={`min(80cqw, ${dial.slideWidth}px)`}
+        autoplay={dial.autoplay}
+      >
         {suites.map(suite => {
           const image = photo(suite.id)
           return (

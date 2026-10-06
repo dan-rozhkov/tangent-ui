@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useDialKit } from "dialkit"
 import { Star } from "lucide-react"
 
 import { GlassCard } from "@/components/ui/glass-card"
@@ -20,16 +21,30 @@ function Stat({ value, label }: { value: string; label: string }) {
 }
 
 export default function Demo() {
+  const props = useDialKit(
+    "Glass card",
+    {
+      tilt: [6, 0, 20, 1],
+      defaultOpen: false,
+      title: { type: "text", default: "Jasmine Brooks" },
+      subtitle: { type: "text", default: "Design lead, Lisbon" },
+    },
+    { id: "glass-card" },
+  )
   const [following, setFollowing] = useState(false)
 
   return (
     <div className="flex w-full justify-center">
       <GlassCard
+        // Initial state is read once, so changing it remounts the card.
+        key={String(props.defaultOpen)}
+        tilt={props.tilt}
+        defaultOpen={props.defaultOpen}
         className="w-[min(100%,360px)]"
         image={avatar("jasmine-brooks")}
         imageAlt="Portrait of Jasmine Brooks"
-        title="Jasmine Brooks"
-        subtitle="Design lead, Lisbon"
+        title={props.title}
+        subtitle={props.subtitle}
         aside={
           <>
             <Star aria-hidden="true" size={14} strokeWidth={1.75} className="fill-accent text-accent" />

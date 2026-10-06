@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- people avatars are plain img tags from the caller's URLs, as documented. */
 
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react"
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import type { KeyboardEvent, PointerEvent, ReactNode } from "react"
 import { AnimatePresence, MotionConfig, animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue, Transition } from "motion/react"
@@ -10,7 +10,8 @@ import { Bell, BellOff, ChevronRight, Headphones, Presentation, Type, Volume1, V
 import type { LucideIcon } from "lucide-react"
 
 import { Switch } from "@/components/ui/switch"
-import { motionTokens } from "@/lib/motion-tokens"
+import { motionTokens as staticTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface ControlCenterFocusMode {
@@ -63,10 +64,9 @@ type Toggles = {
 }
 type Rect = { x: number; y: number; w: number; h: number }
 
-const { blur, duration } = motionTokens
 type Bezier = [number, number, number, number]
-const enter = [...motionTokens.ease.enter] as Bezier
-const standard = [...motionTokens.ease.standard] as Bezier
+const enter = [...staticTokens.ease.enter] as Bezier
+const standard = [...staticTokens.ease.standard] as Bezier
 /** Duration springs restated as stiffness and damping, so a retarget mid flight keeps the velocity it already has. */
 const physical = ({ visualDuration, bounce }: { visualDuration: number; bounce: number }): Transition => {
   const root = (2 * Math.PI) / (visualDuration * 1.2)
@@ -77,10 +77,18 @@ const physical = ({ visualDuration, bounce }: { visualDuration: number; bounce: 
     mass: 1,
   }
 }
-/** The tile grows into its detail and folds back on the same shape spring, with its small overshoot both ways. */
-const MORPH = physical(motionTokens.spring.morph)
-/** Every small control (meter fill, track swell, dial snap, tile press) shares one quick spring. */
-const SNAP = physical(motionTokens.spring.snappy)
+/** The tile grows into its detail and folds back on the same shape spring, with its small overshoot both ways.
+ *  Every small control (meter fill, track swell, dial snap, tile press) shares one quick spring. */
+function useSprings() {
+  const { spring } = useMotionTokens()
+  return useMemo(
+    () => ({
+      MORPH: physical({ visualDuration: spring.morph.visualDuration ?? 0.42, bounce: spring.morph.bounce ?? 0.16 }),
+      SNAP: physical({ visualDuration: spring.snappy.visualDuration ?? 0.26, bounce: spring.snappy.bounce ?? 0.12 }),
+    }),
+    [spring.morph, spring.snappy],
+  )
+}
 const RADIUS = 22
 /** The detail sits this far inside the panel's padding box. */
 const INSET = 8
@@ -123,6 +131,7 @@ function useNow() {
 
 /** Icons swap with a short blur. */
 function Swap({ id, children, className }: { id: string; children: ReactNode; className?: string }) {
+  const { blur, duration } = useMotionTokens()
   return (
     <AnimatePresence initial={false} mode="popLayout">
       <motion.span
@@ -146,6 +155,7 @@ function Swap({ id, children, className }: { id: string; children: ReactNode; cl
 
 /** A line of status text that rolls: the old line leaves upward as the new one rises in from below, both with a slight blur. */
 function Roll({ id, children, className }: { id: string; children: ReactNode; className?: string }) {
+  const { blur } = useMotionTokens()
   return (
     <AnimatePresence initial={false} mode="popLayout">
       <motion.span
@@ -207,6 +217,7 @@ function Tile({
   className?: string
   tileRef?: (node: HTMLDivElement | null) => void
 }) {
+  const { SNAP } = useSprings()
   return (
     <div ref={tileRef} className={cn("relative", hidden && "opacity-0", className)}>
       {/* A press sinks the whole tile slightly; the buttons inside stay flat. */}
@@ -294,6 +305,7 @@ function Meter({
   onChange: (value: number) => void
   reduced: boolean
 }) {
+  const { SNAP } = useSprings()
   const labelId = useId()
   const [value, setValue] = useState(() => clamp(Math.round(defaultValue / step) * step, min, max))
   const span = max - min
@@ -469,6 +481,7 @@ function DurationDial({
   untilText: (minutes: number) => string
   reduced: boolean
 }) {
+  const { SNAP } = useSprings()
   const angle = useMotionValue(value * DEG)
   const [count, setCount] = useState(value)
   const drag = useRef<{ id: number; last: number; raw: number } | null>(null)
@@ -483,7 +496,7 @@ function DurationDial({
       if (reduced) angle.jump(to)
       else anim.current = animate(angle, to, SNAP)
     },
-    [angle, reduced]
+    [SNAP, angle, reduced]
   )
 
   // A new seed from outside (a different mode) glides the knob over.
@@ -676,6 +689,7 @@ function FocusDetail({
   onStart: (mode: string, minutes: number) => void
   onEnd: () => void
 }) {
+  const { MORPH } = useSprings()
   const descId = useId()
   const [mode, setMode] = useState(session?.mode ?? modes[0]?.id ?? "")
   const [minutes, setMinutes] = useState(() => session?.minutes ?? clamp(modes[0]?.defaultMinutes ?? 25, DIAL_MIN, DIAL_MAX))
@@ -872,6 +886,7 @@ export function ControlCenter({
   label = "Quick settings",
   className,
 }: ControlCenterProps) {
+  const { MORPH } = useSprings()
   const reduced = useReducedFlag()
   const uid = useId()
   const now = useNow()

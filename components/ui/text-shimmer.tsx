@@ -2,7 +2,7 @@
 import { useEffect, useLayoutEffect, useRef, useSyncExternalStore } from "react";
 import { AnimatePresence, animate, motion, useInView, useMotionValue, usePageInView, useReducedMotion, useTransform } from "motion/react";
 import type { AnimationPlaybackControls } from "motion/react";
-import { motionTokens } from "@/lib/motion-tokens";
+import { useMotionTokens } from "@/lib/motion-tokens-context";
 import { cn } from "@/lib/utils";
 /* The band is the current text color; the resting base leans toward muted text. Override with --text-shimmer-highlight and --text-shimmer-base. */
 const shimmerVars = "[--ts-base:var(--text-shimmer-base,color-mix(in_oklab,currentColor_12%,var(--text-muted)))] [--ts-highlight:var(--text-shimmer-highlight,currentColor)]";
@@ -45,6 +45,7 @@ export interface TextShimmerProps {
   id?: string;
 }
 export function TextShimmer({ children, active = true, duration = 1.8, as = "span", className, id }: TextShimmerProps) {
+  const motionTokens = useMotionTokens();
   const ref = useRef<HTMLSpanElement>(null);
   const prefersReduced = useReducedMotion();
   const hydrated = useSyncExternalStore(subscribeHydration, clientSnapshot, serverSnapshot);
@@ -81,7 +82,7 @@ export function TextShimmer({ children, active = true, duration = 1.8, as = "spa
     const glide = !reduced && t > 0 && t < 1 ? animate(sweep, 1, { duration: Math.min(.42, duration * (1 - t) * .5), ease: [...motionTokens.ease.enter] }) : undefined;
     const solid = animate(settle, 1, { duration: reduced ? motionTokens.duration.instant : .36, ease: [...motionTokens.ease.standard] });
     return () => { glide?.stop(); solid.stop(); };
-  }, [active, reduced, duration, sweep, settle]);
+  }, [active, reduced, duration, sweep, settle, motionTokens.duration.standard, motionTokens.duration.instant, motionTokens.ease.standard, motionTokens.ease.enter]);
 
   // A new label springs the line to its width instead of resizing in one frame, so text after it never jumps.
   useLayoutEffect(() => {
@@ -97,7 +98,7 @@ export function TextShimmer({ children, active = true, duration = 1.8, as = "spa
     stage.dataset.sizing = "";
     const controls = animate(stage, { width: [from, next] }, { ...motionTokens.spring.morph, onComplete: () => { stage.style.width = ""; delete stage.dataset.sizing; } });
     return () => controls.stop();
-  }, [children, reduced]);
+  }, [children, reduced, motionTokens.spring.morph]);
 
   // Keep the resting width current when fonts load or the container resizes.
   useEffect(() => {

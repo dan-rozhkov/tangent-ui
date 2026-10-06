@@ -1,6 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
+import { useDialKit } from "dialkit"
 import { Bookmark, Compass, House, Search, UserRound } from "lucide-react"
 
 import { GlassTabBar } from "@/components/ui/glass-tabbar"
@@ -15,6 +16,15 @@ const titles: Record<string, string> = {
 }
 
 export default function Demo() {
+  const props = useDialKit(
+    "Glass tab bar",
+    {
+      collapseOnScroll: true,
+      defaultCompact: false,
+      label: { type: "text", default: "Sections" },
+    },
+    { id: "glass-tabbar" },
+  )
   const [tab, setTab] = useState("home")
   const scrollRef = useRef<HTMLDivElement>(null)
   // Each tab shows the feed from a different starting photo, so the glass has new colors to bend.
@@ -43,8 +53,12 @@ export default function Demo() {
         </div>
       </div>
       <GlassTabBar
+        // The initial compact state is read once, so changing it remounts the bar.
+        key={String(props.defaultCompact)}
+        collapseOnScroll={props.collapseOnScroll}
+        defaultCompact={props.defaultCompact}
         className="absolute inset-x-0 bottom-[22px]"
-        label="Sections"
+        label={props.label}
         value={tab}
         onValueChange={(next) => {
           setTab(next)

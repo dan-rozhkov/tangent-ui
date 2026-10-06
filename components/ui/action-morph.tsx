@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react"
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import type { FormEvent, KeyboardEvent, ReactNode } from "react"
 import { Radio } from "@base-ui/react/radio"
 import { RadioGroup } from "@base-ui/react/radio-group"
@@ -9,7 +9,8 @@ import type { Transition, Variants } from "motion/react"
 import { ChevronLeft, Plus, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { motionTokens } from "@/lib/motion-tokens"
+import { motionTokens as staticTokens } from "@/lib/motion-tokens"
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface ActionMorphComposer {
@@ -48,23 +49,51 @@ export interface ActionMorphProps {
 type Face = "button" | "menu" | `composer:${string}`
 
 type Bezier = [number, number, number, number]
-const enter = [...motionTokens.ease.enter] as Bezier
-const standard = [...motionTokens.ease.standard] as Bezier
-const { blur } = motionTokens
+const enter = [...staticTokens.ease.enter] as Bezier
+const standard = [...staticTokens.ease.standard] as Bezier
 const TRAVEL = 14
 /** Duration springs restated as stiffness and damping, so a retarget mid-flight keeps the velocity it already has. */
 const physical = (visualDuration: number, bounce: number): Transition => {
   const root = (2 * Math.PI) / (visualDuration * 1.2)
   return { type: "spring", stiffness: root * root, damping: 2 * (1 - bounce) * root, mass: 1 }
 }
-/** Growing carries the morph spring's bounce; folding uses the smooth spring and never overshoots. */
-const GROW = physical(motionTokens.spring.morph.visualDuration, motionTokens.spring.morph.bounce)
-const FOLD = physical(motionTokens.spring.smooth.visualDuration, motionTokens.spring.smooth.bounce)
-/** Panel to panel (menu and composer) resizes settle without overshoot; the new width follows the incoming face a beat late. */
-const RESIZE: Transition = { ...FOLD, delay: 0.04 }
-const SLIDE = physical(0.36, 0.06)
 /** Menu rows rise 8px on a damped spring while the surface is still growing. */
 const ROW = physical(0.3, 0)
+const SLIDE = physical(0.36, 0.06)
+
+/** Everything derived from the motion tokens, rebuilt when the tokens change. */
+function buildMotion(motionTokens: MotionTokens) {
+  const { blur } = motionTokens
+  /** Growing carries the morph spring's bounce; folding uses the smooth spring and never overshoots. */
+  const GROW = physical(motionTokens.spring.morph.visualDuration ?? 0.42, motionTokens.spring.morph.bounce ?? 0.16)
+  const FOLD = physical(motionTokens.spring.smooth.visualDuration ?? 0.4, motionTokens.spring.smooth.bounce ?? 0)
+  /** Panel to panel (menu and composer) resizes settle without overshoot; the new width follows the incoming face a beat late. */
+  const RESIZE: Transition = { ...FOLD, delay: 0.04 }
+  /** Deeper faces arrive from the right and push the old one left; going back reverses it. Blur is brief and small. */
+  const faceVariants: Variants = {
+    hidden: (direction: number) => ({ opacity: 0, x: direction * TRAVEL, scale: 0.98, filter: `blur(${blur.soft}px)` }),
+    shown: {
+      opacity: 1,
+      x: 0,
+      scale: 1,
+      filter: "blur(0px)",
+      transition: {
+        x: SLIDE,
+        scale: SLIDE,
+        opacity: { duration: 0.2, ease: enter, delay: 0.04 },
+        filter: { duration: 0.22, ease: enter, delay: 0.04 },
+      },
+    },
+    gone: (direction: number) => ({
+      opacity: 0,
+      x: direction * -TRAVEL * 0.6,
+      scale: 0.98,
+      filter: `blur(${blur.soft}px)`,
+      transition: { x: SLIDE, scale: SLIDE, opacity: { duration: 0.12, ease: standard }, filter: { duration: 0.12, ease: standard } },
+    }),
+  }
+  return { GROW, FOLD, RESIZE, faceVariants }
+}
 
 const BUTTON = 56
 const PANEL_RADIUS = 24
@@ -76,29 +105,6 @@ function useReducedFlag() {
   return !!useReducedMotion() && hydrated
 }
 
-/** Deeper faces arrive from the right and push the old one left; going back reverses it. Blur is brief and small. */
-const faceVariants: Variants = {
-  hidden: (direction: number) => ({ opacity: 0, x: direction * TRAVEL, scale: 0.98, filter: `blur(${blur.soft}px)` }),
-  shown: {
-    opacity: 1,
-    x: 0,
-    scale: 1,
-    filter: "blur(0px)",
-    transition: {
-      x: SLIDE,
-      scale: SLIDE,
-      opacity: { duration: 0.2, ease: enter, delay: 0.04 },
-      filter: { duration: 0.22, ease: enter, delay: 0.04 },
-    },
-  },
-  gone: (direction: number) => ({
-    opacity: 0,
-    x: direction * -TRAVEL * 0.6,
-    scale: 0.98,
-    filter: `blur(${blur.soft}px)`,
-    transition: { x: SLIDE, scale: SLIDE, opacity: { duration: 0.12, ease: standard }, filter: { duration: 0.12, ease: standard } },
-  }),
-}
 const fadeVariants: Variants = {
   hidden: { opacity: 0 },
   shown: { opacity: 1, transition: { duration: 0.14 } },
@@ -124,6 +130,8 @@ function FaceLayer({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const present = useIsPresent()
+  const motionTokens = useMotionTokens()
+  const { faceVariants } = useMemo(() => buildMotion(motionTokens), [motionTokens])
   // Only the current face reports its size; the leaving one keeps whatever it had while it fades.
   useLayoutEffect(() => {
     const node = ref.current
@@ -172,6 +180,9 @@ function DrawnCheck({ reduced }: { reduced: boolean }) {
 
 export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end", resetAfter = 1600, className }: ActionMorphProps) {
   const reduced = useReducedFlag()
+  const motionTokens = useMotionTokens()
+  const { blur } = motionTokens
+  const { GROW, FOLD, RESIZE } = useMemo(() => buildMotion(motionTokens), [motionTokens])
   const uid = useId()
   const rootRef = useRef<HTMLDivElement>(null)
   const surfaceRef = useRef<HTMLDivElement>(null)
@@ -218,7 +229,7 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
       animate(height, h, spring)
       animate(radius, r, spring)
     },
-    [height, radius, reduced, width],
+    [FOLD, GROW, RESIZE, height, radius, reduced, width],
   )
 
   const go = useCallback((next: Face, dir: number, focus: string | null) => {
@@ -574,6 +585,7 @@ function Composer({
   onClose: () => void
   onSubmit: () => void
 }) {
+  const motionTokens = useMotionTokens()
   const { composer } = action
   const titleId = `${uid}-${action.id}-title`
   const messageId = `${uid}-${action.id}-message`

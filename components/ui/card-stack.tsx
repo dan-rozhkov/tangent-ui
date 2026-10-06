@@ -13,7 +13,7 @@ import {
 } from "motion/react"
 import type { MotionValue } from "motion/react"
 import { Check, RotateCcw, X } from "lucide-react"
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
@@ -122,11 +122,6 @@ const unresistY = (shown: number) => {
 }
 const clampUnit = (value: number) => Math.min(1, Math.max(0, value))
 const throwSpring = { type: "spring", visualDuration: 0.5, bounce: 0 } as const
-const fadeOut = {
-  duration: 0.22,
-  delay: 0.12,
-  ease: [...motionTokens.ease.standard],
-} as const
 const reducedFade = { duration: 0.15, ease: "linear" } as const
 
 function velocityOf(samples: { t: number; x: number; y: number }[], now: number): Point {
@@ -173,6 +168,12 @@ function StackCard({
   onGone,
   children,
 }: CardProps) {
+  const motionTokens = useMotionTokens()
+  const fadeOut = {
+    duration: 0.22,
+    delay: 0.12,
+    ease: [...motionTokens.ease.standard],
+  } as const
   const cardRef = useRef<HTMLDivElement>(null)
   // A card brought back by undo starts where it left the screen; with reduced motion it simply fades in at home.
   const travel = returnFrom && !reduced ? returnFrom : undefined
@@ -403,6 +404,7 @@ function Control({
   reduced: boolean
   tone?: "primary" | "quiet"
 }) {
+  const motionTokens = useMotionTokens()
   // aria-disabled keeps focus on the button when the stack runs out, instead of dropping it to the page.
   return (
     <motion.button
@@ -440,6 +442,7 @@ export function CardStack<T>({
   renderEmpty,
   className,
 }: CardStackProps<T>) {
+  const motionTokens = useMotionTokens()
   const hydrated = useSyncExternalStore(
     noop,
     () => true,

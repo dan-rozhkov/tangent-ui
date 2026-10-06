@@ -5,7 +5,7 @@ import type { CSSProperties, KeyboardEvent, PointerEvent as ReactPointerEvent, R
 import { AnimatePresence, animate, motion, useMotionTemplate, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react"
 import type { MotionStyle, TargetAndTransition } from "motion/react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface GlassCardProps {
@@ -39,8 +39,6 @@ export interface GlassCardProps {
 const INSET = 12
 const CARD_RADIUS = 34
 const PANEL_RADIUS = CARD_RADIUS - INSET
-/** Tilt eases toward the pointer and back to level on the same spring. */
-const FOLLOW = motionTokens.spring.gentle
 /** The details trail the panel a little, so they fade in once there is room for them. */
 const DETAIL_DELAY = 0.045
 
@@ -70,6 +68,9 @@ export function GlassCard({
   className,
   style,
 }: GlassCardProps) {
+  const motionTokens = useMotionTokens()
+  // Tilt eases toward the pointer and back to level on the same spring.
+  const FOLLOW = motionTokens.spring.gentle
   const reduced = useReducedMotion() ?? false
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "")
   const ids = { header: `gc-header-${uid}`, detail: `gc-detail-${uid}` }
@@ -131,7 +132,7 @@ export function GlassCard({
       observer.disconnect()
       running?.stop()
     }
-  }, [cardH, panelH])
+  }, [cardH, panelH, motionTokens.spring.morph])
 
   /* ---------- pointer light and tilt ---------- */
   // The card turns about its center: full tilt at the edges, level in the middle. Springs ease toward the targets.

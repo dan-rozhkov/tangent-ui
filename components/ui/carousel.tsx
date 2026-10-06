@@ -5,7 +5,7 @@ import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent a
 import { AnimatePresence, animate, motion, motionValue, useMotionValue, useReducedMotion, useTransform } from "motion/react";
 import type { AnimationPlaybackControls, MotionValue, TargetAndTransition } from "motion/react";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
-import { motionTokens } from "@/lib/motion-tokens";
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context";
 import { cn } from "@/lib/utils";
 
 /**
@@ -56,10 +56,13 @@ const subscribeNothing = () => () => {};
 /* Shared by the play, previous and next buttons. */
 const controlClass = "grid size-control-sm flex-none cursor-pointer place-items-center rounded-pill border border-border bg-surface p-0 text-foreground [-webkit-tap-highlight-color:transparent] [transition:background-color_var(--duration-fast)_var(--ease-standard),color_var(--duration-fast)_var(--ease-standard),opacity_var(--duration-fast)_var(--ease-standard),transform_var(--duration-spring)_var(--ease-spring)] pointer-fine:hover:not-aria-disabled:bg-surface-muted active:not-aria-disabled:[transform:scale(.97)] active:not-aria-disabled:[transition:transform_100ms_var(--ease-standard)] aria-disabled:cursor-default aria-disabled:text-text-muted aria-disabled:opacity-50 motion-reduce:transition-none! motion-reduce:active:not-aria-disabled:[transform:none]!";
 
-const iconIn: TargetAndTransition = { opacity: 0, scale: .6, filter: `blur(${motionTokens.blur.subtle}px)` };
+function iconMotion(motionTokens: MotionTokens) {
+  const iconIn: TargetAndTransition = { opacity: 0, scale: .6, filter: `blur(${motionTokens.blur.subtle}px)` };
+  const iconOut: TargetAndTransition = { ...iconIn, transition: { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] } };
+  const iconEnter = { ...motionTokens.spring.snappy, opacity: { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.enter] }, filter: { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.enter] } } as const;
+  return { iconIn, iconOut, iconEnter };
+}
 const iconRest: TargetAndTransition = { opacity: 1, scale: 1, filter: "blur(0px)" };
-const iconOut: TargetAndTransition = { ...iconIn, transition: { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] } };
-const iconEnter = { ...motionTokens.spring.snappy, opacity: { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.enter] }, filter: { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.enter] } } as const;
 
 function velocityOf(samples: [number, number][], now: number) {
   const recent = samples.filter(([time]) => now - time <= 90);
@@ -69,6 +72,8 @@ function velocityOf(samples: [number, number][], now: number) {
 }
 
 export function Carousel({ label, children, index: controlledIndex, defaultIndex = 0, onIndexChange, slideSize = "min(80cqw, 340px)", slideLabel = defaultSlideLabel, interval, autoplay = false, className }: CarouselProps) {
+  const motionTokens = useMotionTokens();
+  const { iconIn, iconOut, iconEnter } = useMemo(() => iconMotion(motionTokens), [motionTokens]);
   const slides = Children.toArray(children);
   const count = slides.length;
   const last = Math.max(0, count - 1);

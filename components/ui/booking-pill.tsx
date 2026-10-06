@@ -7,7 +7,8 @@ import type { Variants } from "motion/react"
 import { ArrowLeft, ArrowRight, CalendarDays, Check, Minus, Plus, RotateCcw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { motionTokens } from "@/lib/motion-tokens"
+import { motionTokens as staticTokens } from "@/lib/motion-tokens"
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface Booking {
@@ -54,8 +55,8 @@ const ORDER: BookingStep[] = ["start", "party", "date", "time", "review", "booke
 const CELL = 52
 /** The selected day's window inside the 60px strip: a 48px rounded square in the centre cell. */
 const LENS_CLIP = `inset(6px calc(50% - ${(CELL - 4) / 2}px) round 14px)`
-const enter = [...motionTokens.ease.enter] as [number, number, number, number]
-const standard = [...motionTokens.ease.standard] as [number, number, number, number]
+const enter = [...staticTokens.ease.enter] as [number, number, number, number]
+const standard = [...staticTokens.ease.standard] as [number, number, number, number]
 
 /* Dates are handled in UTC so the server and the client print the same strip. */
 function addDays(iso: string, offset: number) {
@@ -78,6 +79,7 @@ function formatTime(time: string, cycle: 12 | 24) {
 }
 
 function RollingNumber({ value, reduced }: { value: number; reduced: boolean }) {
+  const motionTokens = useMotionTokens()
   const [state, setState] = useState({ value, direction: 1 })
   if (state.value !== value) setState({ value, direction: value > state.value ? 1 : -1 })
   const digits = String(value).split("")
@@ -126,26 +128,28 @@ const wideButton = cn(
 )
 
 /** Faces slide a beat after the shape starts to change, in the direction of travel. */
-const faceVariants: Variants = {
-  enter: (direction: number) => ({ opacity: 0, x: direction * 28, filter: `blur(${motionTokens.blur.soft}px)` }),
-  center: {
-    opacity: 1,
-    x: 0,
-    filter: "blur(0px)",
-    transition: { ...motionTokens.spring.smooth, delay: 0.07, opacity: { duration: motionTokens.duration.standard, ease: enter, delay: 0.07 } },
+const buildFaceVariants = (motionTokens: MotionTokens): { faceVariants: Variants; fadeVariants: Variants } => ({
+  faceVariants: {
+    enter: (direction: number) => ({ opacity: 0, x: direction * 28, filter: `blur(${motionTokens.blur.soft}px)` }),
+    center: {
+      opacity: 1,
+      x: 0,
+      filter: "blur(0px)",
+      transition: { ...motionTokens.spring.smooth, delay: 0.07, opacity: { duration: motionTokens.duration.standard, ease: enter, delay: 0.07 } },
+    },
+    exit: (direction: number) => ({
+      opacity: 0,
+      x: direction * -20,
+      filter: `blur(${motionTokens.blur.subtle}px)`,
+      transition: { duration: motionTokens.duration.fast, ease: standard },
+    }),
   },
-  exit: (direction: number) => ({
-    opacity: 0,
-    x: direction * -20,
-    filter: `blur(${motionTokens.blur.subtle}px)`,
-    transition: { duration: motionTokens.duration.fast, ease: standard },
-  }),
-}
-const fadeVariants: Variants = {
-  enter: { opacity: 0 },
-  center: { opacity: 1, transition: { duration: motionTokens.duration.fast } },
-  exit: { opacity: 0, transition: { duration: motionTokens.duration.instant } },
-}
+  fadeVariants: {
+    enter: { opacity: 0 },
+    center: { opacity: 1, transition: { duration: motionTokens.duration.fast } },
+    exit: { opacity: 0, transition: { duration: motionTokens.duration.instant } },
+  },
+})
 
 /**
  * A face is laid out at its natural size, centered on the pill's bottom edge, and reports that size for the shape spring.
@@ -169,6 +173,8 @@ function Face({
   children: ReactNode
 }) {
   const present = useIsPresent()
+  const motionTokens = useMotionTokens()
+  const { faceVariants, fadeVariants } = useMemo(() => buildFaceVariants(motionTokens), [motionTokens])
   const ref = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => {
     const node = ref.current
@@ -216,6 +222,7 @@ function DateStrip({
   onCommit: () => void
   reduced: boolean
 }) {
+  const motionTokens = useMotionTokens()
   const viewport = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(0)
   const x = useMotionValue(0)
@@ -248,7 +255,7 @@ function DateStrip({
     }
     const controls = animate(x, xFor(index), motionTokens.spring.snappy)
     return () => controls.stop()
-  }, [index, reduced, width, x, xFor])
+  }, [index, motionTokens.spring.snappy, reduced, width, x, xFor])
 
   // While dragging, the day under the window becomes the value, so the spoken value follows the finger.
   useMotionValueEvent(x, "change", (latest) => {
@@ -487,8 +494,10 @@ const CAPS: Record<BookingStep, number | null> = { start: null, party: null, dat
 /** The shape keeps one radius: a full pill at 52-60px tall, a rounded card when taller. */
 const RADIUS = 30
 /** Growing: morph timing with a little less bounce (~0.3% overshoot measured). Folding: critically damped, ~420ms. */
-const grow = { ...motionTokens.spring.morph, bounce: 0.12 }
-const fold = { ...motionTokens.spring.smooth, visualDuration: 0.3 }
+const buildShape = (motionTokens: MotionTokens) => ({
+  grow: { ...motionTokens.spring.morph, bounce: 0.12 },
+  fold: { ...motionTokens.spring.smooth, visualDuration: 0.3 },
+})
 
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
@@ -514,6 +523,8 @@ export function BookingPill({
   className,
 }: BookingPillProps) {
   const reduced = useReducedMotion() ?? false
+  const motionTokens = useMotionTokens()
+  const { grow, fold } = useMemo(() => buildShape(motionTokens), [motionTokens])
   const [step, setStep] = useState<BookingStep>("start")
   const [moved, setMoved] = useState(false)
   const [direction, setDirection] = useState(1)
@@ -589,7 +600,7 @@ export function BookingPill({
       animate(width, next.width, transition)
       animate(height, next.height, transition)
     },
-    [height, reduced, width],
+    [fold, grow, height, reduced, width],
   )
 
   const shortDate = ticketDate.format(asDate(date))

@@ -6,7 +6,8 @@ import { AnimatePresence, LayoutGroup, animate, motion, useIsPresent, useMotionV
 import type { Transition, Variants } from "motion/react"
 import { ChevronDown, Search, X } from "lucide-react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { motionTokens as defaultTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface MorphNavLink {
@@ -70,16 +71,21 @@ type View = { kind: "bar" } | { kind: "panel"; value: string } | { kind: "search
 type Size = { w: number; h: number }
 
 type Bezier = [number, number, number, number]
-const enter = [...motionTokens.ease.enter] as Bezier
-const standard = [...motionTokens.ease.standard] as Bezier
-const { blur } = motionTokens
+const enter = [...defaultTokens.ease.enter] as Bezier
+const standard = [...defaultTokens.ease.standard] as Bezier
 /** Duration springs restated as stiffness and damping, so a retarget mid-flight keeps the velocity it already has. */
 const physical = (visualDuration: number, bounce: number): Transition => {
   const root = (2 * Math.PI) / (visualDuration * 1.2)
   return { type: "spring", stiffness: root * root, damping: 2 * (1 - bounce) * root, mass: 1 }
 }
 /** Every resize of the surface (open, switch, search, fold) rides one critically damped spring: no overshoot in either direction. */
-const RESIZE = physical(motionTokens.spring.smooth.visualDuration, motionTokens.spring.smooth.bounce)
+function useResize() {
+  const { visualDuration, bounce } = useMotionTokens().spring.smooth
+  return useMemo(
+    () => physical(visualDuration ?? defaultTokens.spring.smooth.visualDuration, bounce ?? defaultTokens.spring.smooth.bounce),
+    [visualDuration, bounce],
+  )
+}
 const SLIDE = physical(0.38, 0.06)
 const PANEL_RADIUS = 22
 const OPEN_DELAY = 60
@@ -94,7 +100,7 @@ function useReducedFlag() {
 }
 
 /** Moving to a neighbour slides the new panel in from that side while the old one leaves the other way. */
-const panelVariants: Variants = {
+const panelVariantsOf = (blur: { soft: number }): Variants => ({
   hidden: (direction: number) => ({ opacity: 0, x: direction * TRAVEL, filter: `blur(${blur.soft}px)` }),
   shown: {
     opacity: 1,
@@ -108,7 +114,7 @@ const panelVariants: Variants = {
     filter: `blur(${blur.soft}px)`,
     transition: { x: SLIDE, opacity: { duration: 0.12, ease: standard }, filter: { duration: 0.12, ease: standard } },
   }),
-}
+})
 const fadeVariants: Variants = {
   hidden: { opacity: 0 },
   shown: { opacity: 1, transition: { duration: 0.14 } },
@@ -155,6 +161,8 @@ function PanelFace({
   className?: string
   children: ReactNode
 }) {
+  const { blur } = useMotionTokens()
+  const panelVariants = useMemo(() => panelVariantsOf(blur), [blur])
   const report = useCallback((size: Size) => onSize(value, size), [onSize, value])
   const { ref, present } = useReportSize(report)
   return (
@@ -179,6 +187,8 @@ function PanelFace({
 }
 
 function SearchFace({ reduced, onSize, children }: { reduced: boolean; onSize: (size: Size) => void; children: ReactNode }) {
+  const { blur } = useMotionTokens()
+  const RESIZE = useResize()
   const { ref, present } = useReportSize(onSize)
   return (
     <motion.div
@@ -237,6 +247,9 @@ export function MorphNav({
   label = "Main navigation",
   className,
 }: MorphNavProps) {
+  const motionTokens = useMotionTokens()
+  const { blur } = motionTokens
+  const RESIZE = useResize()
   const reduced = useReducedFlag()
   const uid = useId()
   const navRef = useRef<HTMLElement>(null)
@@ -316,7 +329,7 @@ export function MorphNav({
     animate(width, next.w, RESIZE)
     animate(radius, next.r, RESIZE)
     animate(height, next.h, RESIZE).then(settle)
-  }, [height, radius, width])
+  }, [RESIZE, height, radius, width])
 
   const onBarSize = useCallback(
     (size: Size) => {

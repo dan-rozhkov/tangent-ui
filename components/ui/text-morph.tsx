@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { AnimatePresence, animate, motion, useReducedMotion, type AnimationPlaybackControls } from "motion/react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 
 /**
  * Morphs one short label into the next in place. Letters both strings share glide to their new positions, new letters sharpen in, removed letters blur away,
@@ -17,9 +17,6 @@ export interface TextMorphProps {
   id?: string
 }
 
-const enter = [...motionTokens.ease.enter] as [number, number, number, number]
-const standard = [...motionTokens.ease.standard] as [number, number, number, number]
-const blurred = `blur(${motionTokens.blur.soft}px)`
 /** Lets leaving letters start to clear before the first new letter sharpens in their place. */
 const HANDOFF = 0.05
 /** Letters match by character and occurrence, so the second "i" in one string pairs with the second "i" in the next. */
@@ -40,6 +37,10 @@ const frameClass =
   "relative box-content inline-block p-[.5em_.5em_.5em_.2em] m-[-.5em_-.5em_-.5em_-.2em] text-start whitespace-nowrap [mask-image:linear-gradient(90deg,#000_calc(100%-.5em),transparent)]"
 
 export function TextMorph({ children, as = "span", className, id }: TextMorphProps) {
+  const motionTokens = useMotionTokens()
+  const enter = [...motionTokens.ease.enter] as [number, number, number, number]
+  const standard = [...motionTokens.ease.standard] as [number, number, number, number]
+  const blurred = `blur(${motionTokens.blur.soft}px)`
   const Tag = as
   const reduced = useReducedMotion()
   const frame = useRef<HTMLSpanElement>(null)
@@ -70,7 +71,7 @@ export function TextMorph({ children, as = "span", className, id }: TextMorphPro
       frameElement.style.width = `${next}px`
     }
     width.current = next
-  }, [children, reduced])
+  }, [children, reduced]) // eslint-disable-line react-hooks/exhaustive-deps -- the morph spring is read when the label changes; retuning it must not re-run the measure
   // Font loading or a responsive font size changes the width without a new label: follow it immediately.
   useEffect(() => {
     const frameElement = frame.current,

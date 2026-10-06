@@ -6,7 +6,7 @@ import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } fr
 import type { Transition, Variants } from "motion/react"
 import { Check, ChevronDown, Search, X } from "lucide-react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface MorphSelectOption {
@@ -63,10 +63,7 @@ export interface MorphSelectProps {
 type Section = { key: string; label?: string; options: MorphSelectOption[] }
 type Change = { key: number; value: string | null; dir: number; fly: { x: number; y: number } | null }
 
-const { blur } = motionTokens
 type Bezier = [number, number, number, number]
-const enter = [...motionTokens.ease.enter] as Bezier
-const standard = [...motionTokens.ease.standard] as Bezier
 /** Duration springs restated as stiffness and damping, so a retarget mid flight keeps the velocity it already has. */
 const physical = (visualDuration: number, bounce: number): Transition => {
   const root = (2 * Math.PI) / (visualDuration * 1.2)
@@ -116,7 +113,7 @@ function matches(option: MorphSelectOption, needle: string) {
 }
 
 /** Lid values roll with the list: a later option rises from below, an earlier one drops from above. */
-const valueVariants: Variants = {
+const valueVariantsFor = ({ blur }: MotionTokens, standard: Bezier): Variants => ({
   enter: (change: Change) =>
     change.fly
       ? { opacity: 1, x: change.fly.x, y: change.fly.y, filter: "blur(0px)" }
@@ -129,7 +126,7 @@ const valueVariants: Variants = {
     filter: `blur(${blur.subtle}px)`,
     transition: { duration: 0.12, ease: standard },
   }),
-}
+})
 const valueFade: Variants = {
   enter: { opacity: 0 },
   rest: { opacity: 1, x: 0, y: 0, filter: "blur(0px)" },
@@ -167,6 +164,11 @@ export function MorphSelect({
   className,
 }: MorphSelectProps) {
   const reduced = useReducedFlag()
+  const motionTokens = useMotionTokens()
+  const { blur } = motionTokens
+  const enter = useMemo(() => [...motionTokens.ease.enter] as Bezier, [motionTokens.ease.enter])
+  const standard = useMemo(() => [...motionTokens.ease.standard] as Bezier, [motionTokens.ease.standard])
+  const valueVariants = useMemo(() => valueVariantsFor(motionTokens, standard), [motionTokens, standard])
   const uid = useId()
   const labelId = `${uid}-label`,
     listId = `${uid}-list`,
@@ -317,7 +319,7 @@ export function MorphSelect({
       else if (top + height > scroller.scrollTop + scroller.clientHeight - pad)
         scroller.scrollTop = top + height - scroller.clientHeight + pad
     }
-  }, [current, hh, ho, hy, open, reduced, visibleSections])
+  }, [current, enter, hh, ho, hy, open, reduced, standard, visibleSections])
 
   /* Focus lands in the lid: the search field when there is one, otherwise the trigger that keeps the active option. */
   const pendingFocus = useRef<"trigger" | "input" | null>(null)

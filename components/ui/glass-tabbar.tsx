@@ -20,7 +20,7 @@ import type {
 import { animate, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react"
 import type { MotionValue } from "motion/react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface GlassTabBarItem {
@@ -413,6 +413,7 @@ export function GlassTabBar({
   className,
   style,
 }: GlassTabBarProps) {
+  const motionTokens = useMotionTokens()
   const reduced = useReducedMotion() ?? false
   const reduceTransparency = useMedia("(prefers-reduced-transparency: reduce)")
   const refract = useSyncExternalStore(subscribeNothing, supportsRefraction, () => false) && !reduceTransparency
@@ -504,7 +505,7 @@ export function GlassTabBar({
     const target = isCompact ? 1 : 0
     if (reduced) progress.jump(target)
     else animate(progress, target, motionTokens.spring.smooth)
-  }, [isCompact, progress, reduced])
+  }, [isCompact, motionTokens.spring.smooth, progress, reduced])
   const slot = useTransform(() => lerp(slotBase.get(), SLOT_COMPACT, progress.get()))
   const barH = useTransform(progress, (p) => lerp(BAR_H, COMPACT_H, p))
   const barW = useTransform(() => count * slot.get() + PAD * 2)
@@ -599,7 +600,7 @@ export function GlassTabBar({
     }
     animate(pos, selectedIndex, motionTokens.spring.morph)
     if (shown.get() < 1) animate(shown, 1, { type: "spring", visualDuration: 0.3, bounce: 0 })
-  }, [pos, reduced, selectedIndex, shown])
+  }, [motionTokens.ease.standard, motionTokens.spring.morph, pos, reduced, selectedIndex, shown])
 
   const clearOpacity = useTransform(() => shown.get() * lift.get())
   const clearVisibility = useTransform(clearOpacity, (o) => (o > 0.004 ? "visible" : "hidden"))

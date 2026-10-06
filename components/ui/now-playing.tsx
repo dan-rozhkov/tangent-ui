@@ -18,7 +18,7 @@ import {
 import type { MotionValue, PanInfo, Transition, Variants } from "motion/react"
 import { ChevronDown, Pause, Play, SkipBack, SkipForward } from "lucide-react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface NowPlayingTrack {
@@ -60,8 +60,8 @@ const RESTART_AFTER = 3
 const PULL_CLOSE = 70
 const FLICK = 550
 
-const fadeIn: Transition = { duration: motionTokens.duration.standard, ease: [...motionTokens.ease.enter] }
-const leave: Transition = { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] }
+const fadeInOf = (motionTokens: MotionTokens): Transition => ({ duration: motionTokens.duration.standard, ease: [...motionTokens.ease.enter] })
+const leaveOf = (motionTokens: MotionTokens): Transition => ({ duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] })
 
 const wrap = (value: number, length: number) => ((value % length) + length) % length
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
@@ -93,6 +93,7 @@ function waveformOf(id: string) {
 
 /** Three small level bars that dance while a track plays and rest while paused. */
 export function NowPlayingLevels({ playing, className }: NowPlayingLevelsProps) {
+  const motionTokens = useMotionTokens()
   const reduced = useReducedMotion() ?? false
   const moving = playing && !reduced
   return (
@@ -125,6 +126,9 @@ export function NowPlayingLevels({ playing, className }: NowPlayingLevelsProps) 
 
 /** Title and artist swap with a short rise when the track changes, in step with the artwork and without blur. */
 function SwapText({ text, className }: { text: string; className?: string }) {
+  const motionTokens = useMotionTokens()
+  const fadeIn = fadeInOf(motionTokens)
+  const leave = leaveOf(motionTokens)
   return (
     <AnimatePresence mode="popLayout" initial={false}>
       <motion.span
@@ -142,19 +146,22 @@ function SwapText({ text, className }: { text: string; className?: string }) {
 }
 
 /** Artwork slides, shrinks a little and blurs in the direction you skip; old and new overlap mid-slide. */
-const slide: Variants = {
+const slideOf = (motionTokens: MotionTokens): Variants => ({
   enter: (direction: number) => ({ x: `${direction * 24}%`, scale: 0.96, opacity: 0, filter: `blur(${motionTokens.blur.soft}px)` }),
   center: { x: 0, scale: 1, opacity: 1, filter: "blur(0px)" },
   exit: (direction: number) => ({ x: `${direction * -21}%`, scale: 0.96, opacity: 0, filter: `blur(${motionTokens.blur.soft}px)` }),
-}
-const slideTransition: Transition = {
+})
+const slideTransitionOf = (motionTokens: MotionTokens): Transition => ({
   x: motionTokens.spring.smooth,
   scale: motionTokens.spring.smooth,
   opacity: { duration: 0.22, ease: [...motionTokens.ease.standard] },
   filter: { duration: 0.36, ease: [...motionTokens.ease.standard] },
-}
+})
 
 function Artwork({ track, direction, layoutId, className, radius }: { track: NowPlayingTrack; direction: number; layoutId: string; className?: string; radius: number }) {
+  const motionTokens = useMotionTokens()
+  const slide = useMemo(() => slideOf(motionTokens), [motionTokens])
+  const slideTransition = useMemo(() => slideTransitionOf(motionTokens), [motionTokens])
   return (
     <motion.div
       layoutId={layoutId}
@@ -191,6 +198,7 @@ interface WaveformProps {
 
 /** A slider drawn as a waveform: the played part is filled, and the bars stretch while you scrub. */
 function Waveform({ track, elapsed, scrubbingRef, onSeek }: WaveformProps) {
+  const motionTokens = useMotionTokens()
   const ref = useRef<HTMLDivElement>(null)
   const bars = useMemo(() => waveformOf(track.id), [track.id])
   const stretch = useSpring(1, motionTokens.spring.snappy)
@@ -306,6 +314,9 @@ export function NowPlaying({
   label = "Now playing",
   className,
 }: NowPlayingProps) {
+  const motionTokens = useMotionTokens()
+  const fadeIn = fadeInOf(motionTokens)
+  const leave = leaveOf(motionTokens)
   const reduced = useReducedMotion() ?? false
   const group = useId()
   const [innerIndex, setInnerIndex] = useState(defaultIndex)

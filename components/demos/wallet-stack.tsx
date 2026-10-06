@@ -1,5 +1,6 @@
 "use client"
 
+import { useDialKit } from "dialkit"
 import { Plane, ShoppingBag, Train } from "lucide-react"
 
 import { WalletStack } from "@/components/ui/wallet-stack"
@@ -73,9 +74,19 @@ const cards: WalletCard[] = [
 ]
 
 export default function Demo() {
+  const values = useDialKit(
+    "Wallet stack",
+    {
+      label: "Jordan's cards",
+      currency: { type: "select", options: ["USD", "EUR", "GBP", "JPY"], default: "USD" },
+      locale: { type: "select", options: ["en-US", "en-GB", "de-DE", "fr-FR", "ja-JP"], default: "en-US" },
+    },
+    { id: "wallet-stack" },
+  )
+
   return (
     <div className="grid w-full place-items-center">
-      <WalletStack cards={cards} label="Jordan's cards" />
+      <WalletStack cards={cards} label={values.label} currency={values.currency} locale={values.locale} />
     </div>
   )
 }

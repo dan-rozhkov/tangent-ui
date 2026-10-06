@@ -1,6 +1,6 @@
 "use client";
 import { Fragment, type CSSProperties } from "react";
-import { motionTokens } from "@/lib/motion-tokens";
+import { useMotionTokens } from "@/lib/motion-tokens-context";
 import { cn } from "@/lib/utils";
 
 /**
@@ -18,11 +18,12 @@ const stage = "inline-block animate-in fill-mode-backwards [--tw-animation-delay
 const rise = `${stage} slide-in-from-bottom-[.62em] duration-[760ms] ease-enter motion-reduce:animate-none`;
 const fade = `${stage} fade-in-0 duration-[440ms] ease-standard motion-reduce:duration-160`;
 const focus = `${stage} [--tw-enter-blur:var(--reveal-blur,4px)] duration-[580ms] ease-enter motion-reduce:animate-none`;
-/** Total stagger stays under this many seconds, however long the text is. */
-const MAX_STAGGER = motionTokens.duration.considered;
 
 export function TextReveal({ text, as = "h2", className, id, delay = 0 }: TextRevealProps) {
+  const motionTokens = useMotionTokens();
   const Tag = as;
+  /** Total stagger stays under this many seconds, however long the text is. */
+  const MAX_STAGGER = motionTokens.duration.considered;
   const lines = text.split("\n").map(line => line.split(" ").filter(Boolean));
   const count = lines.reduce((total, words) => total + words.length, 0);
   const step = Math.min(motionTokens.stagger.word, MAX_STAGGER / Math.max(count, 1));

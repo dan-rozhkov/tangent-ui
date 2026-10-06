@@ -4,7 +4,8 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react"
 import { motion, useReducedMotion } from "motion/react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { motionTokens as staticTokens } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export type DateReelMode = "datetime" | "date" | "time"
@@ -1045,6 +1046,7 @@ export function DateReel({
   style,
 }: DateReelProps) {
   const reduced = useReducedMotion() ?? false
+  const motionTokens = useMotionTokens()
   const [first] = useState(() => normalize(value ?? defaultValue ?? DEFAULT_VALUE, minuteStep))
   const [inner, setInner] = useState(first)
   const valueTime = value ? normalize(value, minuteStep).getTime() : undefined
@@ -1273,7 +1275,7 @@ export function DateReel({
   // Labels roll 4px and fade in place; hidden labels keep the same resting values either way, so server and client render alike.
   const swap = reduced
     ? { duration: motionTokens.duration.fast, y: { duration: 0 } }
-    : { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.enter] as [number, number, number, number] }
+    : { duration: motionTokens.duration.fast, ease: [...staticTokens.ease.enter] as [number, number, number, number] }
 
   return (
     <div

@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element -- people avatars are plain img tags from the caller's URLs, as documented. */
 
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react"
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import type { KeyboardEvent, ReactNode, RefObject } from "react"
 import { createPortal } from "react-dom"
 import {
@@ -20,7 +20,8 @@ import type { Transition, Variants } from "motion/react"
 import { Check, ChevronDown, Copy, Link2, RotateCcw, Share, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { motionTokens } from "@/lib/motion-tokens"
+import { motionTokens as defaults } from "@/lib/motion-tokens"
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface SharePerson {
@@ -67,18 +68,11 @@ type Face = "trigger" | "panel" | "sent"
 type ChannelState = "idle" | "pending" | "done" | "failed"
 
 type Bezier = [number, number, number, number]
-const enter = [...motionTokens.ease.enter] as Bezier
-const standard = [...motionTokens.ease.standard] as Bezier
-const { blur } = motionTokens
 /** Duration springs restated as stiffness and damping, so a retarget mid-flight keeps the velocity it already has. */
 const physical = (visualDuration: number, bounce: number): Transition => {
   const root = (2 * Math.PI) / (visualDuration * 1.2)
   return { type: "spring", stiffness: root * root, damping: 2 * (1 - bounce) * root, mass: 1 }
 }
-const GROW = physical(motionTokens.spring.morph.visualDuration, motionTokens.spring.morph.bounce)
-const FOLD = physical(motionTokens.spring.smooth.visualDuration, motionTokens.spring.smooth.bounce)
-/** In-panel growth (the access list) follows the new content a beat late and settles without overshoot. */
-const RESIZE: Transition = { ...FOLD, delay: 0.04 }
 const CONTROL_RADIUS = 18
 const RADIUS: Record<Face, number> = { trigger: CONTROL_RADIUS, panel: 28, sent: 26 }
 
@@ -97,22 +91,37 @@ function usePhone() {
   return useSyncExternalStore(subscribePhone, () => window.matchMedia(phoneQuery).matches, () => false)
 }
 
-/** Faces cross with a short blur and a hint of scale, so the eye reads one shape changing rather than two layers. */
-const faceVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.97, filter: `blur(${blur.soft}px)` },
-  shown: {
-    opacity: 1,
-    scale: 1,
-    filter: "blur(0px)",
-    transition: { scale: GROW, opacity: { duration: 0.2, ease: enter, delay: 0.05 }, filter: { duration: 0.22, ease: enter, delay: 0.05 } },
-  },
-  gone: {
-    opacity: 0,
-    scale: 0.98,
-    filter: `blur(${blur.soft}px)`,
-    transition: { duration: 0.12, ease: standard },
-  },
+/** Motion derived from the tokens: eases, the physical springs, and the face variants. Recomputed only when the tokens change. */
+function useShareMotion() {
+  const motionTokens = useMotionTokens()
+  return useMemo(() => {
+    const enter = [...motionTokens.ease.enter] as Bezier
+    const standard = [...motionTokens.ease.standard] as Bezier
+    const { blur } = motionTokens
+    const GROW = physical(motionTokens.spring.morph.visualDuration ?? defaults.spring.morph.visualDuration, motionTokens.spring.morph.bounce ?? defaults.spring.morph.bounce)
+    const FOLD = physical(motionTokens.spring.smooth.visualDuration ?? defaults.spring.smooth.visualDuration, motionTokens.spring.smooth.bounce ?? defaults.spring.smooth.bounce)
+    /** In-panel growth (the access list) follows the new content a beat late and settles without overshoot. */
+    const RESIZE: Transition = { ...FOLD, delay: 0.04 }
+  /** Faces cross with a short blur and a hint of scale, so the eye reads one shape changing rather than two layers. */
+  const faceVariants: Variants = {
+    hidden: { opacity: 0, scale: 0.97, filter: `blur(${blur.soft}px)` },
+    shown: {
+      opacity: 1,
+      scale: 1,
+      filter: "blur(0px)",
+      transition: { scale: GROW, opacity: { duration: 0.2, ease: enter, delay: 0.05 }, filter: { duration: 0.22, ease: enter, delay: 0.05 } },
+    },
+    gone: {
+      opacity: 0,
+      scale: 0.98,
+      filter: `blur(${blur.soft}px)`,
+      transition: { duration: 0.12, ease: standard },
+    },
+  }
+    return { motionTokens, enter, standard, blur, GROW, FOLD, RESIZE, faceVariants }
+  }, [motionTokens])
 }
+
 const fadeVariants: Variants = {
   hidden: { opacity: 0 },
   shown: { opacity: 1, transition: { duration: 0.14 } },
@@ -144,6 +153,7 @@ function FaceLayer({
   labelledBy?: string
   role?: string
 }) {
+  const { faceVariants } = useShareMotion()
   const ref = useRef<HTMLDivElement>(null)
   const present = useIsPresent()
   useLayoutEffect(() => {
@@ -185,6 +195,7 @@ function Spinner() {
 
 /** The count rolls one digit up when it grows and down when it shrinks. */
 function RollingCount({ value, reduced }: { value: number; reduced: boolean }) {
+  const { motionTokens } = useShareMotion()
   const [previous, setPrevious] = useState(value)
   const [direction, setDirection] = useState(1)
   if (previous !== value) {
@@ -219,6 +230,7 @@ type Flight = { id: string; src: string; from: { x: number; y: number; size: num
 
 /** A picked avatar flies from the recent row to its chip on its own layer, above the chips row that scrolls and clips. */
 function AvatarFlight({ flight, layer, onDone }: { flight: Flight; layer: HTMLElement | null; onDone: () => void }) {
+  const { motionTokens } = useShareMotion()
   const ref = useRef<HTMLImageElement>(null)
   useLayoutEffect(() => {
     const node = ref.current
@@ -243,7 +255,7 @@ function AvatarFlight({ flight, layer, onDone }: { flight: Flight; layer: HTMLEl
       { ...motionTokens.spring.morph, onComplete: onDone },
     )
     return () => controls.stop()
-  }, [flight, layer, onDone])
+  }, [flight, layer, onDone, motionTokens])
   return (
     <img
       ref={ref}
@@ -278,6 +290,7 @@ export function ShareSheet({
   sheetOnPhones = true,
   className,
 }: ShareSheetProps) {
+  const { motionTokens, enter, standard, blur, GROW, FOLD, RESIZE, faceVariants } = useShareMotion()
   const reduced = useReducedFlag()
   const phone = usePhone()
   const sheet = sheetOnPhones && phone
@@ -340,7 +353,7 @@ export function ShareSheet({
       animate(height, h, spring)
       animate(rawRadius, r, spring)
     },
-    [height, rawRadius, reduced, width],
+    [height, rawRadius, reduced, width, GROW, FOLD, RESIZE],
   )
   /* Only the current face sizes the shape; in sheet mode the trigger stays in the shape whatever the face, so it sizes it directly. */
   const onSize = useCallback(
@@ -979,6 +992,7 @@ function PhoneSheet({
   onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => void
   children: ReactNode
 }) {
+  const { motionTokens, standard } = useShareMotion()
   const drag = useDragControls()
   if (typeof document === "undefined") return null
   return createPortal(

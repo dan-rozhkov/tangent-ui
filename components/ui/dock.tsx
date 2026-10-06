@@ -1,11 +1,12 @@
 "use client"
 
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { ComponentProps, FocusEvent, KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
 import { AnimatePresence, LayoutGroup, Reorder, animate, motion, useMotionValue, useIsPresent, useReducedMotion, useTransform } from "motion/react"
 import type { Variants } from "motion/react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { motionTokens as presets } from "@/lib/motion-tokens"
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export interface DockItem {
@@ -40,8 +41,8 @@ export interface DockProps {
 // Measured: the first label waits ~380ms, then follows hovers at once while warm.
 const LABEL_DELAY = 380
 const LABEL_WARM = 320
-const enter = [...motionTokens.ease.enter] as [number, number, number, number]
-const standard = [...motionTokens.ease.standard] as [number, number, number, number]
+const enter = [...presets.ease.enter] as [number, number, number, number]
+const standard = [...presets.ease.standard] as [number, number, number, number]
 
 /* Geometry, in px. Slots are 44 with a 2px gap inside 6px of padding; tray members are one step smaller. */
 const PAD = 6
@@ -105,6 +106,7 @@ function dockPath(width: number, height: number, left: number, right: number, to
 
 /** Digits roll up when the count grows and down when it shrinks; each place rolls on its own. */
 function RollingNumber({ value, reduced }: { value: number; reduced: boolean }) {
+  const motionTokens = useMotionTokens()
   const [state, setState] = useState({ value, direction: 1 })
   if (state.value !== value) setState({ value, direction: value > state.value ? 1 : -1 })
   const digits = String(value).split("")
@@ -137,6 +139,7 @@ function RollingNumber({ value, reduced }: { value: number; reduced: boolean }) 
 }
 
 function Badge({ count, reduced }: { count?: number; reduced: boolean }) {
+  const motionTokens = useMotionTokens()
   return (
     <AnimatePresence initial={false}>
       {count ? (
@@ -158,6 +161,7 @@ function Badge({ count, reduced }: { count?: number; reduced: boolean }) {
 
 /** The icon swaps with a small blur when a group shows a different member. */
 function Glyph({ id, icon, reduced }: { id: string; icon: ReactNode; reduced: boolean }) {
+  const motionTokens = useMotionTokens()
   return (
     <span className="relative grid size-5 place-items-center [&_svg]:size-5">
       <AnimatePresence initial={false} mode="popLayout">
@@ -187,21 +191,24 @@ const slotClass = [
 ].join(" ")
 
 // The tray fades in as a whole a beat after the tab starts to rise; members follow on the item stagger.
-const trayVariants: Variants = {
-  closed: { opacity: 0, transition: { duration: motionTokens.duration.instant, ease: standard } },
-  open: { opacity: 1, transition: { duration: motionTokens.duration.fast, delay: 0.11, ease: "linear" } },
-}
-const memberVariants: Variants = {
-  closed: { opacity: 0, y: 6, transition: { duration: motionTokens.duration.instant } },
-  open: (index: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { ...motionTokens.spring.snappy, delay: 0.09 + index * motionTokens.stagger.item },
-  }),
-}
-const fadeVariants: Variants = {
-  closed: { opacity: 0, transition: { duration: motionTokens.duration.instant } },
-  open: { opacity: 1, transition: { duration: motionTokens.duration.fast } },
+function makeVariants(motionTokens: MotionTokens) {
+  const trayVariants: Variants = {
+    closed: { opacity: 0, transition: { duration: motionTokens.duration.instant, ease: standard } },
+    open: { opacity: 1, transition: { duration: motionTokens.duration.fast, delay: 0.11, ease: "linear" } },
+  }
+  const memberVariants: Variants = {
+    closed: { opacity: 0, y: 6, transition: { duration: motionTokens.duration.instant } },
+    open: (index: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: { ...motionTokens.spring.snappy, delay: 0.09 + index * motionTokens.stagger.item },
+    }),
+  }
+  const fadeVariants: Variants = {
+    closed: { opacity: 0, transition: { duration: motionTokens.duration.instant } },
+    open: { opacity: 1, transition: { duration: motionTokens.duration.fast } },
+  }
+  return { trayVariants, memberVariants, fadeVariants }
 }
 
 /**
@@ -210,6 +217,8 @@ const fadeVariants: Variants = {
  * tab stop; arrows move along the dock, ArrowUp enters a group's tray.
  */
 export function Dock({ items, value = null, onValueChange, onItemsChange, label = "Tools", className }: DockProps) {
+  const motionTokens = useMotionTokens()
+  const { trayVariants, memberVariants, fadeVariants } = useMemo(() => makeVariants(motionTokens), [motionTokens])
   const reduced = useReducedMotion() ?? false
   const uid = useId()
   const root = useRef<HTMLDivElement>(null)
@@ -329,7 +338,7 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
       labelY.jump(y)
     }
     labelVisible.current = labelOn
-  }, [labelKey, labelOn, labelX, labelY, reduced])
+  }, [labelKey, labelOn, labelX, labelY, motionTokens.spring.snappy, reduced])
 
   useLayoutEffect(() => {
     placeLabel()
@@ -393,7 +402,7 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
     animate(tabLeft, target.l, spring)
     animate(tabRight, target.r, spring)
     animate(tabTop, target.t, spring)
-  }, [open, reduced, surfaceH, surfaceW, tabLeft, tabRight, tabTop, trayCount, trayId])
+  }, [motionTokens.spring.morph, motionTokens.spring.smooth, open, reduced, surfaceH, surfaceW, tabLeft, tabRight, tabTop, trayCount, trayId])
   useLayoutEffect(() => {
     placeTray()
   }, [placeTray, items])
@@ -737,6 +746,7 @@ function TrayPanel(props: ComponentProps<typeof motion.div>) {
 
 /** The label pill springs to the width of its text and crossfades between names. */
 function DockLabel({ text, shortcut, reduced }: { text: string; shortcut?: string; reduced: boolean }) {
+  const motionTokens = useMotionTokens()
   const measure = useRef<HTMLSpanElement>(null)
   const width = useMotionValue<number | "auto">("auto")
   const measured = useRef(false)
@@ -748,7 +758,7 @@ function DockLabel({ text, shortcut, reduced }: { text: string; shortcut?: strin
     if (!measured.current || reduced) width.jump(next)
     else animate(width, next, motionTokens.spring.morph)
     measured.current = true
-  }, [content, reduced, width])
+  }, [content, motionTokens.spring.morph, reduced, width])
   return (
     <motion.span
       className="relative flex h-[27px] items-center overflow-hidden rounded-[10px] bg-foreground text-[13px] font-medium whitespace-nowrap text-background shadow-raised"

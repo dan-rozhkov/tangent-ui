@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -23,7 +24,7 @@ import {
 } from "motion/react"
 import type { HTMLMotionProps, MotionProps, TargetAndTransition, Transition } from "motion/react"
 import { CircleCheck, CircleX, Info, TriangleAlert, X } from "lucide-react"
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 
 export type ToastType = "success" | "info" | "warning" | "error" | "loading"
@@ -128,64 +129,68 @@ const icons = {
   error: CircleX,
 }
 
-const standard = [...motionTokens.ease.standard] as [number, number, number, number]
-const enterEase = [...motionTokens.ease.enter] as [number, number, number, number]
-const fade: Transition = {
-  duration: motionTokens.duration.fast,
-  ease: standard,
-}
-const enterFade: Transition = {
-  duration: motionTokens.duration.standard,
-  ease: enterEase,
-}
-const reducedFade: Transition = {
-  duration: motionTokens.duration.fast,
-  ease: standard,
-}
-const exitFast: Transition = {
-  duration: motionTokens.duration.fast,
-  ease: standard,
-}
-const textIn: TargetAndTransition = {
-  opacity: 0,
-  y: "0.3em",
-  filter: `blur(${motionTokens.blur.soft}px)`,
-}
-const textOut: TargetAndTransition = {
-  opacity: 0,
-  y: "-0.3em",
-  filter: `blur(${motionTokens.blur.subtle}px)`,
-  transition: exitFast,
-}
-const iconIn: TargetAndTransition = {
-  opacity: 0,
-  scale: 0.6,
-  filter: `blur(${motionTokens.blur.subtle}px)`,
-}
-const shown: TargetAndTransition = {
-  opacity: 1,
-  y: "0em",
-  scale: 1,
-  filter: "blur(0px)",
-}
-const fadeOnly: MotionProps = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0, transition: reducedFade },
-  transition: reducedFade,
-}
-const textSwap: MotionProps = {
-  initial: textIn,
-  animate: shown,
-  exit: textOut,
-  transition: { duration: motionTokens.duration.standard, ease: enterEase },
-}
-/** Scale rides the spring; opacity and blur tween so the blur never overshoots below zero. */
-const iconSwap: MotionProps = {
-  initial: iconIn,
-  animate: shown,
-  exit: { ...iconIn, transition: exitFast },
-  transition: { ...motionTokens.spring.snappy, opacity: fade, filter: fade },
+/** Every motion preset the toast reads, derived from the tokens so a live override reaches it. */
+function createMotion(motionTokens: MotionTokens) {
+  const standard = [...motionTokens.ease.standard] as [number, number, number, number]
+  const enterEase = [...motionTokens.ease.enter] as [number, number, number, number]
+  const fade: Transition = {
+    duration: motionTokens.duration.fast,
+    ease: standard,
+  }
+  const enterFade: Transition = {
+    duration: motionTokens.duration.standard,
+    ease: enterEase,
+  }
+  const reducedFade: Transition = {
+    duration: motionTokens.duration.fast,
+    ease: standard,
+  }
+  const exitFast: Transition = {
+    duration: motionTokens.duration.fast,
+    ease: standard,
+  }
+  const textIn: TargetAndTransition = {
+    opacity: 0,
+    y: "0.3em",
+    filter: `blur(${motionTokens.blur.soft}px)`,
+  }
+  const textOut: TargetAndTransition = {
+    opacity: 0,
+    y: "-0.3em",
+    filter: `blur(${motionTokens.blur.subtle}px)`,
+    transition: exitFast,
+  }
+  const iconIn: TargetAndTransition = {
+    opacity: 0,
+    scale: 0.6,
+    filter: `blur(${motionTokens.blur.subtle}px)`,
+  }
+  const shown: TargetAndTransition = {
+    opacity: 1,
+    y: "0em",
+    scale: 1,
+    filter: "blur(0px)",
+  }
+  const fadeOnly: MotionProps = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0, transition: reducedFade },
+    transition: reducedFade,
+  }
+  const textSwap: MotionProps = {
+    initial: textIn,
+    animate: shown,
+    exit: textOut,
+    transition: { duration: motionTokens.duration.standard, ease: enterEase },
+  }
+  /** Scale rides the spring; opacity and blur tween so the blur never overshoots below zero. */
+  const iconSwap: MotionProps = {
+    initial: iconIn,
+    animate: shown,
+    exit: { ...iconIn, transition: exitFast },
+    transition: { ...motionTokens.spring.snappy, opacity: fade, filter: fade },
+  }
+  return { standard, enterEase, fade, enterFade, reducedFade, exitFast, textIn, textOut, iconIn, shown, fadeOnly, textSwap, iconSwap }
 }
 
 /* The region only holds the list; it never blocks clicks outside the toasts themselves. */
@@ -432,6 +437,8 @@ function ToastItem({
   onHandOff,
 }: ToastItemProps) {
   const { id } = toast
+  const motionTokens = useMotionTokens()
+  const { standard, enterFade, fade, reducedFade, textSwap, iconSwap, fadeOnly } = useMemo(() => createMotion(motionTokens), [motionTokens])
   const [isPresent, safeToRemove] = usePresence()
   const itemRef = useRef<HTMLLIElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
@@ -453,6 +460,11 @@ function ToastItem({
   const gesture = useRef<Gesture | null>(null)
   const suppressClick = useRef(false)
   const pointerType = useRef("mouse")
+  // The latest motion, read by the effects below. Retuning tokens must not re-run an entrance, morph or exit already in flight.
+  const live = useRef({ motionTokens, standard, enterFade, fade, reducedFade })
+  useLayoutEffect(() => {
+    live.current = { motionTokens, standard, enterFade, fade, reducedFade }
+  })
 
   // Measure before the first paint, so the toast enters from exactly its own height below the edge.
   useLayoutEffect(() => {
@@ -468,6 +480,7 @@ function ToastItem({
   // Every stack change retargets the running springs from wherever they are, so rapid toasts and hover changes never queue.
   useLayoutEffect(() => {
     if (!isPresent || target.height <= 0) return
+    const { motionTokens, enterFade, fade, reducedFade } = live.current
     const entering = applied.current === null
     const morph = !entering && applied.current !== expanded
     applied.current = expanded
@@ -525,6 +538,7 @@ function ToastItem({
   // Leaving: hand focus on before the toast turns inert, then fade out quickly. A closed toast sinks toward its edge; a thrown one keeps flying.
   useEffect(() => {
     if (isPresent) return
+    const { motionTokens, standard, reducedFade } = live.current
     const node = itemRef.current
     if (node) {
       const active = document.activeElement

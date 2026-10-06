@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   AnimatePresence,
   animate,
@@ -10,9 +10,9 @@ import {
   useReducedMotion,
   useTransform,
 } from "motion/react"
-import type { MotionValue, Variants } from "motion/react"
+import type { MotionValue, Transition, Variants } from "motion/react"
 
-import { motionTokens } from "@/lib/motion-tokens"
+import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 
 export interface AnimatedCounterProps {
   value: number
@@ -30,49 +30,52 @@ type Part =
   { key: string; digit: number; order: number } | { key: string; text: string }
 
 const DIGITS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-const rise: Variants = {
-  hidden: {
-    opacity: 0,
-    y: "0.3em",
-    filter: `blur(${motionTokens.blur.soft}px)`,
-  },
-  shown: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: {
-      duration: motionTokens.duration.standard,
-      ease: [...motionTokens.ease.enter],
+function makeVariants(motionTokens: MotionTokens): { rise: Variants; fade: Variants; reveal: Transition } {
+  const rise: Variants = {
+    hidden: {
+      opacity: 0,
+      y: "0.3em",
+      filter: `blur(${motionTokens.blur.soft}px)`,
     },
-  },
-  gone: {
-    opacity: 0,
-    y: "-0.3em",
-    filter: `blur(${motionTokens.blur.subtle}px)`,
-    transition: {
-      duration: motionTokens.duration.fast,
-      ease: [...motionTokens.ease.standard],
+    shown: {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      transition: {
+        duration: motionTokens.duration.standard,
+        ease: [...motionTokens.ease.enter],
+      },
     },
-  },
-}
-const fade: Variants = {
-  hidden: { opacity: 0, y: 0, filter: "blur(0px)" },
-  shown: {
-    opacity: 1,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { duration: motionTokens.duration.instant },
-  },
-  gone: {
-    opacity: 0,
-    y: 0,
-    filter: "blur(0px)",
-    transition: { duration: motionTokens.duration.instant },
-  },
-}
-const reveal = {
-  ...motionTokens.spring.smooth,
-  visualDuration: motionTokens.duration.considered,
+    gone: {
+      opacity: 0,
+      y: "-0.3em",
+      filter: `blur(${motionTokens.blur.subtle}px)`,
+      transition: {
+        duration: motionTokens.duration.fast,
+        ease: [...motionTokens.ease.standard],
+      },
+    },
+  }
+  const fade: Variants = {
+    hidden: { opacity: 0, y: 0, filter: "blur(0px)" },
+    shown: {
+      opacity: 1,
+      y: 0,
+      filter: "blur(0px)",
+      transition: { duration: motionTokens.duration.instant },
+    },
+    gone: {
+      opacity: 0,
+      y: 0,
+      filter: "blur(0px)",
+      transition: { duration: motionTokens.duration.instant },
+    },
+  }
+  const reveal: Transition = {
+    ...motionTokens.spring.smooth,
+    visualDuration: motionTokens.duration.considered,
+  }
+  return { rise, fade, reveal }
 }
 
 /** Split a formatted number into columns keyed by place value, so 999 → 1,000 keeps the ones column the ones column. */
@@ -123,6 +126,7 @@ function Glyph({
   position: MotionValue<number>
   digit: number
 }) {
+  const motionTokens = useMotionTokens()
   const offset = useTransform(
     position,
     (current) => ((((digit - current) % 10) + 15) % 10) - 5
@@ -175,6 +179,8 @@ function Column({
   delay: number
   reduceMotion: boolean
 }) {
+  const motionTokens = useMotionTokens()
+  const { reveal } = useMemo(() => makeVariants(motionTokens), [motionTokens])
   const position = useMotionValue(armed ? 0 : digit)
   const wheel = useRef({
     digit: armed ? 0 : digit,
@@ -200,7 +206,7 @@ function Column({
         state.revealed ? motionTokens.spring.smooth : { ...reveal, delay }
       )
     state.revealed = true
-  }, [armed, delay, digit, direction, position, reduceMotion])
+  }, [armed, delay, digit, direction, position, reduceMotion, motionTokens, reveal])
   return (
     <motion.span
       className={columnClass}
@@ -224,6 +230,8 @@ export function AnimatedCounter({
   animateOnView = false,
   locale = "en-US",
 }: AnimatedCounterProps) {
+  const motionTokens = useMotionTokens()
+  const { rise, fade } = useMemo(() => makeVariants(motionTokens), [motionTokens])
   const ref = useRef<HTMLSpanElement>(null)
   const inView = useInView(ref, { once: true, amount: 0.6 })
   const reduceMotion = !!useReducedMotion()

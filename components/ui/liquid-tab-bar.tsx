@@ -5,6 +5,7 @@ import type { KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from
 import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react"
 import type { Variants } from "motion/react"
 
+import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
 
@@ -53,9 +54,9 @@ const inOut = [...motionTokens.ease.inOut] as [number, number, number, number]
 
 /** The leading edge races ahead with ~1.8% of overshoot and lands in ~280ms; the trailing edge follows critically damped. */
 const leading = { type: "spring", visualDuration: 0.35, bounce: 0.2 } as const
-const trailing = motionTokens.spring.smooth
 
 function RollingNumber({ value, reduced }: { value: number; reduced: boolean }) {
+  const motionTokens = useMotionTokens()
   const [state, setState] = useState({ value, direction: 1 })
   if (state.value !== value) setState({ value, direction: value > state.value ? 1 : -1 })
   const digits = String(value).split("")
@@ -92,6 +93,8 @@ function RollingNumber({ value, reduced }: { value: number; reduced: boolean }) 
  * to a pill whose two edges ride different springs, so it stretches toward the new tab and thins while it stretches.
  */
 export function LiquidTabBar({ tabs, value, onValueChange, labels = "active", label = "Sections", id, className }: LiquidTabBarProps) {
+  const motionTokens = useMotionTokens()
+  const trailing = motionTokens.spring.smooth
   const reduced = useReducedMotion() ?? false
   const generated = useId()
   const baseId = id ?? generated
@@ -212,7 +215,7 @@ export function LiquidTabBar({ tabs, value, onValueChange, labels = "active", la
       animate(left, target.left, toRight ? trailing : leading)
       animate(right, target.right, toRight ? leading : trailing)
     },
-    [geometry, labelWidths, lean, left, reduced, rest, right, tabs],
+    [geometry, labelWidths, lean, left, reduced, rest, right, tabs, trailing],
   )
 
   useLayoutEffect(() => {
