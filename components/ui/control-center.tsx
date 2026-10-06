@@ -1,6 +1,5 @@
 "use client"
 
-
 /* eslint-disable @next/next/no-img-element -- people avatars are plain img tags from the caller's URLs, as documented. */
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react"
@@ -842,7 +841,7 @@ function NotificationsDetail({
       </ul>
       {shown.length > 0 && (
         <div className="mt-auto flex items-center gap-3 border-t border-border pt-3">
-          <ul className="flex flex-none" aria-label="Can reach you during focus">
+          <ul className="flex flex-none" aria-label={`${names} can reach you`}>
             {shown.map((person, index) => (
               <li key={person.id} className={cn("rounded-full ring-2 ring-surface-muted", index > 0 && "-ml-2")}>
                 <img src={person.avatar} alt={person.name} title={person.name} className="size-7 rounded-full object-cover" />

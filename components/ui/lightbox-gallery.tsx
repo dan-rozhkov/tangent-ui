@@ -731,7 +731,6 @@ function Viewer({
             <button
               type="button"
               aria-label={zoomed ? "Zoom out" : "Zoom in"}
-              aria-pressed={zoomed}
               className={iconButton}
               onClick={() => zoomTo(zoomed ? 1 : fillZoom())}
             >

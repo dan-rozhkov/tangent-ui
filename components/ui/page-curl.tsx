@@ -715,6 +715,8 @@ export function PageCurl({
   }
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    // Keys pressed on the pager buttons keep their own meaning.
+    if (event.target !== event.currentTarget) return
     if (event.key === "ArrowRight" || event.key === "PageDown") {
       event.preventDefault()
       turn(1)

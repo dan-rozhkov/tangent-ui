@@ -1,0 +1,45 @@
+/**
+ * Demos that get a live tuning panel next to the stage. Each one reads motion from
+ * useMotionTokens() and registers its own props with useDialKit, so the panel has something real to change.
+ */
+export const tunableDemos = new Set([
+  // Original components
+  "action-morph",
+  "booking-pill",
+  "control-center",
+  "cover-flow",
+  "date-reel",
+  "dock",
+  "glass-card",
+  "glass-tabbar",
+  "lightbox-gallery",
+  "link-unfurl",
+  "liquid-tab-bar",
+  "morph-loader",
+  "morph-nav",
+  "now-playing",
+  "orbit-menu",
+  "page-curl",
+  "share-sheet",
+  "sheet-stack",
+  "skeleton-morph",
+  "wallet-stack",
+  // Motion-heavy components
+  "animated-counter",
+  "bottom-sheet",
+  "card-stack",
+  "carousel",
+  "confirm-morph",
+  "expandable-card",
+  "expanding-button-group",
+  "gauge",
+  "hold-to-confirm",
+  "morph-select",
+  "slot-text",
+  "swipe-actions",
+  "text-morph",
+  "text-reveal",
+  "text-shimmer",
+  "theme-switch",
+  "toast-stack",
+])
