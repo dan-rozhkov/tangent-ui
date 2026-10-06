@@ -1,5 +1,6 @@
 "use client"
 
+
 /* eslint-disable @next/next/no-img-element -- people avatars are plain img tags from the caller's URLs, as documented. */
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react"
@@ -621,7 +622,7 @@ function DurationDial({
         />
       </svg>
       <motion.span className="pointer-events-none absolute inset-0 block" style={{ transform: arm }} aria-hidden="true">
-        <span className="absolute top-[calc(3%-8px)] left-[calc(50%-8px)] size-4 rounded-full border-[3px] border-accent bg-surface-raised shadow-raised" />
+        <span className="absolute top-[calc(3%-8px)] left-[calc(50%-8px)] size-4 rounded-full bg-surface-raised shadow-raised" />
       </motion.span>
       <span className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
         <span className="flex items-baseline gap-0.5">
@@ -641,9 +642,9 @@ function DetailHead({ titleId, title, icon: Icon, onClose }: { titleId: string; 
       <span className="grid size-9 flex-none place-items-center rounded-full bg-accent text-accent-foreground [&_svg]:size-[18px]">
         <Icon aria-hidden="true" />
       </span>
-      <h2 id={titleId} className="min-w-0 flex-1 truncate text-sm leading-[1.1] font-medium">
+      <h3 id={titleId} className="min-w-0 flex-1 truncate text-sm leading-[1.1] font-medium">
         {title}
-      </h2>
+      </h3>
       <button
         type="button"
         aria-label="Close"
@@ -849,7 +850,7 @@ function NotificationsDetail({
             ))}
           </ul>
           <span className="min-w-0 text-xs leading-[1.4] text-text-secondary" aria-hidden="true">
-            {names} can reach you during focus
+            {names} can reach you
           </span>
         </div>
       )}
@@ -1144,7 +1145,7 @@ export function ControlCenter({
     },
     presenting: {
       label: "Presenting",
-      status: presenting ? "Alerts held" : "Off",
+      status: presenting ? "Previews hidden" : "Off",
       icon: Presentation,
       iconKey: "presenting",
       on: presenting,

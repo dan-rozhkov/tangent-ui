@@ -645,7 +645,7 @@ class ReelEngine {
     if (!column || !model) return
     const entry = this.entry(reel)
     column.setAttribute("aria-valuetext", model.spoken(entry))
-    column.setAttribute("aria-valuenow", String(model.numeric(entry)))
+    column.setAttribute("aria-valuenow", String(entry))
   }
 
   kick() {
@@ -1328,9 +1328,9 @@ export function DateReel({
               role="spinbutton"
               tabIndex={0}
               aria-label={reel.name}
-              aria-valuemin={reel.numeric(0)}
-              aria-valuemax={reel.numeric(reel.count - 1)}
-              aria-valuenow={reel.numeric(currentIndices[index])}
+              aria-valuemin={0}
+              aria-valuemax={reel.count - 1}
+              aria-valuenow={currentIndices[index]}
               aria-valuetext={reel.spoken(currentIndices[index])}
               className="group/reel relative h-full flex-none cursor-grab touch-pan-x px-(--reel-pad) outline-none select-none active:cursor-grabbing"
               style={{

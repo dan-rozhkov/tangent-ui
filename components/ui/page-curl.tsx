@@ -774,7 +774,7 @@ export function PageCurl({
         <motion.span
           aria-hidden="true"
           className={cn(
-            "pointer-events-none absolute top-1/2 -mt-3.5 grid size-7 place-items-center rounded-pill bg-surface/88 text-foreground shadow-[0_0_0_1px_var(--border),var(--shadow-resting)]",
+            "pointer-events-none absolute top-1/2 -mt-3.5 grid size-7 place-items-center rounded-pill bg-surface-raised/88 text-foreground shadow-[0_0_0_1px_var(--border),var(--shadow-resting)]",
             side === "right" ? "right-2" : "left-2",
           )}
           initial={false}
@@ -787,14 +787,17 @@ export function PageCurl({
     ) : null
 
   return (
-    <div className={cn("flex w-full flex-col items-center gap-3", className)} style={style}>
+    <div
+      role="group"
+      aria-roledescription="book"
+      aria-label={label}
+      tabIndex={0}
+      onKeyDown={onKeyDown}
+      className={cn("flex w-full flex-col items-center gap-3 outline-none", className)}
+      style={style}
+    >
       <div
         ref={book}
-        role="group"
-        aria-roledescription="book"
-        aria-label={label}
-        tabIndex={0}
-        onKeyDown={onKeyDown}
         onPointerEnter={onPointerEnter}
         onPointerLeave={onPointerLeave}
         onPointerDown={onPointerDown}

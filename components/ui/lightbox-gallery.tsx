@@ -63,7 +63,7 @@ const closeFlight = { type: "spring", stiffness: 196, damping: 28 } as const
 const dragReturn = { type: "spring", stiffness: 272, damping: 26 } as const
 const outCubic = [0.33, 1, 0.68, 1] as [number, number, number, number]
 /** Grid and placeholder share one sizes string, so the viewer's placeholder is the grid file the browser already has. */
-const GRID_SIZES = "(max-width: 640px) 50vw, 33vw"
+const GRID_SIZES = "(min-width: 900px) 260px, (min-width: 600px) 34vw, 50vw"
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 /** Past an edge, travel approaches `limit` px instead of following the pointer. */
@@ -168,12 +168,13 @@ export function LightboxGallery({ images, minColumnWidth = 150, gap = 8, label =
             aria-label={label}
             aria-modal="true"
             onKeyDown={event => keyRef.current(event)}
-            className="fixed inset-0 z-50 overflow-hidden text-foreground outline-none"
+            className="fixed inset-0 z-[1000] overflow-hidden text-foreground outline-none"
             initialFocus={() => document.querySelector<HTMLElement>("[data-lightbox-close]")}
             finalFocus={() => slots.current[current] ?? true}
           >
             <Viewer
               images={images}
+              label={label}
               index={current}
               onIndexChange={setCurrent}
               slotFor={index => slots.current[index] ?? null}
@@ -212,6 +213,7 @@ function velocityOf(samples: { x: number; y: number; t: number }[], now: number)
 
 function Viewer({
   images,
+  label,
   index,
   onIndexChange,
   slotFor,
@@ -220,6 +222,7 @@ function Viewer({
   keyRef,
 }: {
   images: LightboxImage[]
+  label: string
   index: number
   onIndexChange: (index: number) => void
   slotFor: (index: number) => HTMLElement | null
@@ -679,6 +682,7 @@ function Viewer({
 
   return (
     <div className="absolute inset-0">
+      <h2 className="sr-only">{image?.title ? `${label}: ${image.title}` : label}</h2>
       <motion.div aria-hidden="true" className="absolute inset-0 bg-background" style={{ opacity: shade }} />
       {/* The stage is laid out in CSS so chrome sizes and breakpoints stay in one place; slides are placed from its box. */}
       <div ref={stageRef} aria-hidden="true" className="pointer-events-none absolute inset-x-3 top-[68px] bottom-[140px] sm:inset-x-[72px] sm:top-[72px] sm:bottom-[148px]" />
@@ -726,7 +730,7 @@ function Viewer({
           <div className="flex items-center gap-1">
             <button
               type="button"
-              aria-label="Zoom in"
+              aria-label={zoomed ? "Zoom out" : "Zoom in"}
               aria-pressed={zoomed}
               className={iconButton}
               onClick={() => zoomTo(zoomed ? 1 : fillZoom())}

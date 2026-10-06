@@ -165,6 +165,10 @@ function ChipFace({ link, still, onActivate }: { link: Link; still: boolean; onA
     })
   }, [text, status, still])
   useEffect(() => () => morph.current?.stop(), [])
+  // The wrapper lives outside React, so its status attribute is written from its portal.
+  useLayoutEffect(() => {
+    faceRef.current?.parentElement?.setAttribute("data-status", status)
+  }, [status])
 
   return (
     <span
@@ -527,7 +531,7 @@ export function LinkUnfurl({
     if (!lane || typeof ResizeObserver === "undefined") return
     const observer = new ResizeObserver(() => kick())
     observer.observe(lane)
-    lane.querySelectorAll("[data-card-slot] > [role='group']").forEach(node => observer.observe(node))
+    lane.querySelectorAll("[data-card-slot] > article").forEach(node => observer.observe(node))
     return () => observer.disconnect()
   }, [kick, links])
 
@@ -608,6 +612,8 @@ export function LinkUnfurl({
     const node = document.createElement("span")
     node.contentEditable = "false"
     node.dataset.link = id
+    node.dataset.url = url
+    node.dataset.status = "loading"
     node.className = CHIP_CLASS
     return { id, url, node }
   }
@@ -1144,7 +1150,7 @@ export function LinkUnfurl({
         </p>
       )}
       <span id={descId} className="sr-only">
-        Enter sends, Shift+Enter adds a line, Alt+Enter shows or collapses the preview of the link before the caret.
+        Paste a link to preview it. Enter sends, Shift+Enter adds a line, Alt+Enter shows or collapses the preview of the link before the caret.
       </span>
       <span role="status" aria-live="polite" className="sr-only">
         {announcement}
