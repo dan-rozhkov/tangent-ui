@@ -1,0 +1,100 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "./foundation.css";
+
+/* The theme switches with data-theme on <html>, not a .dark class. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/* Foundation tokens exposed as Tailwind utilities: bg-surface, text-text-secondary, rounded-control, h-control-md, shadow-raised, ease-enter… */
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-heading: var(--font-display);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-muted: var(--surface-muted);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-subtle: var(--accent-subtle);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-control-on: var(--control-on);
+  --color-control-glyph: var(--control-glyph);
+  --color-control-track: var(--control-track);
+  --color-control-track-hover: var(--control-track-hover);
+  --color-control-thumb: var(--control-thumb);
+  --color-control-thumb-on: var(--control-thumb-on);
+  --color-control-fill: var(--control-fill);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-series-1: var(--series-1);
+  --color-series-2: var(--series-2);
+  --color-series-3: var(--series-3);
+  --color-series-4: var(--series-4);
+
+  /* shadcn aliases, so stock shadcn/ui components still render with the foundation colors. */
+  --color-primary: var(--foreground);
+  --color-primary-foreground: var(--background);
+  --color-secondary: var(--surface-muted);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--surface-muted);
+  --color-muted-foreground: var(--text-secondary);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--surface-raised);
+  --color-popover-foreground: var(--foreground);
+  --color-destructive: var(--danger);
+  --color-input: var(--border);
+  --color-ring: var(--focus-ring);
+
+  --radius-control: var(--radius-control);
+  --radius-panel: var(--radius-panel);
+  --radius-surface: var(--radius-surface);
+  --radius-pill: var(--radius-pill);
+
+  --spacing-control-sm: var(--control-height-sm);
+  --spacing-control-md: var(--control-height-md);
+  --spacing-control-lg: var(--control-height-lg);
+
+  --shadow-resting: var(--shadow-resting);
+  --shadow-raised: var(--shadow-raised);
+  --shadow-floating: var(--shadow-floating);
+
+  --ease-enter: var(--ease-enter);
+  --ease-standard: var(--ease-standard);
+  --ease-exit: var(--ease-exit);
+  --ease-in-out: var(--ease-in-out);
+  --ease-spring: var(--ease-spring);
+
+  --tracking-display: var(--tracking-display);
+  --tracking-body: var(--tracking-body);
+  --leading-display: var(--leading-display);
+  --leading-body: var(--leading-body);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    background: var(--background);
+  }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-body);
+    letter-spacing: var(--tracking-body);
+    line-height: var(--leading-body);
+    -webkit-font-smoothing: antialiased;
+  }
+}
