@@ -59,6 +59,13 @@ const RESTART_AFTER = 3
 /** A pull on the expanded artwork past this distance, or a flick, closes the player. */
 const PULL_CLOSE = 70
 const FLICK = 550
+/** Pull distance over which the full player previews its fold into the mini bar. */
+const PULL_RANGE = 220
+/** Full-player artwork height, and how short a full pull makes it. */
+const ARTWORK_HEIGHT = 192
+const ARTWORK_FOLDED = 96
+/** Height of the mini bar the pull folds toward. */
+const MINI_HEIGHT = 64
 
 const fadeInOf = (motionTokens: MotionTokens): Transition => ({ duration: motionTokens.duration.standard, ease: [...motionTokens.ease.enter] })
 const leaveOf = (motionTokens: MotionTokens): Transition => ({ duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] })
@@ -165,6 +172,8 @@ function Artwork({ track, direction, layoutId, className, radius }: { track: Now
   return (
     <motion.div
       layoutId={layoutId}
+      // The same image on both faces: hand it over outright, since a crossfade under the leaving face's fade dips to nothing.
+      layoutCrossfade={false}
       className={cn("relative flex-none overflow-hidden bg-surface-muted", className)}
       style={{ borderRadius: radius }}
     >
@@ -330,6 +339,16 @@ export function NowPlaying({
   const elapsed = useMotionValue(0)
   const scrubbingRef = useRef(false)
   const pull = useMotionValue(0)
+  // The pull previews the fold: the shell shortens, the artwork shrinks toward the bar, and the rest fades out.
+  // On release the shared-layout morph starts from exactly this preview, so the drag hands off without a jump.
+  const fold = useTransform(pull, [0, PULL_RANGE], [0, 1], { clamp: true })
+  const foldSpan = useRef(0)
+  const faceRef = useRef<HTMLDivElement>(null)
+  const shellShrink = useTransform(fold, value => -value * foldSpan.current)
+  // The artwork shortens in layout rather than scaling, so the title rides up with it instead of slipping under the shell's edge.
+  const artworkHeight = useTransform(fold, [0, 1], [ARTWORK_HEIGHT, ARTWORK_FOLDED])
+  const detailOpacity = useTransform(fold, [0, 0.3], [1, 0])
+  const chipOpacity = useTransform(fold, [0, 0.25], [1, 0])
   const expandRef = useRef<HTMLButtonElement>(null)
   const collapseRef = useRef<HTMLButtonElement>(null)
   const focusAfter = useRef<"expand" | "collapse" | null>(null)
@@ -382,19 +401,24 @@ export function NowPlaying({
 
   function expand() {
     focusAfter.current = "collapse"
+    pull.jump(0)
     setExpanded(true)
   }
   function collapse() {
     focusAfter.current = "expand"
+    // The pull is left where it is: the leaving face keeps its preview while the morph carries on from it.
     setExpanded(false)
-    animate(pull, 0, motionTokens.spring.smooth)
   }
   function previous() {
     if (elapsed.get() > RESTART_AFTER) elapsed.set(0)
     else goTo(index - 1, -1)
   }
 
-  // Pulling the expanded artwork down follows the finger; an upward pull rubber-bands.
+  // Pulling the expanded artwork down folds the player along with the finger; an upward pull rubber-bands.
+  function panStart() {
+    const face = faceRef.current?.offsetHeight ?? MINI_HEIGHT
+    foldSpan.current = Math.max(face - MINI_HEIGHT - (ARTWORK_HEIGHT - ARTWORK_FOLDED), 0) * 0.6
+  }
   function panMove(_: PointerEvent, info: PanInfo) {
     const raw = info.offset.y
     pull.set(raw >= 0 ? raw : -Math.sqrt(-raw) * 2.4)
@@ -464,8 +488,10 @@ export function NowPlaying({
             {expanded ? (
               <motion.div
                 key="full"
+                ref={faceRef}
                 layout
                 className="relative grid gap-3 px-3 pt-3 pb-3.5"
+                style={{ marginBottom: shellShrink }}
                 exit={{ opacity: 0, transition: leave }}
                 onKeyDown={event => {
                   if (event.key !== "Escape") return
@@ -473,41 +499,51 @@ export function NowPlaying({
                   collapse()
                 }}
               >
-                <motion.button
-                  {...appear}
-                  ref={collapseRef}
-                  type="button"
-                  aria-expanded="true"
-                  aria-label="Collapse player"
-                  // A dark glass chip over the artwork, white in both themes because it always sits on the image.
-                  className={cn(
-                    iconButton,
-                    "absolute top-[22px] right-[22px] z-2 size-[34px] bg-[color-mix(in_oklab,var(--neutral-11)_42%,transparent)] text-[var(--neutral-0)] pointer-fine:hover:bg-[color-mix(in_oklab,var(--neutral-11)_56%,transparent)]",
-                  )}
-                  onClick={collapse}
-                >
-                  <ChevronDown size={18} strokeWidth={2} aria-hidden="true" />
-                </motion.button>
+                <motion.div className="absolute top-[22px] right-[22px] z-2" style={{ opacity: chipOpacity }}>
+                  <motion.button
+                    {...appear}
+                    ref={collapseRef}
+                    type="button"
+                    aria-expanded="true"
+                    aria-label="Collapse player"
+                    // A dark glass chip over the artwork, white in both themes because it always sits on the image.
+                    className={cn(
+                      iconButton,
+                      "size-[34px] bg-[color-mix(in_oklab,var(--neutral-11)_42%,transparent)] text-[var(--neutral-0)] pointer-fine:hover:bg-[color-mix(in_oklab,var(--neutral-11)_56%,transparent)]",
+                    )}
+                    onClick={collapse}
+                  >
+                    <ChevronDown size={18} strokeWidth={2} aria-hidden="true" />
+                  </motion.button>
+                </motion.div>
                 {/* The artwork is the grab handle: pull it down to close. */}
-                <motion.div className="cursor-grab touch-none active:cursor-grabbing" style={{ y: pull }} onPan={panMove} onPanEnd={panEnd}>
-                  <Artwork track={track} direction={direction} layoutId={ids.artwork} radius={20} className="h-48 w-full" />
+                <motion.div
+                  className="cursor-grab touch-none active:cursor-grabbing"
+                  style={{ height: artworkHeight }}
+                  onPanStart={panStart}
+                  onPan={panMove}
+                  onPanEnd={panEnd}
+                >
+                  <Artwork track={track} direction={direction} layoutId={ids.artwork} radius={20} className="size-full" />
                 </motion.div>
                 <div className="grid min-w-0 px-1">
-                  <motion.h3 layoutId={ids.title} layout="position" className="m-0 block min-w-0 text-lg leading-[1.28] font-medium">
+                  <motion.h3 layoutId={ids.title} layout="position" layoutCrossfade={false} className="m-0 block min-w-0 text-lg leading-[1.28] font-medium">
                     <SwapText text={track.title} />
                   </motion.h3>
-                  <motion.span layoutId={ids.artist} layout="position" className="block min-w-0 text-sm leading-[1.64] text-text-secondary">
+                  <motion.span layoutId={ids.artist} layout="position" layoutCrossfade={false} className="block min-w-0 text-sm leading-[1.64] text-text-secondary">
                     <SwapText text={track.artist} />
                   </motion.span>
                 </div>
-                <motion.div {...appear} className="grid gap-1 px-1">
-                  <Waveform track={track} elapsed={elapsed} scrubbingRef={scrubbingRef} onSeek={seconds => elapsed.set(seconds)} />
-                  <div className="flex justify-between text-xs text-text-muted tabular-nums" aria-hidden="true">
-                    <motion.span>{elapsedText}</motion.span>
-                    <motion.span>{remainingText}</motion.span>
-                  </div>
+                <motion.div style={{ opacity: detailOpacity }}>
+                  <motion.div {...appear} className="grid gap-1 px-1">
+                    <Waveform track={track} elapsed={elapsed} scrubbingRef={scrubbingRef} onSeek={seconds => elapsed.set(seconds)} />
+                    <div className="flex justify-between text-xs text-text-muted tabular-nums" aria-hidden="true">
+                      <motion.span>{elapsedText}</motion.span>
+                      <motion.span>{remainingText}</motion.span>
+                    </div>
+                  </motion.div>
                 </motion.div>
-                <div className="flex items-center justify-center gap-7">
+                <motion.div className="flex items-center justify-center gap-7" style={{ opacity: detailOpacity }}>
                   <motion.button
                     {...appear}
                     type="button"
@@ -520,7 +556,7 @@ export function NowPlaying({
                   </motion.button>
                   {playButton(true)}
                   {nextButton(true)}
-                </div>
+                </motion.div>
               </motion.div>
             ) : (
               <motion.div key="mini" layout className="relative flex items-center gap-2.5 px-2.5 py-[9px]" exit={{ opacity: 0, transition: leave }}>
@@ -535,10 +571,10 @@ export function NowPlaying({
                 />
                 <Artwork track={track} direction={direction} layoutId={ids.artwork} radius={12} className="pointer-events-none size-11" />
                 <div className="pointer-events-none grid min-w-0 flex-1">
-                  <motion.span layoutId={ids.title} layout="position" className="block min-w-0 text-sm leading-body font-medium">
+                  <motion.span layoutId={ids.title} layout="position" layoutCrossfade={false} className="block min-w-0 text-sm leading-body font-medium">
                     <SwapText text={track.title} />
                   </motion.span>
-                  <motion.span layoutId={ids.artist} layout="position" className="block min-w-0 text-xs text-text-secondary">
+                  <motion.span layoutId={ids.artist} layout="position" layoutCrossfade={false} className="block min-w-0 text-xs text-text-secondary">
                     <SwapText text={track.artist} />
                   </motion.span>
                 </div>
