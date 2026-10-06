@@ -1,5 +1,6 @@
 "use client"
 
+import { useSyncExternalStore } from "react"
 import { flushSync } from "react-dom"
 import { useTheme } from "next-themes"
 import { useDialKit } from "dialkit"
@@ -91,9 +92,13 @@ export function runThemeTransition(
   transition.finished.finally(() => style.remove())
 }
 
+const noop = () => () => {}
+
 export function useThemeTransition() {
   const { resolvedTheme, setTheme } = useTheme()
-  const theme: Theme = resolvedTheme === "dark" ? "dark" : "light"
+  // The server can't know the stored theme, so hydrate as light and take the real theme right after.
+  const hydrated = useSyncExternalStore(noop, () => true, () => false)
+  const theme: Theme = hydrated && resolvedTheme === "dark" ? "dark" : "light"
   const onThemeChange = (next: Theme, variant: ThemeSwitchVariant, trigger: HTMLElement) =>
     runThemeTransition(next, variant, trigger, setTheme)
   return { theme, onThemeChange }
