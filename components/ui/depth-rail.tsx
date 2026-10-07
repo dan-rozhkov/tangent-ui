@@ -9,31 +9,31 @@ import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export interface CoverFlowItem {
+export interface DepthRailItem {
   id: string
-  title: string
-  subtitle?: string
-  meta?: string
+  name: string
+  byline?: string
+  stat?: string
   image: string
   /** object-position of the photo inside its frame. */
   imagePosition?: string
-  /** Defaults to the title. */
+  /** Defaults to the name. */
   alt?: string
 }
 
-export interface CoverFlowProps<T extends CoverFlowItem = CoverFlowItem> {
-  /** Cards in order. Extra fields on your items are passed back to renderCaption. */
-  items: T[]
-  /** Accessible name of the carousel, such as "Hikes for this fall". */
+export interface DepthRailProps<T extends DepthRailItem = DepthRailItem> {
+  /** Cards in order. Extra fields on your entries are passed back to renderInfo. */
+  slides: T[]
+  /** Accessible name of the carousel, such as "Albums on repeat". */
   label: string
-  /** Controlled front card. Pair with onIndexChange. */
-  index?: number
+  /** Controlled front card. Pair with onActiveChange. */
+  active?: number
   /** Initial front card when uncontrolled. */
-  defaultIndex?: number
+  defaultActive?: number
   /** Called when a different card settles in front, and while a drag passes over one. */
-  onIndexChange?: (index: number) => void
+  onActiveChange?: (index: number) => void
   /** Replaces the caption under the rail. It changes with the front card. */
-  renderCaption?: (item: T, index: number) => ReactNode
+  renderInfo?: (item: T, index: number) => ReactNode
   /** Extra class on the root. */
   className?: string
 }
@@ -62,7 +62,7 @@ const FADE_FROM = 2
 const FADE_TO = 2.7
 /** Share of the card height mirrored under it. */
 const REFLECTION = 0.15
-/** Room under the card for its reflection and shadows, and the gap above it (`--cf-top`), in px. */
+/** Room under the card for its reflection and shadows, and the gap above it (`--dr-top`), in px. */
 const STAGE_EXTRA = 50
 const CARD_TOP = 12
 
@@ -114,7 +114,7 @@ function steps(w: number, stage: number) {
 /* ---------- card ---------- */
 
 interface CardProps {
-  item: CoverFlowItem
+  item: DepthRailItem
   index: number
   count: number
   front: boolean
@@ -159,9 +159,9 @@ function Card({ item, index, count, front, pos, width, stage, still, onSelect }:
     <motion.div
       role="group"
       aria-roledescription="slide"
-      aria-label={`${index + 1} of ${count}: ${item.title}`}
+      aria-label={`${index + 1} of ${count}: ${item.name}`}
       aria-hidden={front ? undefined : true}
-      className={cn("absolute top-(--cf-top) left-1/2 ml-[calc(var(--cf-w)/-2)] h-(--cf-h) w-(--cf-w)", !front && "cursor-pointer")}
+      className={cn("absolute top-(--dr-top) left-1/2 ml-[calc(var(--dr-w)/-2)] h-(--dr-h) w-(--dr-w)", !front && "cursor-pointer")}
       style={{ x, z, rotateY, zIndex, opacity, visibility }}
       onClick={() => onSelect(index)}
     >
@@ -173,7 +173,7 @@ function Card({ item, index, count, front, pos, width, stage, still, onSelect }:
       {/* A quiet reflection on the floor: the bottom of the photo, mirrored and faded out. */}
       <motion.span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-full overflow-hidden rounded-t-(--cf-r) [mask-image:linear-gradient(oklch(0%_0_0/.28),transparent_88%)]"
+        className="pointer-events-none absolute inset-x-0 top-full overflow-hidden rounded-t-(--dr-r) [mask-image:linear-gradient(oklch(0%_0_0/.28),transparent_88%)]"
         style={{ height: `${REFLECTION * 100}%`, opacity: reflection }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -181,7 +181,7 @@ function Card({ item, index, count, front, pos, width, stage, still, onSelect }:
           src={item.image}
           alt=""
           draggable={false}
-          className="absolute inset-x-0 top-0 h-(--cf-h) w-full max-w-none -scale-y-100 object-cover"
+          className="absolute inset-x-0 top-0 h-(--dr-h) w-full max-w-none -scale-y-100 object-cover"
           style={{ objectPosition: item.imagePosition }}
         />
       </motion.span>
@@ -189,7 +189,7 @@ function Card({ item, index, count, front, pos, width, stage, still, onSelect }:
         aria-hidden="true"
         className="pointer-events-none absolute top-[calc(100%-8px)] left-[5%] h-4 w-[90%] bg-[radial-gradient(closest-side,oklch(0%_0_0/.2232),oklch(0%_0_0/.0781)_60%,transparent)] dark:bg-[radial-gradient(closest-side,oklch(0%_0_0/.4092),oklch(0%_0_0/.1432)_60%,transparent)]"
       />
-      <span className="absolute inset-0 block overflow-hidden rounded-(--cf-r) bg-surface-muted">
+      <span className="absolute inset-0 block overflow-hidden rounded-(--dr-r) bg-surface-muted">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={item.image}
@@ -238,22 +238,22 @@ function Caption({ index, current, still, children }: CaptionProps) {
  * A depth rail for browsing a short collection of images one at a time. The front card stands forward while the rest
  * recede to either side, turned toward it.
  */
-export function CoverFlow<T extends CoverFlowItem>({
-  items,
+export function DepthRail<T extends DepthRailItem>({
+  slides,
   label,
-  index,
-  defaultIndex = 0,
-  onIndexChange,
-  renderCaption,
+  active,
+  defaultActive = 0,
+  onActiveChange,
+  renderInfo,
   className,
-}: CoverFlowProps<T>) {
+}: DepthRailProps<T>) {
   const reduced = useReducedMotion() ?? false
-  const count = items.length
+  const count = slides.length
   const last = Math.max(count - 1, 0)
 
-  /* ---------- index ---------- */
-  const [inner, setInner] = useState(() => clamp(defaultIndex, 0, last))
-  const current = clamp(index ?? inner, 0, last)
+  /* ---------- active card ---------- */
+  const [inner, setInner] = useState(() => clamp(defaultActive, 0, last))
+  const current = clamp(active ?? inner, 0, last)
 
   const pos = useMotionValue(current)
   const width = useMotionValue(168)
@@ -262,9 +262,9 @@ export function CoverFlow<T extends CoverFlowItem>({
   useEffect(() => still.set(reduced ? 1 : 0), [reduced, still])
   const target = useRef(current)
   const running = useRef<ReturnType<typeof animate> | null>(null)
-  const latest = useRef({ current, onIndexChange, controlled: index !== undefined })
+  const latest = useRef({ current, onActiveChange, controlled: active !== undefined })
   useLayoutEffect(() => {
-    latest.current = { current, onIndexChange, controlled: index !== undefined }
+    latest.current = { current, onActiveChange, controlled: active !== undefined }
   })
 
   const commit = useCallback((next: number) => {
@@ -272,7 +272,7 @@ export function CoverFlow<T extends CoverFlowItem>({
     if (next === latest.current.current) return
     latest.current.current = next
     if (!latest.current.controlled) setInner(next)
-    latest.current.onIndexChange?.(next)
+    latest.current.onActiveChange?.(next)
   }, [])
 
   /** Moves the rail to a card: a step spring, or a softer one that carries a release's velocity, or a jump. */
@@ -301,7 +301,7 @@ export function CoverFlow<T extends CoverFlowItem>({
     [commit, glide, last],
   )
 
-  // A controlled index that changes from outside moves the rail there.
+  // A controlled active card that changes from outside moves the rail there.
   const interacting = useRef(false)
   useEffect(() => {
     if (interacting.current || target.current === current) return
@@ -503,7 +503,7 @@ export function CoverFlow<T extends CoverFlowItem>({
 
   // The tick thumb rides the rail itself, so it slides on the same spring as the cards.
   const thumbX = useTransform(() => clamp(pos.get(), 0, last) * TICK + (TICK - THUMB) / 2)
-  const announced = items[current]
+  const announced = slides[current]
 
   return (
     <section
@@ -512,7 +512,7 @@ export function CoverFlow<T extends CoverFlowItem>({
       className={cn(
         "@container grid w-full gap-4 select-none",
         // Card width from the container, a 4 by 5 height, and a radius that scales with the card.
-        "[--cf-top:12px] [--cf-w:clamp(160px,31cqw,272px)] [--cf-h:calc(var(--cf-w)*1.25)] [--cf-r:calc(var(--cf-w)*0.085)]",
+        "[--dr-top:12px] [--dr-w:clamp(160px,31cqw,272px)] [--dr-h:calc(var(--dr-w)*1.25)] [--dr-r:calc(var(--dr-w)*0.085)]",
         className,
       )}
     >
@@ -521,10 +521,10 @@ export function CoverFlow<T extends CoverFlowItem>({
         tabIndex={0}
         className="relative w-full cursor-grab touch-pan-y outline-none [-webkit-tap-highlight-color:transparent] [overflow:clip_visible]"
         style={{
-          height: `calc(var(--cf-h) + ${STAGE_EXTRA}px)`,
-          perspective: "calc(var(--cf-w) * 3.4)",
+          height: `calc(var(--dr-h) + ${STAGE_EXTRA}px)`,
+          perspective: "calc(var(--dr-w) * 3.4)",
           // The eye sits level with the floor line, so the reflections read as lying on it.
-          perspectiveOrigin: `50% calc(var(--cf-h) + ${CARD_TOP - 4}px)`,
+          perspectiveOrigin: `50% calc(var(--dr-h) + ${CARD_TOP - 4}px)`,
         }}
         onKeyDown={onKeyDown}
         onPointerDown={onPointerDown}
@@ -533,8 +533,8 @@ export function CoverFlow<T extends CoverFlowItem>({
         onPointerCancel={onPointerUp}
         onLostPointerCapture={onPointerUp}
       >
-        <div ref={probeRef} aria-hidden="true" className="pointer-events-none invisible absolute h-0 w-(--cf-w)" />
-        {items.map((entry, i) => (
+        <div ref={probeRef} aria-hidden="true" className="pointer-events-none invisible absolute h-0 w-(--dr-w)" />
+        {slides.map((entry, i) => (
           <Card
             key={entry.id}
             item={entry}
@@ -552,16 +552,16 @@ export function CoverFlow<T extends CoverFlowItem>({
 
       <div className="grid justify-items-center gap-3">
         <div className="grid min-h-12 w-full justify-items-center overflow-hidden px-4 text-center">
-          {items.map((entry, i) => (
+          {slides.map((entry, i) => (
             <Caption key={entry.id} index={i} current={current} still={reduced}>
-              {renderCaption ? (
-                renderCaption(entry, i)
+              {renderInfo ? (
+                renderInfo(entry, i)
               ) : (
                 <>
-                  <p className="m-0 max-w-full truncate text-lg leading-[1.3] font-medium">{entry.title}</p>
-                  {entry.subtitle || entry.meta ? (
+                  <p className="m-0 max-w-full truncate text-lg leading-[1.3] font-medium">{entry.name}</p>
+                  {entry.byline || entry.stat ? (
                     <p className="m-0 max-w-full truncate text-sm leading-[1.4] text-text-secondary">
-                      {[entry.subtitle, entry.meta].filter(Boolean).join(" · ")}
+                      {[entry.byline, entry.stat].filter(Boolean).join(" · ")}
                     </p>
                   ) : null}
                 </>
@@ -572,12 +572,12 @@ export function CoverFlow<T extends CoverFlowItem>({
 
         {count > 1 ? (
           <div aria-label={`${label} position`} className="relative flex items-center">
-            {items.map((entry, i) => (
+            {slides.map((entry, i) => (
               <button
                 key={entry.id}
                 type="button"
                 tabIndex={-1}
-                aria-label={`Show ${entry.title}`}
+                aria-label={`Show ${entry.name}`}
                 aria-current={i === current ? "true" : undefined}
                 className="group grid h-6 w-4 cursor-pointer place-items-center border-0 bg-transparent p-0 outline-none"
                 onClick={() => go(i)}
@@ -595,10 +595,10 @@ export function CoverFlow<T extends CoverFlowItem>({
       </div>
 
       <p aria-live="polite" aria-atomic="true" className="sr-only">
-        {announced ? `${announced.title}, ${current + 1} of ${count}` : ""}
+        {announced ? `${announced.name}, ${current + 1} of ${count}` : ""}
       </p>
     </section>
   )
 }
 
-export default CoverFlow
+export default DepthRail

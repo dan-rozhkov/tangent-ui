@@ -11,34 +11,34 @@ import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export interface MorphNavLink {
+export interface FluidHeaderLink {
   label: string
   description?: string
   icon?: ReactNode
   href?: string
 }
-export interface MorphNavItem {
-  value: string
-  label: string
+export interface FluidHeaderSection {
+  id: string
+  title: string
   href?: string
-  links?: MorphNavLink[]
-  /** Defaults to 2 when there are more than three links. */
+  entries?: FluidHeaderLink[]
+  /** Defaults to 2 when there are more than three entries. */
   columns?: 1 | 2
-  feature?: ReactNode
-  footer?: ReactNode
+  spotlight?: ReactNode
+  note?: ReactNode
 }
-export interface MorphNavBrand {
+export interface FluidHeaderLogo {
   name: string
-  mark: ReactNode
+  glyph: ReactNode
   href?: string
 }
-export interface MorphNavAction {
+export interface FluidHeaderCta {
   label: string
   icon?: ReactNode
   href?: string
   onClick?: () => void
 }
-export interface MorphNavSearchItem {
+export interface FluidHeaderSearchItem {
   label: string
   description?: string
   group?: string
@@ -46,24 +46,24 @@ export interface MorphNavSearchItem {
   href?: string
   keywords?: string
 }
-export interface MorphNavSearch {
+export interface FluidHeaderSearch {
   placeholder?: string
-  items: MorphNavSearchItem[]
+  items: FluidHeaderSearchItem[]
 }
-export interface MorphNavDestination {
+export interface FluidHeaderTarget {
   label: string
   href?: string
   section?: string
 }
-export interface MorphNavProps {
-  items: MorphNavItem[]
-  brand?: MorphNavBrand
-  action?: MorphNavAction
-  search?: MorphNavSearch
-  current?: string
-  compact?: boolean
-  collapseBelow?: number
-  onNavigate?: (destination: MorphNavDestination) => void
+export interface FluidHeaderProps {
+  sections: FluidHeaderSection[]
+  logo?: FluidHeaderLogo
+  cta?: FluidHeaderCta
+  search?: FluidHeaderSearch
+  page?: string
+  slim?: boolean
+  foldBelow?: number
+  onVisit?: (target: FluidHeaderTarget) => void
   label?: string
   className?: string
 }
@@ -206,10 +206,10 @@ function SearchFace({ reduced, onSize, children }: { reduced: boolean; onSize: (
 }
 
 /** Simple in-memory ranking: label prefix beats word prefix beats substring beats a match in the description, group, or keywords. */
-function rank(items: MorphNavSearchItem[], query: string) {
+function rank(items: FluidHeaderSearchItem[], query: string) {
   const q = query.trim().toLowerCase()
   if (!q) return items.slice(0, 5)
-  const scored: { item: MorphNavSearchItem; score: number; index: number }[] = []
+  const scored: { item: FluidHeaderSearchItem; score: number; index: number }[] = []
   items.forEach((item, index) => {
     const label = item.label.toLowerCase()
     const rest = `${item.description ?? ""} ${item.group ?? ""} ${item.keywords ?? ""}`.toLowerCase()
@@ -236,18 +236,18 @@ const linkClass = [
   "pointer-fine:hover:bg-foreground/[0.045] focus-visible:bg-foreground/[0.045]",
 ].join(" ")
 
-export function MorphNav({
-  items,
-  brand,
-  action,
+export function FluidHeader({
+  sections,
+  logo,
+  cta,
   search,
-  current,
-  compact = false,
-  collapseBelow = 720,
-  onNavigate,
-  label = "Main navigation",
+  page,
+  slim = false,
+  foldBelow = 680,
+  onVisit,
+  label = "Site navigation",
   className,
-}: MorphNavProps) {
+}: FluidHeaderProps) {
   const motionTokens = useMotionTokens()
   const { blur } = motionTokens
   const RESIZE = useResize()
@@ -265,14 +265,14 @@ export function MorphNav({
   const [query, setQuery] = useState("")
   const [activeResult, setActiveResult] = useState(0)
 
-  const collapsed = containerWidth !== null && containerWidth < collapseBelow
+  const collapsed = containerWidth !== null && containerWidth < foldBelow
   /** In the narrow state every item folds into one menu trigger. */
-  const topItems: MorphNavItem[] = useMemo(
-    () => (collapsed ? [{ value: MENU, label: "Menu" }] : items),
-    [collapsed, items],
+  const topItems: FluidHeaderSection[] = useMemo(
+    () => (collapsed ? [{ id: MENU, title: "Menu" }] : sections),
+    [collapsed, sections],
   )
   const hasPanel = useCallback(
-    (item: MorphNavItem) => item.value === MENU || !!item.links?.length || !!item.feature,
+    (item: FluidHeaderSection) => item.id === MENU || !!item.entries?.length || !!item.spotlight,
     [],
   )
 
@@ -393,8 +393,8 @@ export function MorphNav({
         return
       }
       if (previous.kind === "panel" && next.kind === "panel") {
-        const from = topItems.findIndex(item => item.value === previous.value)
-        const to = topItems.findIndex(item => item.value === next.value)
+        const from = topItems.findIndex(item => item.id === previous.value)
+        const to = topItems.findIndex(item => item.id === next.value)
         setDirection(to >= from ? 1 : -1)
       } else {
         setDirection(1)
@@ -434,7 +434,7 @@ export function MorphNav({
 
   // The narrow state can drop the open item; fold the panel rather than point at a trigger that no longer exists.
   useEffect(() => {
-    if (view.kind === "panel" && !topItems.some(item => item.value === view.value)) closeAll()
+    if (view.kind === "panel" && !topItems.some(item => item.id === view.value)) closeAll()
   }, [closeAll, topItems, view])
 
   // A pointer down outside the nav closes the panel or search.
@@ -447,10 +447,10 @@ export function MorphNav({
     return () => document.removeEventListener("pointerdown", onDown)
   }, [closeAll, view.kind])
 
-  const navigate = (destination: MorphNavDestination, event?: MouseEvent) => {
-    if (onNavigate) {
+  const navigate = (destination: FluidHeaderTarget, event?: MouseEvent) => {
+    if (onVisit) {
       event?.preventDefault()
-      onNavigate(destination)
+      onVisit(destination)
     }
   }
 
@@ -458,16 +458,16 @@ export function MorphNav({
   /** Set for a moment after hover opens a panel, so the click that follows does not toggle it shut. */
   const hoverOpened = useRef(false)
   const hoverOpenedTimer = useRef(0)
-  const onItemPointerEnter = (item: MorphNavItem, event: ReactPointerEvent) => {
+  const onItemPointerEnter = (item: FluidHeaderSection, event: ReactPointerEvent) => {
     if (event.pointerType !== "mouse" || viewRef.current.kind === "search") return
     clearTimers()
-    setHovered(item.value)
+    setHovered(item.id)
     openTimer.current = window.setTimeout(() => {
       if (hasPanel(item)) {
         hoverOpened.current = true
         window.clearTimeout(hoverOpenedTimer.current)
         hoverOpenedTimer.current = window.setTimeout(() => (hoverOpened.current = false), 400)
-        setView({ kind: "panel", value: item.value })
+        setView({ kind: "panel", value: item.id })
       } else if (viewRef.current.kind === "panel") {
         setView({ kind: "bar" })
       }
@@ -497,7 +497,7 @@ export function MorphNav({
   const panelId = (value: string) => `${uid}-panel-${value}`
   const focusTop = (index: number) => navRef.current?.querySelector<HTMLElement>(`[data-top="${index}"]`)?.focus()
 
-  const onTopKeyDown = (item: MorphNavItem, index: number, event: KeyboardEvent<HTMLElement>) => {
+  const onTopKeyDown = (item: FluidHeaderSection, index: number, event: KeyboardEvent<HTMLElement>) => {
     const last = topItems.length - 1
     const move = (to: number) => {
       event.preventDefault()
@@ -506,7 +506,7 @@ export function MorphNav({
       // An open panel follows to the new item.
       if (viewRef.current.kind === "panel") {
         const target = topItems[to]
-        if (target && hasPanel(target)) setView({ kind: "panel", value: target.value })
+        if (target && hasPanel(target)) setView({ kind: "panel", value: target.id })
         else setView({ kind: "bar" })
       }
     }
@@ -516,21 +516,21 @@ export function MorphNav({
     if (event.key === "End") return move(last)
     if (hasPanel(item) && (event.key === "ArrowDown" || event.key === "Enter" || event.key === " ")) {
       event.preventDefault()
-      setView({ kind: "panel", value: item.value }, `#${CSS.escape(panelId(item.value))} [data-link]`)
+      setView({ kind: "panel", value: item.id }, `#${CSS.escape(panelId(item.id))} [data-link]`)
     }
   }
 
-  const onTopClick = (item: MorphNavItem, event: MouseEvent) => {
+  const onTopClick = (item: FluidHeaderSection, event: MouseEvent) => {
     if (!hasPanel(item)) {
-      navigate({ label: item.label, href: item.href, section: item.value }, event)
+      navigate({ label: item.title, href: item.href, section: item.id }, event)
       closeAll()
       return
     }
     // A click right after hover opened the panel keeps it open instead of toggling it shut.
     if (hoverOpened.current && viewRef.current.kind === "panel") return
-    const open = viewRef.current.kind === "panel" && viewRef.current.value === item.value
+    const open = viewRef.current.kind === "panel" && viewRef.current.value === item.id
     if (open) closeAll()
-    else setView({ kind: "panel", value: item.value })
+    else setView({ kind: "panel", value: item.id })
   }
 
   /** Top items carry their index in data-top, so one handler of each kind serves every item. */
@@ -577,7 +577,7 @@ export function MorphNav({
   const results = useMemo(() => (search ? rank(search.items, query) : []), [search, query])
   const suggested = !query.trim()
   const groups = useMemo(() => {
-    const map = new Map<string, { item: MorphNavSearchItem; index: number }[]>()
+    const map = new Map<string, { item: FluidHeaderSearchItem; index: number }[]>()
     results.forEach((item, index) => {
       const key = suggested ? "Suggested" : (item.group ?? "Results")
       map.set(key, [...(map.get(key) ?? []), { item, index }])
@@ -595,10 +595,10 @@ export function MorphNav({
     setHovered(null)
     setView({ kind: "search" }, "[data-search-input]")
   }
-  const choose = (item: MorphNavSearchItem) => {
+  const choose = (item: FluidHeaderSearchItem) => {
     const destination = { label: item.label, href: item.href, section: item.group }
     closeAll("[data-search-trigger]")
-    if (onNavigate) onNavigate(destination)
+    if (onVisit) onVisit(destination)
     else if (item.href) window.location.assign(item.href)
   }
   const onResultPointerMove = (event: ReactPointerEvent<HTMLElement>) => {
@@ -635,11 +635,11 @@ export function MorphNav({
   const openValue = view.kind === "panel" ? view.value : null
   /** The highlight follows the pointer, then keyboard focus, then the open panel; at rest it is hidden. */
   const highlighted = hovered ?? focusedTop ?? openValue ?? null
-  const itemText = compact ? "text-[13px]" : "text-sm"
+  const itemText = slim ? "text-[13px]" : "text-sm"
   const cap = containerWidth ? `${Math.max(240, containerWidth - 16)}px` : "calc(100vw - 2rem)"
   const announcement = searching ? (results.length ? `${results.length} ${results.length === 1 ? "result" : "results"}` : "No results") : ""
 
-  const renderLinks = (links: MorphNavLink[], section: string, columns: 1 | 2) => (
+  const renderLinks = (links: FluidHeaderLink[], section: string, columns: 1 | 2) => (
     <ul className={cn("grid gap-1", columns === 2 ? "w-[29rem] max-w-full grid-cols-2 max-[420px]:grid-cols-1" : "w-[14.375rem] max-w-full grid-cols-1")}>
       {links.map(link => (
         <li key={link.label} className="min-w-0">
@@ -668,38 +668,38 @@ export function MorphNav({
     if (value === MENU) {
       return (
         <div className="flex w-[min(20rem,var(--nav-cap))] flex-col gap-1 p-2">
-          {items.map(item =>
-            item.links?.length ? (
-              <div key={item.value} className="flex flex-col">
-                <span className="px-3 pt-2 pb-1 text-xs leading-body text-text-muted">{item.label}</span>
-                {renderLinks(item.links, item.value, 1)}
+          {sections.map(item =>
+            item.entries?.length ? (
+              <div key={item.id} className="flex flex-col">
+                <span className="px-3 pt-2 pb-1 text-xs leading-body text-text-muted">{item.title}</span>
+                {renderLinks(item.entries, item.id, 1)}
               </div>
             ) : (
               <a
-                key={item.value}
+                key={item.id}
                 data-link=""
                 href={item.href ?? "#"}
-                aria-current={current === item.value ? "page" : undefined}
+                aria-current={page === item.id ? "page" : undefined}
                 className={cn(linkClass, "text-sm leading-body font-medium")}
-                onClick={event => navigate({ label: item.label, href: item.href, section: item.value }, event)}
+                onClick={event => navigate({ label: item.title, href: item.href, section: item.id }, event)}
               >
-                {item.label}
+                {item.title}
               </a>
             ),
           )}
         </div>
       )
     }
-    const item = items.find(entry => entry.value === value)
+    const item = sections.find(entry => entry.id === value)
     if (!item) return null
-    const columns = item.columns ?? ((item.links?.length ?? 0) > 3 ? 2 : 1)
+    const columns = item.columns ?? ((item.entries?.length ?? 0) > 3 ? 2 : 1)
     return (
       <div className="flex flex-col gap-2 p-2">
         <div className="flex gap-2 max-[420px]:flex-col">
-          {item.links?.length ? renderLinks(item.links, item.value, columns) : null}
-          {item.feature && <div className="w-[13.25rem] max-w-full flex-none max-[420px]:w-full">{item.feature}</div>}
+          {item.entries?.length ? renderLinks(item.entries, item.id, columns) : null}
+          {item.spotlight && <div className="w-[13.25rem] max-w-full flex-none max-[420px]:w-full">{item.spotlight}</div>}
         </div>
-        {item.footer && <div className="border-t border-border-subtle px-2.5 pt-2 pb-1 text-sm text-text-secondary">{item.footer}</div>}
+        {item.note && <div className="border-t border-border-subtle px-2.5 pt-2 pb-1 text-sm text-text-secondary">{item.note}</div>}
       </div>
     )
   }
@@ -708,7 +708,7 @@ export function MorphNav({
     <nav
       ref={navRef}
       aria-label={label}
-      className={cn("relative w-full", compact ? "h-11" : "h-14", className)}
+      className={cn("relative w-full", slim ? "h-11" : "h-14", className)}
       style={{ "--nav-cap": cap, "--bar-h": `${barHeight}px` } as CSSProperties}
       onPointerEnter={onNavPointerEnter}
       onPointerLeave={onNavPointerLeave}
@@ -733,7 +733,7 @@ export function MorphNav({
         {/* The bar stays in flow so the resting surface sizes to it; search fades and blurs it away. */}
         <motion.div
           ref={barRef}
-          className={cn("mx-auto flex w-max items-center", compact ? "h-11 gap-1 px-1.5" : "h-14 gap-1.5 pr-2 pl-2.5")}
+          className={cn("mx-auto flex w-max items-center", slim ? "h-11 gap-1 px-1.5" : "h-14 gap-1.5 pr-2 pl-2.5")}
           animate={
             searching
               ? reduced
@@ -744,36 +744,36 @@ export function MorphNav({
           transition={{ duration: searching ? 0.14 : motionTokens.duration.standard, ease: searching ? standard : enter }}
           inert={searching || undefined}
         >
-          {brand && (
+          {logo && (
             <a
-              href={brand.href ?? "#"}
+              href={logo.href ?? "#"}
               className={cn(
                 "inline-flex h-9 flex-none cursor-pointer items-center rounded-full pl-1 text-base leading-body font-medium text-foreground outline-none",
                 "transition-[padding] duration-200 ease-standard motion-reduce:transition-none",
-                compact ? "pr-1" : "pr-2",
+                slim ? "pr-1" : "pr-2",
               )}
-              aria-label={compact ? brand.name : undefined}
+              aria-label={slim ? logo.name : undefined}
               onClick={event => {
                 closeAll()
-                navigate({ label: brand.name, href: brand.href }, event)
+                navigate({ label: logo.name, href: logo.href }, event)
               }}
             >
               <span className="grid size-[26px] flex-none place-items-center [&_svg]:size-[26px]" aria-hidden="true">
-                {brand.mark}
+                {logo.glyph}
               </span>
               {/* In the compact bar the name folds to nothing with a small blur instead of unmounting. */}
               <motion.span
                 className="overflow-hidden whitespace-nowrap"
                 initial={false}
                 animate={
-                  compact
+                  slim
                     ? { width: 0, opacity: 0, filter: reduced ? "blur(0px)" : `blur(${blur.subtle}px)` }
                     : { width: "auto", opacity: 1, filter: "blur(0px)" }
                 }
                 transition={reduced ? { duration: 0 } : { width: RESIZE, opacity: { duration: 0.16, ease: standard }, filter: { duration: 0.16, ease: standard } }}
-                aria-hidden={compact || undefined}
+                aria-hidden={slim || undefined}
               >
-                <span className="block pl-2">{brand.name}</span>
+                <span className="block pl-2">{logo.name}</span>
               </motion.span>
             </a>
           )}
@@ -782,24 +782,24 @@ export function MorphNav({
             <ul className="isolate flex items-center">
               {topItems.map((item, index) => {
                 const panel = hasPanel(item)
-                const open = openValue === item.value
-                const isCurrent = current === item.value
+                const open = openValue === item.id
+                const isCurrent = page === item.id
                 const common = {
                   "data-top": index,
                   className: cn(
                     "relative inline-flex cursor-pointer items-center gap-1 rounded-full leading-body font-normal whitespace-nowrap outline-none [-webkit-tap-highlight-color:transparent]",
                     "transition-[color] duration-160 ease-standard motion-reduce:transition-none",
-                    compact ? "h-8 px-3" : "h-9 px-3.5",
+                    slim ? "h-8 px-3" : "h-9 px-3.5",
                     itemText,
-                    highlighted === item.value || isCurrent ? "text-foreground" : "text-text-secondary",
+                    highlighted === item.id || isCurrent ? "text-foreground" : "text-text-secondary",
                   ),
                   onPointerEnter: onTopPointerEnter,
-                  onFocus: () => setFocusedTop(item.value),
-                  onBlur: () => setFocusedTop(value => (value === item.value ? null : value)),
+                  onFocus: () => setFocusedTop(item.id),
+                  onBlur: () => setFocusedTop(value => (value === item.id ? null : value)),
                   onKeyDown: onTopKeyDownEvent,
                   onClick: onTopClickEvent,
                 }
-                const highlight = highlighted === item.value && (
+                const highlight = highlighted === item.id && (
                   <motion.span
                     layoutId="highlight"
                     className="absolute inset-0 -z-1 rounded-full bg-foreground/[0.045]"
@@ -808,27 +808,27 @@ export function MorphNav({
                   />
                 )
                 return (
-                  <li key={item.value}>
+                  <li key={item.id}>
                     {panel ? (
                       <button
                         type="button"
-                        id={triggerId(item.value)}
+                        id={triggerId(item.id)}
                         aria-expanded={open}
-                        aria-controls={open ? panelId(item.value) : undefined}
+                        aria-controls={open ? panelId(item.id) : undefined}
                         aria-current={isCurrent ? "page" : undefined}
                         {...common}
                       >
                         {highlight}
-                        {item.label}
+                        {item.title}
                         <CaretDownIcon
                           className={cn("size-3.5 opacity-80 transition-transform duration-200 ease-standard motion-reduce:transition-none", open && "rotate-180")}
                           aria-hidden="true"
                         />
                       </button>
                     ) : (
-                      <a id={triggerId(item.value)} href={item.href ?? "#"} aria-current={isCurrent ? "page" : undefined} {...common}>
+                      <a id={triggerId(item.id)} href={item.href ?? "#"} aria-current={isCurrent ? "page" : undefined} {...common}>
                         {highlight}
-                        {item.label}
+                        {item.title}
                       </a>
                     )}
                   </li>
@@ -845,7 +845,7 @@ export function MorphNav({
               aria-expanded={searching}
               className={cn(
                 "grid flex-none cursor-pointer place-items-center rounded-full text-text-secondary outline-none transition-[background-color,color] duration-160 ease-standard pointer-fine:hover:bg-foreground/[0.045] pointer-fine:hover:text-foreground",
-                compact ? "size-8" : "size-9",
+                slim ? "size-8" : "size-9",
               )}
               onClick={openSearch}
             >
@@ -853,32 +853,32 @@ export function MorphNav({
             </button>
           )}
 
-          {action &&
-            (action.href ? (
+          {cta &&
+            (cta.href ? (
               <a
-                href={action.href}
-                onClick={() => action.onClick?.()}
+                href={cta.href}
+                onClick={() => cta.onClick?.()}
                 className={cn(
                   "inline-flex flex-none cursor-pointer items-center gap-1.5 rounded-full bg-foreground leading-body font-medium whitespace-nowrap text-background outline-none",
                   "transition-opacity duration-160 pointer-fine:hover:opacity-90",
-                  compact ? "h-8 px-3 text-[13px]" : "h-9 px-4 text-sm",
+                  slim ? "h-8 px-3 text-[13px]" : "h-9 px-4 text-sm",
                 )}
               >
-                {action.icon}
-                {action.label}
+                {cta.icon}
+                {cta.label}
               </a>
             ) : (
               <button
                 type="button"
-                onClick={() => action.onClick?.()}
+                onClick={() => cta.onClick?.()}
                 className={cn(
                   "inline-flex flex-none cursor-pointer items-center gap-1.5 rounded-full bg-foreground leading-body font-medium whitespace-nowrap text-background outline-none",
                   "transition-opacity duration-160 pointer-fine:hover:opacity-90",
-                  compact ? "h-8 px-3 text-[13px]" : "h-9 px-4 text-sm",
+                  slim ? "h-8 px-3 text-[13px]" : "h-9 px-4 text-sm",
                 )}
               >
-                {action.icon}
-                {action.label}
+                {cta.icon}
+                {cta.label}
               </button>
             ))}
         </motion.div>
@@ -904,7 +904,7 @@ export function MorphNav({
         <AnimatePresence initial={false}>
           {searching && search && (
             <SearchFace key="search" reduced={reduced} onSize={onSearchSize}>
-              <div className={cn("flex items-center gap-2.5 pr-2 pl-[18px]", compact ? "h-11" : "h-[54px]")}>
+              <div className={cn("flex items-center gap-2.5 pr-2 pl-[18px]", slim ? "h-11" : "h-[54px]")}>
                 <MagnifyingGlassIcon className="size-[17px] flex-none text-text-muted" aria-hidden="true" />
                 <input
                   data-search-input=""
@@ -993,4 +993,4 @@ export function MorphNav({
   )
 }
 
-export default MorphNav
+export default FluidHeader

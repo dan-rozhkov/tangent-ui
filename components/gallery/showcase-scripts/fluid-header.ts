@@ -5,18 +5,18 @@ const script: AutoplayScript = async ctx => {
 
   await ctx.wait(500)
   // Hovering a section opens its panel; moving to the next one morphs the panel in place.
-  for (const name of ["Product", "Solutions", "Resources"]) {
+  for (const name of ["Cook", "Learn", "Community"]) {
     const item = await top(name)
     ctx.hover(item)
     await ctx.wait(1300)
   }
-  ctx.unhover(await top("Resources"))
+  ctx.unhover(await top("Community"))
   await ctx.wait(1000)
 
   // The search icon turns the bar into a search panel.
   await ctx.tap(await ctx.findByLabel("Search"))
   await ctx.wait(900)
-  await ctx.type((await ctx.find("[data-search-input]")) as HTMLInputElement, "doc", { delay: 120 })
+  await ctx.type((await ctx.find("[data-search-input]")) as HTMLInputElement, "cla", { delay: 120 })
   await ctx.wait(1200)
   ctx.press("Escape", await ctx.find("[data-search-input]"))
   await ctx.wait(900)

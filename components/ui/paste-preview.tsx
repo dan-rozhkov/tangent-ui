@@ -1,6 +1,6 @@
 "use client"
 
-/* eslint-disable @next/next/no-img-element -- favicons and preview images come from the caller's unfurl data as plain URLs. */
+/* eslint-disable @next/next/no-img-element -- favicons and preview images come from the caller's lookup data as plain URLs. */
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react"
 import type { CSSProperties, ClipboardEvent, FormEvent, KeyboardEvent, PointerEvent } from "react"
@@ -14,9 +14,9 @@ import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export interface LinkUnfurlPreview {
+export interface PasteCard {
   url: string
-  site: string
+  source: string
   title: string
   description?: string
   /** Open Graph image, shown at 1.91 : 1. */
@@ -24,24 +24,24 @@ export interface LinkUnfurlPreview {
   /** Square favicon, aligned with the one in the inline link. */
   favicon?: string
 }
-export interface LinkUnfurlMessage {
+export interface PasteMessage {
   /** The message with links written out as addresses. */
   text: string
-  previews: LinkUnfurlPreview[]
+  previews: PasteCard[]
 }
-export interface LinkUnfurlProps {
+export interface PastePreviewProps {
   label?: string
   placeholder?: string
   defaultValue?: string
-  samples?: LinkUnfurlPreview[]
-  resolve?: (url: string, signal: AbortSignal) => Promise<LinkUnfurlPreview | null>
-  autoExpand?: boolean
-  autoPlay?: boolean
+  suggestions?: PasteCard[]
+  lookup?: (url: string, signal: AbortSignal) => Promise<PasteCard | null>
+  openOnResolve?: boolean
+  autoPaste?: boolean
   speed?: number
   paused?: boolean
   accent?: string
-  sendLabel?: string
-  onSend?: (message: LinkUnfurlMessage) => void | Promise<unknown>
+  submitLabel?: string
+  onSubmit?: (message: PasteMessage) => void | Promise<unknown>
   className?: string
   style?: CSSProperties
 }
@@ -52,7 +52,7 @@ type Link = {
   url: string
   node: HTMLElement
   status: Status
-  preview: LinkUnfurlPreview | null
+  preview: PasteCard | null
   open: boolean
   /** Taken out of the message; its card folds away before it leaves. */
   removed?: boolean
@@ -114,16 +114,16 @@ function decode(src?: string) {
   image.src = src
   return image.decode().catch(() => undefined)
 }
-/** A link with no known preview still gets a small card: the site, and the last part of the path as a title. */
-function plainPreview(url: string): LinkUnfurlPreview {
+/** A link with no known preview still gets a small card: the source, and the last part of the path as a title. */
+function plainPreview(url: string): PasteCard {
   const address = display(url)
-  let site = address.split("/")[0]
+  let source = address.split("/")[0]
   try {
-    site = new URL(hrefOf(url)).hostname.replace(/^www\./, "")
+    source = new URL(hrefOf(url)).hostname.replace(/^www\./, "")
   } catch {}
   const last = decodeURIComponent(address.split(/[?#]/)[0].split("/").filter(Boolean).slice(1).pop() ?? "").replace(/[-_]+/g, " ").trim()
-  const title = last ? last.charAt(0).toUpperCase() + last.slice(1) : site
-  return { url, site, title, description: address }
+  const title = last ? last.charAt(0).toUpperCase() + last.slice(1) : source
+  return { url, source, title, description: address }
 }
 
 /* The chip wrapper is created outside React (it lives in the contenteditable); React renders its face through a portal. */
@@ -143,7 +143,7 @@ function ChipFace({ link, still, onActivate }: { link: Link; still: boolean; onA
     ? `${display(link.url)}, loading preview`
     : status === "failed"
       ? `${display(link.url)}, no preview, activate to try again`
-      : `${text}, ${preview?.site ?? display(link.url)} link`
+      : `${text}, ${preview?.source ?? display(link.url)} link`
   const faceRef = useRef<HTMLSpanElement>(null)
   const width = useRef(0)
   const morph = useRef<AnimationPlaybackControls | null>(null)
@@ -277,7 +277,7 @@ function PreviewCard({
         ref={bind("card")}
         inert={folded || undefined}
         aria-hidden={folded || undefined}
-        aria-label={`${preview.site}: ${preview.title}`}
+        aria-label={`${preview.source}: ${preview.title}`}
         className="invisible absolute top-0 left-0 w-full max-w-[440px] p-2 will-change-[transform,clip-path]"
       >
         <div
@@ -291,11 +291,11 @@ function PreviewCard({
               <LinkIcon className="size-3.5" />
             </span>
           )}
-          <span className="min-w-0 flex-1 truncate text-xs leading-[1.4] text-text-secondary">{preview.site}</span>
-          <button type="button" aria-label={`Collapse preview of ${preview.title}`} onClick={onCollapse} className={iconButton}>
+          <span className="min-w-0 flex-1 truncate text-xs leading-[1.4] text-text-secondary">{preview.source}</span>
+          <button type="button" aria-label={`Fold preview of ${preview.title}`} onClick={onCollapse} className={iconButton}>
             <CaretUpIcon className="size-4" aria-hidden="true" />
           </button>
-          <button type="button" aria-label={`Remove link to ${preview.title}`} onClick={onRemove} className={iconButton}>
+          <button type="button" aria-label={`Drop link to ${preview.title}`} onClick={onRemove} className={iconButton}>
             <XIcon className="size-4" aria-hidden="true" />
           </button>
         </div>
@@ -322,26 +322,26 @@ function PreviewCard({
 }
 
 /**
- * A message composer that unfurls links. A pasted address becomes an inline link with a soft loading sweep; once the preview resolves,
- * the favicon and title roll in and the link unrolls into a rich card in one continuous morph. Click the link, press collapse, or drag the
- * card up to fold it back into the text; remove it to take the link out of the message.
+ * A reply composer that expands links in place. A pasted address becomes an inline link with a soft loading sweep; once its card resolves,
+ * the favicon and title roll in and the link unrolls into a card in one continuous morph. Click the link, press fold, or drag the
+ * card up to fold it back into the text; drop it to take the link out of the reply.
  */
-export function LinkUnfurl({
-  label = "Message #kyoto-offsite",
-  placeholder = "Message #kyoto-offsite",
-  defaultValue = "Found a place for the offsite, take a look",
-  samples = [],
-  resolve,
-  autoExpand = true,
-  autoPlay = true,
+export function PastePreview({
+  label = "Reply to ticket #4182",
+  placeholder = "Reply to ticket #4182",
+  defaultValue = "Hi Dana, the fix is live. These should help",
+  suggestions = [],
+  lookup,
+  openOnResolve = true,
+  autoPaste = true,
   speed = 1,
   paused = false,
   accent,
-  sendLabel = "Send message",
-  onSend,
+  submitLabel = "Send reply",
+  onSubmit,
   className,
   style,
-}: LinkUnfurlProps) {
+}: PastePreviewProps) {
   const { duration } = useMotionTokens()
   const reduced = useReducedFlag()
   const still = reduced || paused
@@ -360,9 +360,9 @@ export function LinkUnfurl({
   const interacted = useRef(false)
 
   // Latest props and flags for callbacks that outlive a render.
-  const live = useRef({ resolve, samples, speed, still, autoExpand })
+  const live = useRef({ lookup, suggestions, speed, still, openOnResolve })
   useLayoutEffect(() => {
-    live.current = { resolve, samples, speed, still, autoExpand }
+    live.current = { lookup, suggestions, speed, still, openOnResolve }
     linksRef.current = links
   })
 
@@ -572,7 +572,7 @@ export function LinkUnfurl({
       const link = linksRef.current.find(item => item.id === id)
       if (!link || link.removed || link.status !== "ready" || link.open === open) return
       setLinks(all => all.map(item => (item.id === id ? { ...item, open } : item)))
-      if (say && link.preview) announce(open ? `Preview shown. ${link.preview.site}, ${link.preview.title}.` : `Preview collapsed. ${link.preview.title}.`)
+      if (say && link.preview) announce(open ? `Preview shown. ${link.preview.source}, ${link.preview.title}.` : `Preview collapsed. ${link.preview.title}.`)
     },
     [announce],
   )
@@ -586,11 +586,11 @@ export function LinkUnfurl({
       announce(`Link added. Loading a preview for ${display(url).split("/")[0]}.`)
       const builtIn = async () => {
         await wait(1150 / Math.max(0.1, live.current.speed), signal)
-        return live.current.samples.find(sample => same(sample.url, url)) ?? plainPreview(url)
+        return live.current.suggestions.find(suggestion => same(suggestion.url, url)) ?? plainPreview(url)
       }
-      const custom = live.current.resolve
+      const custom = live.current.lookup
       ;(async () => {
-        let preview: LinkUnfurlPreview | null = null
+        let preview: PasteCard | null = null
         try {
           preview = custom ? await custom(hrefOf(url), signal) : await builtIn()
           if (preview) await Promise.all([decode(preview.image), decode(preview.favicon)])
@@ -600,10 +600,10 @@ export function LinkUnfurl({
         if (signal.aborted) return
         aborts.current.delete(id)
         // The link takes its title and the card starts unrolling from it in the same frame.
-        const openNow = !!preview && live.current.autoExpand
+        const openNow = !!preview && live.current.openOnResolve
         setLinks(all => all.map(item => (item.id === id ? { ...item, status: preview ? "ready" : "failed", preview, open: openNow } : item)))
         if (!preview) announce(`No preview for ${display(url)}. Click the link to try again.`)
-        else if (openNow) announce(`Preview shown. ${preview.site}, ${preview.title}.`)
+        else if (openNow) announce(`Preview shown. ${preview.source}, ${preview.title}.`)
         else announce(`Preview ready. ${preview.title}.`)
       })()
     },
@@ -831,9 +831,9 @@ export function LinkUnfurl({
     return () => map.forEach(controller => controller.abort())
   }, [])
 
-  // Autoplay pastes the first sample the first time the composer scrolls into view, unless someone got there first.
+  // Autoplay pastes the first suggestion the first time the composer scrolls into view, unless someone got there first.
   useEffect(() => {
-    if (!autoPlay || paused || !samples.length) return
+    if (!autoPaste || paused || !suggestions.length) return
     const root = rootRef.current
     if (!root) return
     let timer = 0
@@ -842,7 +842,7 @@ export function LinkUnfurl({
       io.disconnect()
       timer = window.setTimeout(() => {
         if (interacted.current || linksRef.current.length) return
-        insertText(samples[0].url, true)
+        insertText(suggestions[0].url, true)
       }, 700)
     })
     io.observe(root)
@@ -863,7 +863,7 @@ export function LinkUnfurl({
     const previews = ordered.filter(link => link.status === "ready" && link.preview).map(link => link.preview!)
     setError(null)
     try {
-      const result = onSend?.({ text, previews })
+      const result = onSubmit?.({ text, previews })
       if (result && typeof (result as Promise<unknown>).then === "function") {
         setPending(true)
         await result
@@ -880,7 +880,7 @@ export function LinkUnfurl({
     setLinks([])
     refresh()
     setSent(true)
-    announce("Message sent.")
+    announce("Reply sent.")
   }
   useEffect(() => {
     if (!sent) return
@@ -1017,12 +1017,12 @@ export function LinkUnfurl({
     }
   }
 
-  const sampleState = (sample: LinkUnfurlPreview) => linksRef.current.find(link => !link.removed && same(link.url, sample.url))
-  const onSample = (sample: LinkUnfurlPreview) => {
+  const suggestionState = (suggestion: PasteCard) => linksRef.current.find(link => !link.removed && same(link.url, suggestion.url))
+  const onSuggestion = (suggestion: PasteCard) => {
     interacted.current = true
-    const link = sampleState(sample)
+    const link = suggestionState(suggestion)
     if (link) activate(link.id)
-    else insertText(sample.url, true)
+    else insertText(suggestion.url, true)
   }
 
   // Cards keep the order of their links; a card folding away after its link was removed keeps its place.
@@ -1079,31 +1079,31 @@ export function LinkUnfurl({
             ))}
         </div>
         <div className="flex items-center gap-3 pt-2 pr-2.5 pb-2.5 pl-3.5">
-          {samples.length > 0 && (
-            <div role="group" aria-label="Sample links" className="flex min-w-0 flex-1 items-center gap-1.5">
+          {suggestions.length > 0 && (
+            <div role="group" aria-label="Suggested links" className="flex min-w-0 flex-1 items-center gap-1.5">
               <span className="flex-none pr-1 text-xs leading-[1.4] text-text-muted @max-[359px]:hidden">Try</span>
               <div className="-m-0.5 flex min-w-0 flex-1 gap-1.5 overflow-x-auto p-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                {samples.map(sample => {
-                  const link = links.find(item => !item.removed && same(item.url, sample.url))
+                {suggestions.map(suggestion => {
+                  const link = links.find(item => !item.removed && same(item.url, suggestion.url))
                   return (
                     <button
-                      key={sample.url}
+                      key={suggestion.url}
                       type="button"
                       aria-pressed={link ? link.open : undefined}
-                      aria-label={link ? `${link.open ? "Collapse" : "Show"} ${sample.site} preview` : `Paste ${sample.site} link`}
-                      onClick={() => onSample(sample)}
+                      aria-label={link ? `${link.open ? "Fold" : "Open"} ${suggestion.source} card` : `Insert ${suggestion.source} link`}
+                      onClick={() => onSuggestion(suggestion)}
                       className={cn(
                         "inline-flex h-8 flex-none cursor-pointer items-center gap-1.5 rounded-full pr-3 pl-2.5 text-xs leading-[1.4] shadow-[inset_0_0_0_1px_var(--border-subtle)] outline-none",
                         "transition-[background-color,color] duration-160 ease-standard focus-visible:bg-surface-muted pointer-fine:hover:bg-surface-muted",
                         link ? "bg-surface-muted text-foreground" : "text-text-secondary",
                       )}
                     >
-                      {sample.favicon ? (
-                        <img src={sample.favicon} alt="" className="size-3.5 rounded-[3px] object-cover" />
+                      {suggestion.favicon ? (
+                        <img src={suggestion.favicon} alt="" className="size-3.5 rounded-[3px] object-cover" />
                       ) : (
                         <LinkIcon className="size-3.5" aria-hidden="true" />
                       )}
-                      {sample.site}
+                      {suggestion.source}
                     </button>
                   )
                 })}
@@ -1112,7 +1112,7 @@ export function LinkUnfurl({
           )}
           <button
             type="button"
-            aria-label={sendLabel}
+            aria-label={submitLabel}
             aria-disabled={empty || pending || undefined}
             data-state={sent ? "sent" : "idle"}
             onClick={() => void send()}
@@ -1153,7 +1153,7 @@ export function LinkUnfurl({
         </p>
       )}
       <span id={descId} className="sr-only">
-        Paste a link to preview it. Enter sends, Shift+Enter adds a line, Alt+Enter shows or collapses the preview of the link before the caret.
+        Paste a link to get a card. Enter sends the reply, Shift+Enter starts a new line, Alt+Enter opens or folds the card for the link before the caret.
       </span>
       <span role="status" aria-live="polite" className="sr-only">
         {announcement}
@@ -1165,4 +1165,4 @@ export function LinkUnfurl({
   )
 }
 
-export default LinkUnfurl
+export default PastePreview

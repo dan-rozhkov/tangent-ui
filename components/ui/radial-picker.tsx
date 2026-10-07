@@ -11,27 +11,27 @@ import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export interface OrbitAction {
+export interface RadialPick {
   id: string
   label: string
   icon: ReactNode
-  /** Short confirmation shown after firing. Defaults to the label. */
-  done?: string
-  tone?: "neutral" | "danger"
+  /** Short acknowledgement shown once the pick fires. Defaults to the label. */
+  confirmLabel?: string
+  intent?: "plain" | "destructive"
 }
 
-export interface OrbitMenuProps {
-  /** Three to six actions. */
-  actions: OrbitAction[]
-  onAction: (id: string) => void
+export interface RadialPickerProps {
+  /** Three to six picks. */
+  picks: RadialPick[]
+  onPick: (id: string) => void
   /** Accessible name of the button and menu, also shown while the arc is open and nothing is targeted. */
   label?: string
   /** Distance from the button center to each action, in px. */
   radius?: number
-  /** Degrees the arc spans. */
-  spread?: number
-  /** Degrees the arc opens toward: -90 up, 0 right, 90 down, 180 left. */
-  direction?: number
+  /** Degrees of the fan, edge to edge. */
+  sweep?: number
+  /** Degrees the fan is centred on: -90 up, 0 right, 90 down, 180 left. */
+  heading?: number
   disabled?: boolean
   /** Announces confirmations in a polite status region. */
   announce?: boolean
@@ -62,21 +62,21 @@ const SWIRL = 0.7
 /** Fly out: ~2% radial overshoot peaking ~440ms after an action starts. */
 const flyOut = { type: "spring", visualDuration: 0.45, bounce: 0.22 } as const
 const OPEN_STAGGER = 0.045
-/** Border and fills measured on the open material: --border-strong at 55%, --surface-raised at 94% (actions) and 76%. */
+/** Border and fills measured on the open material: --border-strong at 55%, --surface-raised at 94% (picks) and 76%. */
 const ring = "border border-[color-mix(in_oklab,var(--border-strong)_55%,transparent)]"
 
 const toRad = (deg: number) => (deg * Math.PI) / 180
 /** Signed smallest difference between two angles in degrees. */
 const angleDiff = (a: number, b: number) => ((((a - b) % 360) + 540) % 360) - 180
 
-function angles(count: number, direction: number, spread: number) {
-  if (count <= 1) return [direction]
-  return Array.from({ length: count }, (_, i) => direction - spread / 2 + (spread * i) / (count - 1))
+function angles(count: number, heading: number, sweep: number) {
+  if (count <= 1) return [heading]
+  return Array.from({ length: count }, (_, i) => heading - sweep / 2 + (sweep * i) / (count - 1))
 }
 
 type Glyph = "more" | "close" | "done"
 
-function OrbitItem({
+function RadialItem({
   action,
   angle,
   radius,
@@ -94,7 +94,7 @@ function OrbitItem({
   onKeyDown,
   onFocus,
 }: {
-  action: OrbitAction
+  action: RadialPick
   angle: number
   radius: number
   index: number
@@ -159,7 +159,7 @@ function OrbitItem({
   useEffect(() => {
     geometry.set({ rad: toRad(angle), radius, reduced, leans })
   }, [angle, geometry, leans, radius, reduced])
-  // Nearby actions lean toward the pointer, a few px at most.
+  // Nearby picks lean toward the pointer, a few px at most.
   const magnet = useTransform(() => {
     const at = pointer.get()
     const { rad, radius, reduced, leans } = geometry.get()
@@ -183,7 +183,7 @@ function OrbitItem({
     const a = rad - (1 - Math.min(1, p)) * SWIRL
     return Math.sin(a) * radius * p + magnet.get().y
   })
-  // Closed actions sit at .4 of their size with the icon at half size again.
+  // Closed picks sit at .4 of their size with the icon at half size again.
   const scale = useTransform(() => (0.4 + 0.6 * progress.get()) * zoom.get())
   const iconScale = useTransform(progress, [0, 1], [0.5, 1])
   const filter = useTransform(() => (geometry.get().reduced ? "none" : `blur(${Math.max(0, blur.get())}px)`))
@@ -202,7 +202,7 @@ function OrbitItem({
         "bg-[color-mix(in_oklab,var(--surface-raised)_94%,transparent)] text-foreground shadow-raised [touch-action:none] [-webkit-tap-highlight-color:transparent]",
         "transition-[color,background,border-color,box-shadow] duration-160 ease-standard motion-reduce:transition-none",
         "data-targeted:border-transparent data-targeted:bg-transparent data-targeted:text-background data-targeted:shadow-none [&_svg]:size-5",
-        action.tone === "danger" && "text-danger data-targeted:text-white",
+        action.intent === "destructive" && "text-danger data-targeted:text-white",
         reduced && "transition-[opacity,color,background] duration-160",
       )}
       style={{ x, y, opacity: fade, scale, filter }}
@@ -218,7 +218,7 @@ function OrbitItem({
 }
 
 /** Text in the pill crossfades while the pill springs to fit it. */
-function OrbitPill({ text, tone, reduced }: { text: string; tone: "neutral" | "danger" | "muted"; reduced: boolean }) {
+function RadialPill({ text, tone, reduced }: { text: string; tone: "neutral" | "danger" | "muted"; reduced: boolean }) {
   const motionTokens = useMotionTokens()
   const measure = useRef<HTMLSpanElement>(null)
   const width = useMotionValue<number | "auto">("auto")
@@ -265,21 +265,21 @@ function OrbitPill({ text, tone, reduced }: { text: string; tone: "neutral" | "d
 }
 
 /**
- * A round button that bursts into an arc of actions. Press, drag toward an action, and release to fire it; or tap to keep
- * the arc open and tap again to close it. Targeting goes by angle like a pie menu, outside a small dead zone.
+ * A round trigger that fans out a few picks around it. Hold, slide toward one, and let go to fire it; or tap to leave
+ * the fan open and tap again to close. The pick under the pointer is chosen by angle, outside a small dead zone.
  */
-export function OrbitMenu({
-  actions,
-  onAction,
-  label = "Actions",
-  radius = 104,
-  spread = 150,
-  direction = -90,
+export function RadialPicker({
+  picks,
+  onPick,
+  label = "Quick picks",
+  radius = 96,
+  sweep = 140,
+  heading = -100,
   disabled = false,
   announce = true,
   onOpenChange,
   className,
-}: OrbitMenuProps) {
+}: RadialPickerProps) {
   const motionTokens = useMotionTokens()
   const reduced = useReducedMotion() ?? false
   const menuId = useId()
@@ -356,15 +356,15 @@ export function OrbitMenu({
     return () => document.removeEventListener("pointerdown", onDown, true)
   }, [open, setOpen])
 
-  const arc = angles(actions.length, direction, spread)
-  const step = actions.length > 1 ? spread / (actions.length - 1) : 60
+  const arc = angles(picks.length, heading, sweep)
+  const step = picks.length > 1 ? sweep / (picks.length - 1) : 60
 
   const fire = (index: number) => {
-    const action = actions[index]
+    const action = picks[index]
     if (!action) return
-    onAction(action.id)
-    const text = action.done ?? action.label
-    setDone({ text, tone: action.tone ?? "neutral" })
+    onPick(action.id)
+    const text = action.confirmLabel ?? action.label
+    setDone({ text, tone: action.intent === "destructive" ? "danger" : "neutral" })
     if (announce) setStatus(text)
     window.clearTimeout(doneTimer.current)
     doneTimer.current = window.setTimeout(() => {
@@ -466,7 +466,7 @@ export function OrbitMenu({
     if (disabled) return
     if (event.key === "ArrowUp") {
       event.preventDefault()
-      openAndFocus(actions.length - 1)
+      openAndFocus(picks.length - 1)
     } else if (event.key === "ArrowDown" || event.key === "ArrowLeft" || event.key === "ArrowRight") {
       event.preventDefault()
       openAndFocus(0)
@@ -477,7 +477,7 @@ export function OrbitMenu({
   }
 
   const onItemKey = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
-    const last = actions.length - 1
+    const last = picks.length - 1
     let next = -1
     if (event.key === "ArrowRight" || event.key === "ArrowDown") next = index === last ? 0 : index + 1
     else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = index === 0 ? last : index - 1
@@ -502,7 +502,7 @@ export function OrbitMenu({
 
   /* ---------- render ---------- */
   const glyph: Glyph = done ? "done" : open ? "close" : "more"
-  const targetedAction = target !== null ? actions[target] : null
+  const targetedAction = target !== null ? picks[target] : null
   const pillText = done
     ? done.text
     : open
@@ -512,7 +512,7 @@ export function OrbitMenu({
           ? "Release to cancel"
           : label
       : null
-  const pillTone = done ? done.tone : targetedAction ? (targetedAction.tone ?? "neutral") : "muted"
+  const pillTone = done ? done.tone : targetedAction ? (targetedAction.intent === "destructive" ? "danger" : "neutral") : "muted"
 
   const lensRad = target !== null ? toRad(arc[target]) : 0
   const lens = { x: Math.cos(lensRad) * radius, y: Math.sin(lensRad) * radius }
@@ -527,7 +527,7 @@ export function OrbitMenu({
           ? NEIGHBOUR_SCALE
           : 1
   // The pill sits between the trigger and the arc, 8px off the trigger's edge, its near edge toward the trigger.
-  const pillRad = toRad(direction)
+  const pillRad = toRad(heading)
   const pillOffset = TRIGGER / 2 + PILL_GAP
   const pillCos = Math.cos(pillRad)
   const pillSin = Math.sin(pillRad)
@@ -550,7 +550,7 @@ export function OrbitMenu({
               aria-hidden="true"
               className={cn(
                 "pointer-events-none! absolute top-1/2 left-1/2 -mt-[23px] -ml-[23px] size-[46px] rounded-pill",
-                actions[target]?.tone === "danger" ? "bg-danger" : "bg-foreground",
+                picks[target]?.intent === "destructive" ? "bg-danger" : "bg-foreground",
               )}
               initial={reduced ? { opacity: 0, x: lens.x, y: lens.y, scale: emphasisOf(target) } : { opacity: 0, scale: 0.6, x: lens.x, y: lens.y }}
               animate={{ opacity: 1, scale: emphasisOf(target), x: lens.x, y: lens.y }}
@@ -563,14 +563,14 @@ export function OrbitMenu({
             />
           ) : null}
         </AnimatePresence>
-        {actions.map((action, index) => (
-          <OrbitItem
+        {picks.map((action, index) => (
+          <RadialItem
             key={action.id}
             action={action}
             angle={arc[index]}
             radius={radius}
             index={index}
-            count={actions.length}
+            count={picks.length}
             open={open}
             focused={index === focusIndex}
             targeted={index === target}
@@ -656,7 +656,7 @@ export function OrbitMenu({
               exit={{ opacity: 0, scale: reduced ? 1 : 0.9, transition: { duration: motionTokens.duration.fast, ease: standard } }}
               transition={reduced ? { duration: motionTokens.duration.instant } : motionTokens.spring.snappy}
             >
-              <OrbitPill text={pillText} tone={pillTone} reduced={reduced} />
+              <RadialPill text={pillText} tone={pillTone} reduced={reduced} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -671,4 +671,4 @@ export function OrbitMenu({
   )
 }
 
-export default OrbitMenu
+export default RadialPicker

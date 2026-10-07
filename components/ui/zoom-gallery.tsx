@@ -13,25 +13,25 @@ import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export interface LightboxImage {
+export interface ZoomShot {
   src: string
   /** Intrinsic width; with height it sets the aspect ratio in the grid, the zoom and the return flight. */
   width: number
   height: number
   alt: string
-  /** First caption line. */
-  title?: string
-  /** Second caption line. */
-  caption?: string
+  /** Bold first line of the caption. */
+  name?: string
+  /** Smaller second line of the caption. */
+  note?: string
 }
 
-export interface LightboxGalleryProps {
+export interface ZoomGalleryProps {
   /** Photos in reading order. Keep the array and its items stable between renders, so grid tiles skip re-rendering. */
-  images: LightboxImage[]
+  shots: ZoomShot[]
   /** Columns are added while each stays at least this wide, in px. There are always at least two. */
-  minColumnWidth?: number
-  /** Gap between photos in px. */
-  gap?: number
+  minTile?: number
+  /** Space between tiles in px. */
+  spacing?: number
   /** Accessible name of the gallery and its viewer. */
   label?: string
   /** Class on the root region. */
@@ -72,10 +72,10 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 const rubber = (distance: number, limit = 120) => (1 - 1 / ((distance * 0.55) / limit + 1)) * limit
 const fade = { duration: 0.1, ease: [...presets.ease.standard] as [number, number, number, number] }
 
-const nameOf = (image: LightboxImage) => image.title ?? image.alt
+const nameOf = (image: ZoomShot) => image.name ?? image.alt
 
 /** The photo's resting box: contained in the stage, centered. */
-function fitIn(image: LightboxImage | undefined, box: Rect | null): Rect | null {
+function fitIn(image: ZoomShot | undefined, box: Rect | null): Rect | null {
   if (!box || !image) return null
   const ratio = Math.min(box.w / image.width, box.h / image.height)
   const w = image.width * ratio
@@ -84,7 +84,7 @@ function fitIn(image: LightboxImage | undefined, box: Rect | null): Rect | null 
 }
 
 /** A masonry grid of photos that open in a fullscreen viewer. */
-export function LightboxGallery({ images, minColumnWidth = 150, gap = 8, label = "Photo gallery", className }: LightboxGalleryProps) {
+export function ZoomGallery({ shots, minTile = 150, spacing = 8, label = "Image gallery", className }: ZoomGalleryProps) {
   const rootRef = useRef<HTMLElement>(null)
   const slots = useRef<(HTMLButtonElement | null)[]>([])
   const [width, setWidth] = useState(0)
@@ -107,19 +107,19 @@ export function LightboxGallery({ images, minColumnWidth = 150, gap = 8, label =
   }, [])
 
   const columns = useMemo(() => {
-    const count = Math.max(2, Math.floor((width + gap) / (minColumnWidth + gap)) || 2)
-    const columnWidth = width ? (width - gap * (count - 1)) / count : minColumnWidth
+    const count = Math.max(2, Math.floor((width + spacing) / (minTile + spacing)) || 2)
+    const columnWidth = width ? (width - spacing * (count - 1)) / count : minTile
     const heights = new Array<number>(count).fill(0)
     const lists = Array.from({ length: count }, () => [] as number[])
     // Each photo goes under the shortest column, so reading order runs across the top and the columns end level.
-    images.forEach((image, index) => {
+    shots.forEach((image, index) => {
       let target = 0
       for (let column = 1; column < count; column++) if (heights[column] < heights[target] - 0.5) target = column
       lists[target].push(index)
-      heights[target] += (columnWidth * image.height) / image.width + gap
+      heights[target] += (columnWidth * image.height) / image.width + spacing
     })
     return lists
-  }, [gap, images, minColumnWidth, width])
+  }, [spacing, shots, minTile, width])
 
   // Stable, so the memoized tiles skip every re-render caused by the viewer changing `current`.
   const show = useCallback((index: number) => {
@@ -132,17 +132,17 @@ export function LightboxGallery({ images, minColumnWidth = 150, gap = 8, label =
 
   return (
     <section ref={rootRef} aria-label={label} className={cn("w-full", className)}>
-      <div className="flex items-start" style={{ gap }}>
+      <div className="flex items-start" style={{ gap: spacing }}>
         {columns.map((list, column) => (
-          <div key={column} className="flex min-w-0 flex-1 flex-col" style={{ gap }}>
+          <div key={column} className="flex min-w-0 flex-1 flex-col" style={{ gap: spacing }}>
             {list.map(index => {
-              const image = images[index]
+              const image = shots[index]
               return (
                 <GridTile
                   key={`${image.src}-${index}`}
                   image={image}
                   index={index}
-                  total={images.length}
+                  total={shots.length}
                   hidden={open && index === current}
                   onOpen={show}
                   register={register}
@@ -167,11 +167,11 @@ export function LightboxGallery({ images, minColumnWidth = 150, gap = 8, label =
             aria-modal="true"
             onKeyDown={event => keyRef.current(event)}
             className="fixed inset-0 z-[1000] overflow-hidden text-foreground outline-none"
-            initialFocus={() => document.querySelector<HTMLElement>("[data-lightbox-close]")}
+            initialFocus={() => document.querySelector<HTMLElement>("[data-zoom-close]")}
             finalFocus={() => slots.current[current] ?? true}
           >
             <Viewer
-              images={images}
+              shots={shots}
               label={label}
               index={current}
               onIndexChange={setCurrent}
@@ -196,7 +196,7 @@ const GridTile = memo(function GridTile({
   onOpen,
   register,
 }: {
-  image: LightboxImage
+  image: ZoomShot
   index: number
   total: number
   hidden: boolean
@@ -244,7 +244,7 @@ function velocityOf(samples: { x: number; y: number; t: number }[], now: number)
 }
 
 function Viewer({
-  images,
+  shots,
   label,
   index,
   onIndexChange,
@@ -253,7 +253,7 @@ function Viewer({
   closeRef,
   keyRef,
 }: {
-  images: LightboxImage[]
+  shots: ZoomShot[]
   label: string
   index: number
   onIndexChange: (index: number) => void
@@ -271,7 +271,7 @@ function Viewer({
   const [viewport, setViewport] = useState({ w: 0, h: 0 })
   const [zoomed, setZoomed] = useState(false)
   const [closing, setClosing] = useState(false)
-  const count = images.length
+  const count = shots.length
   const viewportWidth = viewport.w
   /** Slides sit one viewport apart; the frame padding keeps a neighbour from peeking in. */
   const pitch = viewportWidth
@@ -328,7 +328,7 @@ function Viewer({
     return () => window.removeEventListener("resize", measure)
   }, [])
 
-  const fitFor = useCallback((at: number, box: Rect | null = stateRef.current.stage) => fitIn(images[at], box), [images])
+  const fitFor = useCallback((at: number, box: Rect | null = stateRef.current.stage) => fitIn(shots[at], box), [shots])
 
   /* Opening: the photo starts exactly over its grid slot and springs out to fit the stage. This runs on mount, before
      the slides exist, so their first painted frame is already the grid slot rather than the fitted rect. */
@@ -712,12 +712,12 @@ function Viewer({
     zoomTo(z.get() > 1.01 ? 1 : fillZoom(), { x: event.clientX, y: event.clientY })
   }
 
-  const image = images[index]
+  const image = shots[index]
   const near = (at: number) => at === index || (warm && Math.abs(at - index) <= 2)
 
   return (
     <div className="absolute inset-0">
-      <h2 className="sr-only">{image?.title ? `${label}: ${image.title}` : label}</h2>
+      <h2 className="sr-only">{image?.name ? `${label}: ${image.name}` : label}</h2>
       <motion.div aria-hidden="true" className="absolute inset-0 bg-background will-change-[opacity]" style={{ opacity: shade }} />
       {/* The stage is laid out in CSS so chrome sizes and breakpoints stay in one place; slides are placed from its box. */}
       <div ref={stageRef} aria-hidden="true" className="pointer-events-none absolute inset-x-3 top-[68px] bottom-[140px] sm:inset-x-[72px] sm:top-[72px] sm:bottom-[148px]" />
@@ -733,7 +733,7 @@ function Viewer({
         {/* With reduced motion there is no flight: the photos fade in and out with the backdrop. */}
         {stage ? (
           <motion.div className="absolute inset-0" style={{ x: track, opacity: reduced ? shade : 1 }}>
-            {images.map((slide, at) => {
+            {shots.map((slide, at) => {
               if (!near(at)) return null
               const fit = fitIn(slide, stage)
               if (!fit) return null
@@ -772,7 +772,7 @@ function Viewer({
             >
               {zoomed ? <MagnifyingGlassMinusIcon size={20} aria-hidden="true" /> : <MagnifyingGlassPlusIcon size={20} aria-hidden="true" />}
             </button>
-            <button type="button" aria-label="Close viewer" data-lightbox-close="" className={iconButton} onClick={() => close()}>
+            <button type="button" aria-label="Close viewer" data-zoom-close="" className={iconButton} onClick={() => close()}>
               <XIcon size={20} aria-hidden="true" />
             </button>
           </div>
@@ -797,10 +797,10 @@ function Viewer({
         </button>
         <div className="pointer-events-auto absolute inset-x-0 bottom-0 flex h-32 flex-col items-center justify-end pb-4 sm:h-[140px]">
           <div className="flex min-h-[62px] max-w-[min(32rem,calc(100%-2rem))] flex-col items-center justify-end pb-2.5 text-center">
-            {image?.title ? <p className="m-0 max-w-full truncate text-sm leading-[1.4] font-medium">{image.title}</p> : null}
-            {image?.caption ? <p className="m-0 max-w-full truncate text-xs leading-[1.4] text-text-secondary">{image.caption}</p> : null}
+            {image?.name ? <p className="m-0 max-w-full truncate text-sm leading-[1.4] font-medium">{image.name}</p> : null}
+            {image?.note ? <p className="m-0 max-w-full truncate text-xs leading-[1.4] text-text-secondary">{image.note}</p> : null}
           </div>
-          <ThumbStrip images={images} index={index} reduced={reduced} onSelect={onIndexChange} />
+          <ThumbStrip shots={shots} index={index} reduced={reduced} onSelect={onIndexChange} />
         </div>
       </motion.div>
     </div>
@@ -809,12 +809,12 @@ function Viewer({
 
 /** The thumbnail strip. Memoized, so measuring the stage or zooming re-renders the viewer without it. */
 const ThumbStrip = memo(function ThumbStrip({
-  images,
+  shots,
   index,
   reduced,
   onSelect,
 }: {
-  images: LightboxImage[]
+  shots: ZoomShot[]
   index: number
   reduced: boolean
   onSelect: (index: number) => void
@@ -841,7 +841,7 @@ const ThumbStrip = memo(function ThumbStrip({
       aria-label="All photos"
       className="flex h-[52px] w-full touch-pan-x items-center gap-1 overflow-x-auto px-[calc(50%-18px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
     >
-      {images.map((thumb, at) => (
+      {shots.map((thumb, at) => (
         <button
           key={`${thumb.src}-${at}`}
           ref={node => {
@@ -888,7 +888,7 @@ function Slide({
   transform,
   className,
 }: {
-  image: LightboxImage
+  image: ZoomShot
   current: boolean
   /** Within one of the current slide: loads now, so a swipe lands on a sharp photo. */
   eager: boolean
@@ -937,4 +937,4 @@ function Slide({
   )
 }
 
-export default LightboxGallery
+export default ZoomGallery

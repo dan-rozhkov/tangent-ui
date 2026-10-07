@@ -1,39 +1,39 @@
 "use client"
 
 import { useState } from "react"
-import { CopyIcon, FolderPlusIcon, HeartIcon, PaperPlaneTiltIcon, TrashIcon } from "@phosphor-icons/react"
+import { BellSlashIcon, BookmarkSimpleIcon, LinkSimpleIcon, NotePencilIcon, ProhibitIcon } from "@phosphor-icons/react"
 
-import { OrbitMenu } from "@/components/ui/orbit-menu"
+import { RadialPicker } from "@/components/ui/radial-picker"
 
-const labels: Record<string, string> = {
-  favorite: "Added to favorites",
-  share: "Shared with Ryan",
-  album: "Added to Fall trips",
-  duplicate: "Duplicated",
-  delete: "Deleted",
+const confirmations: Record<string, string> = {
+  save: "Saved for later",
+  copy: "Link copied",
+  note: "Note attached",
+  mute: "Thread muted",
+  block: "Sender blocked",
 }
 
 export default function Demo() {
   const [last, setLast] = useState<string | null>(null)
 
   return (
-    // The actions fan out above the button, so the group keeps the same room above and below it.
+    // The picks fan out above the trigger, so the group keeps the same room above and below it.
     <div className="flex w-full max-w-xs flex-col items-center gap-8 py-24">
-      <OrbitMenu
-        label="Photo actions"
-        onAction={setLast}
-        actions={[
-          { id: "favorite", label: "Favorite", icon: <HeartIcon size={24} />, done: "Added to favorites" },
-          { id: "share", label: "Share with Ryan", icon: <PaperPlaneTiltIcon size={24} />, done: "Shared with Ryan" },
-          { id: "album", label: "Add to album", icon: <FolderPlusIcon size={24} />, done: "Added to Fall trips" },
-          { id: "duplicate", label: "Duplicate", icon: <CopyIcon size={24} />, done: "Duplicated" },
-          { id: "delete", label: "Delete", icon: <TrashIcon size={24} />, tone: "danger", done: "Deleted" },
+      <RadialPicker
+        label="Message options"
+        onPick={setLast}
+        picks={[
+          { id: "save", label: "Save for later", icon: <BookmarkSimpleIcon size={24} />, confirmLabel: "Saved for later" },
+          { id: "copy", label: "Copy link", icon: <LinkSimpleIcon size={24} />, confirmLabel: "Link copied" },
+          { id: "note", label: "Attach a note", icon: <NotePencilIcon size={24} />, confirmLabel: "Note attached" },
+          { id: "mute", label: "Mute thread", icon: <BellSlashIcon size={24} />, confirmLabel: "Thread muted" },
+          { id: "block", label: "Block sender", icon: <ProhibitIcon size={24} />, intent: "destructive", confirmLabel: "Sender blocked" },
         ]}
       />
       <div className="w-full rounded-panel border border-border bg-surface p-5 shadow-resting">
-        <p className="text-sm font-medium">Golden hour, Lake Tahoe</p>
+        <p className="text-sm font-medium">Re: Invoice 2291 is overdue</p>
         <p className="mt-1 text-sm text-text-secondary">
-          {last ? `Last action: ${labels[last]}` : "Hold the button, drag to an action, release."}
+          {last ? `Last pick: ${confirmations[last]}` : "Press and hold the dots, slide to a pick, let go."}
         </p>
       </div>
     </div>

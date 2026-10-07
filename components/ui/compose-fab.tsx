@@ -14,36 +14,36 @@ import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export interface ActionMorphComposer {
+export interface ComposeFabForm {
   title: string
   placeholder: string
   multiline?: boolean
-  choices?: { label: string; options: string[] }
-  submitLabel: string
-  successLabel: string
-  /** Shown when the composer is submitted empty. */
-  emptyHint?: string
+  chips?: { label: string; values: string[] }
+  sendLabel: string
+  doneLabel: string
+  /** Shown when the form is sent blank. */
+  blankHint?: string
 }
-export interface ActionMorphAction {
+export interface ComposeFabEntry {
   id: string
   label: string
-  description?: string
+  hint?: string
   icon: ReactNode
-  /** One letter that opens this action's composer while the menu is open. */
-  shortcut?: string
-  composer: ActionMorphComposer
+  /** One letter that opens this entry's form while the menu is open. */
+  hotkey?: string
+  form: ComposeFabForm
 }
-export interface ActionMorphSubmission {
-  action: string
+export interface ComposeFabCreated {
+  entry: string
   text: string
-  choice?: string
+  chip?: string
 }
-export interface ActionMorphProps {
-  actions: ActionMorphAction[]
+export interface ComposeFabProps {
+  entries: ComposeFabEntry[]
   label?: string
-  onSubmit?: (submission: ActionMorphSubmission) => void | Promise<unknown>
-  corner?: "end" | "start"
-  resetAfter?: number
+  onCreate?: (created: ComposeFabCreated) => void | Promise<unknown>
+  anchor?: "end" | "start"
+  settleAfter?: number
   className?: string
 }
 
@@ -116,7 +116,7 @@ function FaceLayer({
   id,
   direction,
   reduced,
-  corner,
+  anchor,
   onSize,
   className,
   children,
@@ -124,7 +124,7 @@ function FaceLayer({
   id: Face
   direction: number
   reduced: boolean
-  corner: "end" | "start"
+  anchor: "end" | "start"
   onSize: (id: Face, width: number, height: number) => void
   className?: string
   children: ReactNode
@@ -154,7 +154,7 @@ function FaceLayer({
       animate="shown"
       exit="gone"
       inert={!present || undefined}
-      className={cn("absolute bottom-0", corner === "end" ? "right-0 origin-bottom-right" : "left-0 origin-bottom-left", className)}
+      className={cn("absolute bottom-0", anchor === "end" ? "right-0 origin-bottom-right" : "left-0 origin-bottom-left", className)}
     >
       {children}
     </motion.div>
@@ -179,7 +179,7 @@ function DrawnCheck({ reduced }: { reduced: boolean }) {
   )
 }
 
-export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end", resetAfter = 1600, className }: ActionMorphProps) {
+export function ComposeFab({ entries, label = "Quick add", onCreate, anchor = "end", settleAfter = 1600, className }: ComposeFabProps) {
   const reduced = useReducedFlag()
   const motionTokens = useMotionTokens()
   const { blur } = motionTokens
@@ -249,12 +249,12 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
     surfaceRef.current?.querySelector<HTMLElement>(`[data-face="${CSS.escape(face)}"] ${selector}`)?.focus({ preventScroll: true })
   }, [face])
 
-  // After success the check holds for resetAfter, then the plus rotates back in.
+  // After success the check holds for settleAfter, then the plus rotates back in.
   useEffect(() => {
     if (!success) return
-    const timer = window.setTimeout(() => setSuccess(null), resetAfter)
+    const timer = window.setTimeout(() => setSuccess(null), settleAfter)
     return () => window.clearTimeout(timer)
-  }, [success, resetAfter])
+  }, [success, settleAfter])
 
   const close = useCallback(
     (focusButton: boolean) => {
@@ -281,29 +281,29 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
     setActive(index)
     go("menu", 1, `[data-index="${index}"]`)
   }
-  const openComposer = (action: ActionMorphAction) => {
+  const openComposer = (action: ComposeFabEntry) => {
     setProblem(null)
-    setActive(actions.indexOf(action))
+    setActive(entries.indexOf(action))
     go(`composer:${action.id}`, 1, "[data-field]")
   }
-  const backToMenu = (action: ActionMorphAction) => {
+  const backToMenu = (action: ComposeFabEntry) => {
     run.current++
     setSending(false)
     setProblem(null)
-    const index = actions.indexOf(action)
+    const index = entries.indexOf(action)
     setActive(index)
     go("menu", -1, `[data-index="${index}"]`)
   }
 
-  const draftFor = (action: ActionMorphAction) => {
+  const draftFor = (action: ComposeFabEntry) => {
     const draft = drafts[action.id]
-    return { text: draft?.text ?? "", choice: draft?.choice ?? action.composer.choices?.options[0] }
+    return { text: draft?.text ?? "", choice: draft?.choice ?? action.form.chips?.values[0] }
   }
   const setDraft = (id: string, patch: Partial<{ text: string; choice?: string }>) =>
     setDrafts(all => ({ ...all, [id]: { text: all[id]?.text ?? "", choice: all[id]?.choice, ...patch } }))
 
   const [shake, setShake] = useState(0)
-  const submit = async (action: ActionMorphAction) => {
+  const submit = async (action: ComposeFabEntry) => {
     if (sending) return
     const { text, choice } = draftFor(action)
     if (!text.trim()) {
@@ -316,7 +316,7 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
     setProblem(null)
     let result: void | Promise<unknown> | undefined
     try {
-      result = onSubmit?.({ action: action.id, text: text.trim(), choice: action.composer.choices ? choice : undefined })
+      result = onCreate?.({ entry: action.id, text: text.trim(), chip: action.form.chips ? choice : undefined })
       if (result && typeof (result as Promise<unknown>).then === "function") {
         setSending(true)
         await result
@@ -325,7 +325,7 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
       if (token !== run.current) return
       setSending(false)
       setProblem({ id: action.id, kind: "failed" })
-      setAnnouncement("Couldn’t save. Your draft is kept, try again.")
+      setAnnouncement("Not saved. Your draft is kept, try again.")
       return
     }
     if (token !== run.current) {
@@ -336,7 +336,7 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
         delete next[action.id]
         return next
       })
-      setAnnouncement(action.composer.successLabel)
+      setAnnouncement(action.form.doneLabel)
       return
     }
     setSending(false)
@@ -345,8 +345,8 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
       delete next[action.id]
       return next
     })
-    setSuccess(action.composer.successLabel)
-    setAnnouncement(action.composer.successLabel)
+    setSuccess(action.form.doneLabel)
+    setAnnouncement(action.form.doneLabel)
     go("button", -1, "[data-trigger]")
   }
 
@@ -354,20 +354,20 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
     if (event.key !== "Escape" || face === "button") return
     event.preventDefault()
     event.stopPropagation()
-    const composing = face.startsWith("composer:") ? actions.find(action => face === `composer:${action.id}`) : undefined
+    const composing = face.startsWith("composer:") ? entries.find(action => face === `composer:${action.id}`) : undefined
     if (composing) backToMenu(composing)
     else close(true)
   }
 
   const onMenuKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    const last = actions.length - 1
+    const last = entries.length - 1
     let next = -1
     if (event.key === "ArrowDown") next = active >= last ? 0 : active + 1
     else if (event.key === "ArrowUp") next = active <= 0 ? last : active - 1
     else if (event.key === "Home") next = 0
     else if (event.key === "End") next = last
     else if (event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey) {
-      const action = actions.find(item => item.shortcut?.toLowerCase() === event.key.toLowerCase())
+      const action = entries.find(item => item.hotkey?.toLowerCase() === event.key.toLowerCase())
       if (action) {
         event.preventDefault()
         openComposer(action)
@@ -382,7 +382,7 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
 
   const titleId = `${uid}-title`
   const resting = face === "button"
-  const composing = actions.find(action => face === `composer:${action.id}`)
+  const composing = entries.find(action => face === `composer:${action.id}`)
 
   return (
     <div ref={rootRef} className={cn("relative size-14 touch-manipulation", className)}>
@@ -391,7 +391,7 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
         className={cn(
           "absolute bottom-0 overflow-hidden",
           "transition-[background-color,color,box-shadow] duration-300 ease-standard motion-reduce:transition-none",
-          corner === "end" ? "right-0" : "left-0",
+          anchor === "end" ? "right-0" : "left-0",
           resting
             ? success
               ? "bg-success text-background shadow-raised"
@@ -405,7 +405,7 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
       >
         <AnimatePresence initial={false} custom={direction}>
           {resting && (
-            <FaceLayer key="button" id="button" direction={direction} reduced={reduced} corner={corner} onSize={onSize}>
+            <FaceLayer key="button" id="button" direction={direction} reduced={reduced} anchor={anchor} onSize={onSize}>
               <button
                 type="button"
                 data-trigger=""
@@ -417,7 +417,7 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
                 onKeyDown={event => {
                   if (event.key === "ArrowUp" || event.key === "ArrowDown") {
                     event.preventDefault()
-                    openMenu(event.key === "ArrowUp" ? actions.length - 1 : 0)
+                    openMenu(event.key === "ArrowUp" ? entries.length - 1 : 0)
                   }
                 }}
               >
@@ -456,7 +456,7 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
               id="menu"
               direction={direction}
               reduced={reduced}
-              corner={corner}
+              anchor={anchor}
               onSize={onSize}
               className="w-[min(16rem,calc(100vw-2rem))] p-1.5"
             >
@@ -468,14 +468,14 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
               </div>
               <LayoutGroup id={`${uid}-menu`}>
                 <div role="menu" aria-labelledby={titleId} className="isolate mt-0.5 flex flex-col gap-0.5" onKeyDown={onMenuKeyDown}>
-                  {actions.map((action, index) => (
+                  {entries.map((action, index) => (
                     <motion.button
                       key={action.id}
                       type="button"
                       role="menuitem"
                       data-index={index}
                       tabIndex={index === active ? 0 : -1}
-                      aria-keyshortcuts={action.shortcut}
+                      aria-keyshortcuts={action.hotkey}
                       className="relative flex cursor-pointer items-center gap-3 rounded-[18px] px-2.5 py-[9px] text-left outline-none [-webkit-tap-highlight-color:transparent]"
                       initial={reduced ? { opacity: 0 } : { opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -506,11 +506,11 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
                       </span>
                       <span className="flex min-w-0 flex-1 flex-col gap-px">
                         <span className="truncate text-sm leading-body font-medium text-foreground">{action.label}</span>
-                        {action.description && <span className="truncate text-xs leading-body text-text-secondary">{action.description}</span>}
+                        {action.hint && <span className="truncate text-xs leading-body text-text-secondary">{action.hint}</span>}
                       </span>
-                      {action.shortcut && (
+                      {action.hotkey && (
                         <kbd className="grid h-[22px] min-w-[22px] flex-none place-items-center rounded-[7px] border border-border px-1.5 font-sans text-xs leading-none text-text-muted uppercase" aria-hidden="true">
-                          {action.shortcut}
+                          {action.hotkey}
                         </kbd>
                       )}
                     </motion.button>
@@ -526,7 +526,7 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
               id={face}
               direction={direction}
               reduced={reduced}
-              corner={corner}
+              anchor={anchor}
               onSize={onSize}
               className="w-[min(20rem,calc(100vw-2rem))]"
             >
@@ -574,7 +574,7 @@ function Composer({
   onSubmit,
 }: {
   uid: string
-  action: ActionMorphAction
+  action: ComposeFabEntry
   draft: { text: string; choice?: string }
   problem: "empty" | "failed" | null
   sending: boolean
@@ -587,7 +587,7 @@ function Composer({
   onSubmit: () => void
 }) {
   const motionTokens = useMotionTokens()
-  const { composer } = action
+  const { form: composer } = action
   const titleId = `${uid}-${action.id}-title`
   const messageId = `${uid}-${action.id}-message`
   const choicesId = `${uid}-${action.id}-choices`
@@ -601,7 +601,7 @@ function Composer({
   }, [field, problem, reduced, shake])
 
   const message =
-    problem === "empty" ? (composer.emptyHint ?? "Write something first.") : problem === "failed" ? "Couldn’t save. Try again." : null
+    problem === "empty" ? (composer.blankHint ?? "Add a few words first.") : problem === "failed" ? "Not saved. Try again." : null
   const fieldClass = cn(
     "block w-full resize-none rounded-[18px] bg-surface-muted/80 px-3 py-2.5 text-base leading-body text-foreground outline-none ring-1 ring-border ring-inset placeholder:text-text-muted",
     "transition-[box-shadow] duration-160 ease-standard focus:ring-border-strong aria-invalid:ring-danger",
@@ -653,10 +653,10 @@ function Composer({
           />
         )}
       </motion.div>
-      {composer.choices && (
+      {composer.chips && (
         <div className="flex flex-col gap-1.5 px-0.5">
           <span id={choicesId} className="text-xs leading-body text-text-muted">
-            {composer.choices.label}
+            {composer.chips.label}
           </span>
           <LayoutGroup id={`${uid}-${action.id}-choices`}>
             <RadioGroup
@@ -665,7 +665,7 @@ function Composer({
               onValueChange={value => onChoice(String(value))}
               className="isolate grid auto-cols-fr grid-flow-col rounded-full bg-foreground/5 p-[3px]"
             >
-              {composer.choices.options.map(option => (
+              {composer.chips.values.map(option => (
                 <Radio.Root
                   key={option}
                   value={option}
@@ -692,7 +692,7 @@ function Composer({
       )}
       <div className="flex h-9 items-center justify-between gap-3 pl-1">
         <span id={messageId} className={cn("min-w-0 text-xs leading-body", problem ? "text-danger" : "text-text-muted")}>
-          {message ?? (composer.multiline ? "⌘ Enter to save" : null)}
+          {message ?? (composer.multiline ? "⌘ Enter to send" : null)}
         </span>
         <Button
           type="submit"
@@ -700,7 +700,7 @@ function Composer({
           loading={sending}
           className="min-h-9 flex-none rounded-full border-transparent bg-accent px-3.5 text-accent-foreground [&_.animate-spin]:motion-reduce:animate-[spin_1.6s_linear_infinite]"
         >
-          {composer.submitLabel}
+          {composer.sendLabel}
         </Button>
       </div>
     </form>
@@ -728,4 +728,4 @@ function CloseButton({ onClick }: { onClick: () => void }) {
   )
 }
 
-export default ActionMorph
+export default ComposeFab

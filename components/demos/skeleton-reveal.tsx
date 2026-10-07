@@ -4,104 +4,104 @@ import { useEffect, useState } from "react"
 import { ArrowsClockwiseIcon } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
-import { MorphBlock, SkeletonMorph } from "@/components/ui/skeleton-morph"
+import { RevealBlock, SkeletonReveal } from "@/components/ui/skeleton-reveal"
 import { avatar } from "@/lib/media"
 import type { PersonId } from "@/lib/media"
 
 const card = "flex w-full flex-col rounded-panel border border-border bg-surface p-5"
 
-const payouts: { id: PersonId; name: string; note: string; amount: string; nameWidth: number; noteWidth: number }[] = [
-  { id: "emma-collins", name: "Emma Collins", note: "Sent today", amount: "$980", nameWidth: 104, noteWidth: 76 },
-  { id: "mateo-alvarez", name: "Mateo Alvarez", note: "Sent Oct 2", amount: "$1,460", nameWidth: 104, noteWidth: 76 },
-  { id: "hannah-walsh", name: "Hannah Walsh", note: "Due Oct 14", amount: "$2,310", nameWidth: 104, noteWidth: 76 },
+const shipments: { id: PersonId; name: string; note: string; amount: string; nameWidth: number; noteWidth: number }[] = [
+  { id: "daniel-kim", name: "Daniel Kim", note: "Left the depot", amount: "12 crates", nameWidth: 96, noteWidth: 88 },
+  { id: "chloe-nguyen", name: "Chloe Nguyen", note: "Arrives Nov 6", amount: "4 crates", nameWidth: 104, noteWidth: 84 },
+  { id: "andre-williams", name: "Andre Williams", note: "Packing Nov 9", amount: "28 crates", nameWidth: 112, noteWidth: 80 },
 ]
 
 export default function Demo() {
-  const [loading, setLoading] = useState(true)
+  const [ready, setReady] = useState(false)
   const [round, setRound] = useState(0)
 
-  // Each round pretends to fetch for a moment, then resolves.
+  // Each round waits a moment, then reveals.
   useEffect(() => {
-    const timer = window.setTimeout(() => setLoading(false), 1500)
+    const timer = window.setTimeout(() => setReady(true), 1600)
     return () => window.clearTimeout(timer)
   }, [round])
 
   return (
     <div className="flex w-full max-w-[490px] flex-col items-center gap-4">
-      <SkeletonMorph loading={loading} loadingLabel="Loading profile" as="article" className={card}>
+      <SkeletonReveal ready={ready} busyLabel="Fetching vendor" as="article" className={card}>
         <div className="grid gap-4">
           <div className="flex items-center gap-3">
-            <MorphBlock radius="circle" width={52} height={52} className="flex-none">
+            <RevealBlock shape="circle" width={52} height={52} className="flex-none">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={avatar("jasmine-brooks")} alt="" width={52} height={52} className="block size-13 rounded-full object-cover" />
-            </MorphBlock>
+              <img src={avatar("sofia-ramirez")} alt="" width={52} height={52} className="block size-13 rounded-full object-cover" />
+            </RevealBlock>
             <div className="flex min-w-0 flex-col gap-0.5">
-              <MorphBlock width={124} lines={1} lineHeight={20}>
-                <p className="m-0 text-[15px] leading-[20px] font-medium">Jasmine Brooks</p>
-              </MorphBlock>
-              <MorphBlock width={164} lines={1} lineHeight={18}>
-                <p className="m-0 text-[13px] leading-[18px] text-text-secondary">Design lead, Lisbon studio</p>
-              </MorphBlock>
+              <RevealBlock width={124} rows={1} rowHeight={20}>
+                <p className="m-0 text-[15px] leading-[20px] font-medium">Sofia Ramirez</p>
+              </RevealBlock>
+              <RevealBlock width={164} rows={1} rowHeight={18}>
+                <p className="m-0 text-[13px] leading-[18px] text-text-secondary">Orchard grower, Valle Verde</p>
+              </RevealBlock>
             </div>
           </div>
-          <MorphBlock lines={2} lineHeight={20}>
+          <RevealBlock rows={2} rowHeight={20}>
             <p className="m-0 text-sm leading-[20px] text-text-secondary">
-              Shapes calm interfaces for home goods. This month: a quieter checkout and a lamp that keeps turning up in every moodboard.
+              Third-generation pear and quince farm. Picking wraps up this week, and the late russet crates ship in time for the first cold snap.
             </p>
-          </MorphBlock>
+          </RevealBlock>
           <div className="flex items-center justify-between gap-3">
-            <MorphBlock width={169} lines={1} lineHeight={20}>
+            <RevealBlock width={169} rows={1} rowHeight={20}>
               <p className="m-0 text-sm leading-[20px] text-text-secondary">
-                <span className="text-foreground tabular-nums">3.1k</span> followers · <span className="text-foreground tabular-nums">96</span> posts
+                <span className="text-foreground tabular-nums">48</span> acres · <span className="text-foreground tabular-nums">7</span> varieties
               </p>
-            </MorphBlock>
-            <MorphBlock width={90} height={36} radius={18} className="flex-none">
+            </RevealBlock>
+            <RevealBlock width={90} height={36} shape={18} className="flex-none">
               <Button size="sm" className="w-[90px]">
-                Follow
+                Order
               </Button>
-            </MorphBlock>
+            </RevealBlock>
           </div>
         </div>
-      </SkeletonMorph>
-      <SkeletonMorph loading={loading} loadingLabel="Loading payouts" as="section" className={card}>
+      </SkeletonReveal>
+      <SkeletonReveal ready={ready} busyLabel="Fetching shipments" as="section" className={card}>
         <div className="grid gap-4">
-          <MorphBlock width={101} lines={1} lineHeight={20}>
-            <h3 className="m-0 text-sm leading-[20px] font-medium">Recent payouts</h3>
-          </MorphBlock>
+          <RevealBlock width={128} rows={1} rowHeight={20}>
+            <h3 className="m-0 text-sm leading-[20px] font-medium">Incoming shipments</h3>
+          </RevealBlock>
           <ul className="m-0 grid list-none gap-3.5 p-0">
-            {payouts.map(item => (
+            {shipments.map(item => (
               <li key={item.id} className="flex h-9 items-center gap-3">
-                <MorphBlock radius="circle" width={36} height={36} className="flex-none">
+                <RevealBlock shape="circle" width={36} height={36} className="flex-none">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={avatar(item.id)} alt="" width={36} height={36} className="block size-9 rounded-full object-cover" />
-                </MorphBlock>
+                </RevealBlock>
                 <div className="flex min-w-0 flex-1 flex-col">
-                  <MorphBlock width={item.nameWidth} lines={1} lineHeight={18}>
+                  <RevealBlock width={item.nameWidth} rows={1} rowHeight={18}>
                     <p className="m-0 text-sm leading-[18px] font-medium">{item.name}</p>
-                  </MorphBlock>
-                  <MorphBlock width={item.noteWidth} lines={1} lineHeight={18}>
+                  </RevealBlock>
+                  <RevealBlock width={item.noteWidth} rows={1} rowHeight={18}>
                     <p className="m-0 text-xs leading-[18px] text-text-muted">{item.note}</p>
-                  </MorphBlock>
+                  </RevealBlock>
                 </div>
-                <MorphBlock width={44} lines={1} lineHeight={18} className="flex-none">
+                <RevealBlock width={64} rows={1} rowHeight={18} className="flex-none">
                   <p className="m-0 text-sm leading-[18px] tabular-nums">{item.amount}</p>
-                </MorphBlock>
+                </RevealBlock>
               </li>
             ))}
           </ul>
         </div>
-      </SkeletonMorph>
+      </SkeletonReveal>
       <Button
         size="sm"
         variant="secondary"
         className="px-3.5"
         onClick={() => {
-          setLoading(true)
+          setReady(false)
           setRound(value => value + 1)
         }}
       >
         <ArrowsClockwiseIcon size={16} aria-hidden="true" />
-        Reload
+        Replay
       </Button>
     </div>
   )

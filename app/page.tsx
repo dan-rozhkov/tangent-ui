@@ -14,7 +14,7 @@ export default function Home() {
             React components with calm, physical motion
           </h1>
           <p className="max-w-xl text-base leading-body text-balance text-text-secondary sm:text-lg">
-            {catalog.length} components and blocks built on Base UI, Tailwind and Motion. Every demo is live: press, drag and scroll them.
+            Built on Base UI, Tailwind and Motion. Press, drag and scroll any of the {catalog.length} pieces below to feel how they move.
           </p>
           <div>
             <OpenMenuButton />

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useMotionValueEvent } from "motion/react"
 import type { Variants } from "motion/react"
-import { ArrowUUpLeftIcon, ArrowLeftIcon, ArrowRightIcon, CalendarBlankIcon, CheckIcon, MinusIcon, PlusIcon } from "@phosphor-icons/react"
+import { ArrowUUpLeftIcon, ArrowLeftIcon, ArrowRightIcon, TennisBallIcon, CheckIcon, MinusIcon, PlusIcon } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
@@ -12,47 +12,47 @@ import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export interface Booking {
-  date: string
-  time: string
-  partySize: number
+export interface Reservation {
+  day: string
+  slot: string
+  players: number
 }
 
-export type BookingStep = "start" | "party" | "date" | "time" | "review" | "booked"
+export type ReserveStep = "start" | "players" | "day" | "slot" | "review" | "done"
 
-export interface BookingPillProps {
-  /** Venue name printed on the ticket. */
-  venue: string
-  /** Second ticket line, such as the address. */
-  venueDetail?: string
+export interface ReservePillProps {
+  /** Court or facility name printed on the ticket. */
+  facility: string
+  /** Second ticket line, such as the location. */
+  facilityNote?: string
   /** First day on the strip as an ISO date. Pass it from data so server and client agree. */
-  startDate: string
+  firstDay: string
   /** Days on the strip. */
   days?: number
-  /** Seating times as "HH:MM", in order. */
-  times?: string[]
-  /** Whether a time is free. Everything is free by default. */
-  isAvailable?: (date: string, time: string, partySize: number) => boolean
-  /** Preselected when free, otherwise the nearest free time. */
-  preferredTime?: string
-  minPartySize?: number
-  maxPartySize?: number
-  defaultPartySize?: number
-  /** Resolve to show the booked state, reject to keep the ticket open with an error. */
-  onConfirm?: (booking: Booking) => Promise<void> | void
-  onStepChange?: (step: BookingStep) => void
+  /** Slot start times as "HH:MM", in order. */
+  slots?: string[]
+  /** Whether a slot is open. Everything is open by default. */
+  isOpen?: (day: string, slot: string, players: number) => boolean
+  /** Preselected when open, otherwise the nearest open slot. */
+  preferredSlot?: string
+  minPlayers?: number
+  maxPlayers?: number
+  defaultPlayers?: number
+  /** Resolve to show the confirmed state, reject to keep the ticket open with an error. */
+  onConfirm?: (reservation: Reservation) => Promise<void> | void
+  onStepChange?: (step: ReserveStep) => void
   /** Clock used for displayed times. Data always uses "HH:MM". */
-  hourCycle?: 12 | 24
+  clock?: 12 | 24
   /** Label of the closed pill. */
   label?: string
   className?: string
 }
 
-const DEFAULT_TIMES = Array.from({ length: 12 }, (_, i) => {
-  const minutes = 17 * 60 + i * 30
+const DEFAULT_SLOTS = Array.from({ length: 12 }, (_, i) => {
+  const minutes = 8 * 60 + i * 60
   return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`
 })
-const ORDER: BookingStep[] = ["start", "party", "date", "time", "review", "booked"]
+const ORDER: ReserveStep[] = ["start", "players", "day", "slot", "review", "done"]
 const CELL = 52
 /** The selected day's window inside the 60px strip: a 48px rounded square in the centre cell. */
 const LENS_CLIP = `inset(6px calc(50% - ${(CELL - 4) / 2}px) round 14px)`
@@ -369,7 +369,7 @@ function DateStrip({
       role="slider"
       tabIndex={0}
       data-autofocus
-      aria-label="Date"
+      aria-label="Day"
       aria-valuemin={0}
       aria-valuemax={last}
       aria-valuenow={index}
@@ -406,13 +406,13 @@ function TimeGrid({
   free,
   value,
   onChange,
-  hourCycle,
+  clock,
 }: {
   times: string[]
   free: (time: string) => boolean
   value: string | null
   onChange: (time: string) => void
-  hourCycle: 12 | 24
+  clock: 12 | 24
 }) {
   const nodes = useRef(new Map<string, HTMLButtonElement>())
   const freeIndexes = times.map((time, i) => (free(time) ? i : -1)).filter((i) => i >= 0)
@@ -443,7 +443,7 @@ function TimeGrid({
   }
 
   return (
-    <div role="radiogroup" aria-label="Time" className="grid grid-cols-4 gap-1.5">
+    <div role="radiogroup" aria-label="Slot" className="grid grid-cols-4 gap-1.5">
       {times.map((time, index) => {
         const available = free(time)
         const checked = time === value
@@ -472,7 +472,7 @@ function TimeGrid({
             onClick={() => available && onChange(time)}
             onKeyDown={(event) => onKeyDown(event, index)}
           >
-            {formatTime(time, hourCycle)}
+            {formatTime(time, clock)}
           </button>
         )
       })}
@@ -482,16 +482,16 @@ function TimeGrid({
 
 /* ---------- pill ---------- */
 
-const STEP_NAMES: Record<BookingStep, string> = {
+const STEP_NAMES: Record<ReserveStep, string> = {
   start: "",
-  party: "Party size",
-  date: "Choose a date",
-  time: "Choose a time",
-  review: "Review your booking",
-  booked: "Table booked",
+  players: "Players",
+  day: "Choose a day",
+  slot: "Choose a slot",
+  review: "Review your reservation",
+  done: "Court reserved",
 }
-/** Fixed step widths (measured); party and booked size to their content (300 and ~244). */
-const CAPS: Record<BookingStep, number | null> = { start: null, party: null, date: 420, time: 360, review: 340, booked: null }
+/** Fixed step widths (measured); players and done size to their content (300 and ~244). */
+const CAPS: Record<ReserveStep, number | null> = { start: null, players: null, day: 420, slot: 360, review: 340, done: null }
 /** The shape keeps one radius: a full pill at 52-60px tall, a rounded card when taller. */
 const RADIUS = 30
 /** Growing: morph timing with a little less bounce (~0.3% overshoot measured). Folding: critically damped, ~420ms. */
@@ -503,33 +503,33 @@ const buildShape = (motionTokens: MotionTokens) => ({
 const wait = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
 /**
- * One floating pill that reshapes itself through a booking flow. The surface springs to each step's measured size while the
+ * One floating pill that reshapes itself through a court reservation. The surface springs to each step's measured size while the
  * faces inside slide in the direction of travel. Escape goes back one step.
  */
-export function BookingPill({
-  venue,
-  venueDetail,
-  startDate,
+export function ReservePill({
+  facility,
+  facilityNote,
+  firstDay,
   days = 21,
-  times = DEFAULT_TIMES,
-  isAvailable,
-  preferredTime = "19:30",
-  minPartySize = 1,
-  maxPartySize = 12,
-  defaultPartySize = 2,
+  slots = DEFAULT_SLOTS,
+  isOpen,
+  preferredSlot = "18:00",
+  minPlayers = 2,
+  maxPlayers = 4,
+  defaultPlayers = 2,
   onConfirm,
   onStepChange,
-  hourCycle = 12,
-  label = "Book a table",
+  clock = 12,
+  label = "Reserve a court",
   className,
-}: BookingPillProps) {
+}: ReservePillProps) {
   const reduced = useReducedMotion() ?? false
   const motionTokens = useMotionTokens()
   const { grow, fold } = useMemo(() => buildShape(motionTokens), [motionTokens])
-  const [step, setStep] = useState<BookingStep>("start")
+  const [step, setStep] = useState<ReserveStep>("start")
   const [moved, setMoved] = useState(false)
   const [direction, setDirection] = useState(1)
-  const [party, setParty] = useState(() => Math.min(maxPartySize, Math.max(minPartySize, defaultPartySize)))
+  const [party, setParty] = useState(() => Math.min(maxPlayers, Math.max(minPlayers, defaultPlayers)))
   const [dateIndex, setDateIndex] = useState(0)
   const [time, setTime] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
@@ -541,21 +541,21 @@ export function BookingPill({
   const size = useRef<{ width: number; height: number } | null>(null)
   const [measured, setMeasured] = useState(false)
 
-  const dates = useMemo(() => Array.from({ length: Math.max(1, days) }, (_, i) => addDays(startDate, i)), [days, startDate])
+  const dates = useMemo(() => Array.from({ length: Math.max(1, days) }, (_, i) => addDays(firstDay, i)), [days, firstDay])
   const date = dates[Math.min(dateIndex, dates.length - 1)]
-  const free = useCallback((t: string) => (isAvailable ? isAvailable(date, t, party) : true), [date, isAvailable, party])
+  const free = useCallback((t: string) => (isOpen ? isOpen(date, t, party) : true), [date, isOpen, party])
 
-  const go = (next: BookingStep) => {
+  const go = (next: ReserveStep) => {
     setDirection(ORDER.indexOf(next) >= ORDER.indexOf(step) ? 1 : -1)
     setStep(next)
     setMoved(true)
     setError(null)
     onStepChange?.(next)
-    if (next === "time") {
+    if (next === "slot") {
       // Keep a still-free choice; otherwise the preferred time, or the free time nearest to it.
       if (time && free(time)) return
-      const preferred = Math.max(0, times.indexOf(preferredTime))
-      const nearest = times
+      const preferred = Math.max(0, slots.indexOf(preferredSlot))
+      const nearest = slots
         .map((t, i) => ({ t, d: Math.abs(i - preferred) + (i < preferred ? 0.5 : 0) }))
         .filter(({ t }) => free(t))
         .sort((a, b) => a.d - b.d)[0]
@@ -564,7 +564,7 @@ export function BookingPill({
   }
 
   const back = () => {
-    const previous: Partial<Record<BookingStep, BookingStep>> = { party: "start", date: "party", time: "date", review: "time", booked: "start" }
+    const previous: Partial<Record<ReserveStep, ReserveStep>> = { players: "start", day: "players", slot: "day", review: "slot", done: "start" }
     const target = previous[step]
     if (target && !submitting) go(target)
   }
@@ -574,12 +574,12 @@ export function BookingPill({
     setSubmitting(true)
     setError(null)
     try {
-      await (onConfirm ? onConfirm({ date, time, partySize: party }) : wait(900))
+      await (onConfirm ? onConfirm({ day: date, slot: time, players: party }) : wait(900))
       setSubmitting(false)
-      go("booked")
+      go("done")
     } catch {
       setSubmitting(false)
-      setError("That table could not be booked. Try again or pick another time.")
+      setError("That court could not be reserved. Try again or pick another slot.")
     }
   }
 
@@ -605,12 +605,12 @@ export function BookingPill({
   )
 
   const shortDate = ticketDate.format(asDate(date))
-  const timeLabel = time ? formatTime(time, hourCycle) : null
+  const timeLabel = time ? formatTime(time, clock) : null
   const when = `${shortDate}${timeLabel ? ` at ${timeLabel}` : ""}`
-  const guests = `${party} ${party === 1 ? "guest" : "guests"}`
-  const freeCount = times.filter(free).length
+  const guests = `${party} ${party === 1 ? "player" : "players"}`
+  const freeCount = slots.filter(free).length
   const announcement =
-    step === "booked" ? `Table for ${party} booked, ${when}` : step === "start" ? "" : STEP_NAMES[step]
+    step === "done" ? `Court reserved for ${guests}, ${when}` : step === "start" ? "" : STEP_NAMES[step]
 
   let face: ReactNode
   if (step === "start") {
@@ -619,53 +619,53 @@ export function BookingPill({
         type="button"
         data-autofocus
         className="flex h-[52px] cursor-pointer items-center gap-2 rounded-pill border-0 bg-transparent px-5 text-base font-medium whitespace-nowrap text-foreground outline-none [-webkit-tap-highlight-color:transparent]"
-        onClick={() => go("party")}
+        onClick={() => go("players")}
       >
-        <CalendarBlankIcon className="size-5" aria-hidden="true" />
+        <TennisBallIcon className="size-5" aria-hidden="true" />
         {label}
       </button>
     )
-  } else if (step === "party") {
+  } else if (step === "players") {
     face = (
       <div className="flex items-center gap-1.5 p-2">
         <button type="button" className={quiet} aria-label="Back" onClick={back}>
           <ArrowLeftIcon size={24} />
         </button>
-        <div role="group" aria-label="Party size" className="flex h-9 w-[184px] items-center gap-0.5 px-0.5">
+        <div role="group" aria-label="Player count" className="flex h-9 w-[184px] items-center gap-0.5 px-0.5">
           <button
             type="button"
             className={stepper}
-            aria-label="Fewer guests"
-            disabled={party <= minPartySize}
-            onClick={() => setParty((n) => Math.max(minPartySize, n - 1))}
+            aria-label="Fewer players"
+            disabled={party <= minPlayers}
+            onClick={() => setParty((n) => Math.max(minPlayers, n - 1))}
           >
             <MinusIcon size={24} />
           </button>
           <output aria-live="polite" className="flex min-w-0 flex-1 justify-center gap-1 text-base whitespace-nowrap text-foreground">
             <RollingNumber value={party} reduced={reduced} />
-            <span>{party === 1 ? "guest" : "guests"}</span>
+            <span>{party === 1 ? "player" : "players"}</span>
           </output>
           <button
             type="button"
             className={stepper}
-            aria-label="More guests"
+            aria-label="More players"
             data-autofocus
-            disabled={party >= maxPartySize}
-            onClick={() => setParty((n) => Math.min(maxPartySize, n + 1))}
+            disabled={party >= maxPlayers}
+            onClick={() => setParty((n) => Math.min(maxPlayers, n + 1))}
           >
             <PlusIcon size={24} />
           </button>
         </div>
-        <button type="button" className={loud} aria-label="Next, choose a date" onClick={() => go("date")}>
+        <button type="button" className={loud} aria-label="Next, choose a day" onClick={() => go("day")}>
           <ArrowRightIcon size={24} />
         </button>
       </div>
     )
-  } else if (step === "date") {
+  } else if (step === "day") {
     face = (
       <div className="grid gap-1 p-2">
         <div className="flex items-center gap-2">
-          <button type="button" className={quiet} aria-label="Back to party size" onClick={back}>
+          <button type="button" className={quiet} aria-label="Back to players" onClick={back}>
             <ArrowLeftIcon size={24} />
           </button>
           {/* The long date gives way to the short one when the title runs out of room. */}
@@ -680,31 +680,31 @@ export function BookingPill({
               {shortDate}
             </span>
           </div>
-          <button type="button" className={loud} aria-label="Next, choose a time" onClick={() => go("time")}>
+          <button type="button" className={loud} aria-label="Next, choose a slot" onClick={() => go("slot")}>
             <ArrowRightIcon size={24} />
           </button>
         </div>
-        <DateStrip dates={dates} index={dateIndex} onIndexChange={setDateIndex} onCommit={() => go("time")} reduced={reduced} />
+        <DateStrip dates={dates} index={dateIndex} onIndexChange={setDateIndex} onCommit={() => go("slot")} reduced={reduced} />
       </div>
     )
-  } else if (step === "time") {
+  } else if (step === "slot") {
     face = (
       <div className="grid gap-3 px-2.5 pt-2 pb-2.5">
         <div className="flex items-center gap-2">
-          <button type="button" className={quiet} aria-label="Back to dates" onClick={back}>
+          <button type="button" className={quiet} aria-label="Back to days" onClick={back}>
             <ArrowLeftIcon size={24} />
           </button>
           <div className="min-w-0 flex-1 leading-tight">
             <p className="truncate text-base font-medium text-foreground">{shortDate}</p>
             <p className="truncate text-sm text-text-secondary">
-              {guests} · {freeCount} free
+              {guests} · {freeCount} open
             </p>
           </div>
         </div>
         {freeCount ? (
-          <TimeGrid times={times} free={free} value={time} onChange={setTime} hourCycle={hourCycle} />
+          <TimeGrid times={slots} free={free} value={time} onChange={setTime} clock={clock} />
         ) : (
-          <p className="px-2 text-center text-sm text-text-secondary">No free tables this day. Go back and try another date.</p>
+          <p className="px-2 text-center text-sm text-text-secondary">No open courts this day. Go back and try another day.</p>
         )}
         <button
           type="button"
@@ -712,7 +712,7 @@ export function BookingPill({
           disabled={!time || !free(time)}
           onClick={() => go("review")}
         >
-          Review booking
+          Review reservation
         </button>
       </div>
     )
@@ -721,20 +721,20 @@ export function BookingPill({
       <div className="grid">
         <div className="grid gap-4 px-[22px] pt-5 pb-[18px]">
           <div>
-            <p className="text-[22px] leading-tight font-medium text-foreground">{venue}</p>
-            {venueDetail ? <p className="text-sm text-text-secondary">{venueDetail}</p> : null}
+            <p className="text-[22px] leading-tight font-medium text-foreground">{facility}</p>
+            {facilityNote ? <p className="text-sm text-text-secondary">{facilityNote}</p> : null}
           </div>
           <dl className="grid grid-cols-3 gap-3">
             <div>
-              <dt className="text-xs text-text-muted">Date</dt>
+              <dt className="text-xs text-text-muted">Day</dt>
               <dd className="text-base font-medium text-foreground">{shortDate}</dd>
             </div>
             <div>
-              <dt className="text-xs text-text-muted">Time</dt>
+              <dt className="text-xs text-text-muted">Slot</dt>
               <dd className="text-base font-medium text-foreground tabular-nums">{timeLabel ?? "None"}</dd>
             </div>
             <div>
-              <dt className="text-xs text-text-muted">Guests</dt>
+              <dt className="text-xs text-text-muted">Players</dt>
               <dd className="text-base font-medium text-foreground tabular-nums">{party}</dd>
             </div>
           </dl>
@@ -759,7 +759,7 @@ export function BookingPill({
             loading={submitting}
             onClick={confirm}
           >
-            Confirm booking
+            Confirm reservation
           </Button>
         </div>
       </div>
@@ -771,13 +771,13 @@ export function BookingPill({
           <CheckIcon size={24} aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1 leading-tight whitespace-nowrap">
-          <p className="truncate text-sm font-medium text-foreground">Table for {party} booked</p>
+          <p className="truncate text-sm font-medium text-foreground">Court for {party} reserved</p>
           <p className="truncate text-xs text-text-secondary">{when}</p>
         </div>
         <button
           type="button"
           className={cn(stepper, "bg-surface-muted pointer-fine:hover:not-disabled:bg-control-track")}
-          aria-label="Book another table"
+          aria-label="Reserve another court"
           data-autofocus
           onClick={() => go("start")}
         >
@@ -822,4 +822,4 @@ export function BookingPill({
   )
 }
 
-export default BookingPill
+export default ReservePill

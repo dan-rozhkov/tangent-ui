@@ -1,21 +1,21 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { BookmarkSimpleIcon, CompassIcon, HouseIcon, MagnifyingGlassIcon, UserIcon } from "@phosphor-icons/react"
+import { CalendarBlankIcon, ChatCircleIcon, GearSixIcon, PlusIcon, SunIcon } from "@phosphor-icons/react"
 
-import { GlassTabBar } from "@/components/ui/glass-tabbar"
+import { FloatTabs } from "@/components/ui/float-tabs"
 import { photos } from "@/lib/media"
 
 const titles: Record<string, string> = {
-  home: "For you",
-  explore: "Explore",
-  saved: "Saved",
-  profile: "Profile",
-  search: "Search",
+  today: "Today",
+  plan: "Plan",
+  chats: "Chats",
+  settings: "Settings",
+  create: "New entry",
 }
 
 export default function Demo() {
-  const [tab, setTab] = useState("home")
+  const [tab, setTab] = useState("today")
   const scrollRef = useRef<HTMLDivElement>(null)
   // Each tab shows the feed from a different starting photo, so the glass has new colors to bend.
   const offset = Object.keys(titles).indexOf(tab) * 5
@@ -42,9 +42,9 @@ export default function Demo() {
           </div>
         </div>
       </div>
-      <GlassTabBar
+      <FloatTabs
         className="absolute inset-x-0 bottom-[22px]"
-        label="Sections"
+        label="Main navigation"
         value={tab}
         onValueChange={(next) => {
           setTab(next)
@@ -52,13 +52,13 @@ export default function Demo() {
           scrollRef.current?.scrollTo({ top: 0 })
         }}
         scrollRef={scrollRef}
-        items={[
-          { value: "home", label: "Home", icon: <HouseIcon size={24} /> },
-          { value: "explore", label: "Explore", icon: <CompassIcon size={24} /> },
-          { value: "saved", label: "Saved", icon: <BookmarkSimpleIcon size={24} />, badge: 3 },
-          { value: "profile", label: "Profile", icon: <UserIcon size={24} /> },
+        tabs={[
+          { value: "today", label: "Today", icon: <SunIcon size={24} /> },
+          { value: "plan", label: "Plan", icon: <CalendarBlankIcon size={24} /> },
+          { value: "chats", label: "Chats", icon: <ChatCircleIcon size={24} />, unread: 4 },
+          { value: "settings", label: "Settings", icon: <GearSixIcon size={24} /> },
         ]}
-        action={{ value: "search", label: "Search", icon: <MagnifyingGlassIcon size={24} /> }}
+        trailing={{ value: "create", label: "New entry", icon: <PlusIcon size={24} /> }}
       />
     </div>
   )

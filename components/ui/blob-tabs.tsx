@@ -10,22 +10,22 @@ import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export interface LiquidTab {
+export interface BlobTab {
   value: string
   label: string
   icon: ReactNode
-  /** A rolling count. */
-  badge?: number
-  /** What screen readers hear with the badge, such as "2 new". */
-  badgeLabel?: string
+  /** A rolling tally. */
+  tally?: number
+  /** What screen readers hear with the tally, such as "2 unread". */
+  tallyLabel?: string
 }
 
-export interface LiquidTabBarProps {
-  tabs: LiquidTab[]
+export interface BlobTabsProps {
+  tabs: BlobTab[]
   value: string
   onValueChange: (value: string) => void
-  /** Which tabs show their label: the selected one, every tab, or none. */
-  labels?: "active" | "always" | "none"
+  /** Which tabs show a caption: the selected one, all of them, or none (hidden). */
+  captions?: "selected" | "all" | "hidden"
   /** Accessible name of the tab list. */
   label?: string
   /** Base id for tab and panel ids. */
@@ -33,8 +33,8 @@ export interface LiquidTabBarProps {
   className?: string
 }
 
-export const liquidTabId = (id: string, value: string) => `${id}-tab-${value}`
-export const liquidPanelId = (id: string, value: string) => `${id}-panel-${value}`
+export const blobTabId = (id: string, value: string) => `${id}-tab-${value}`
+export const blobPanelId = (id: string, value: string) => `${id}-panel-${value}`
 
 /* Geometry, in px: 40px tabs sit 4px inside a 48px bar with 2px between them. An icon-only tab is 44 wide (12 + 20 + 12);
    an open one puts its label 40px in and ends 14px after it. */
@@ -88,10 +88,10 @@ function RollingNumber({ value, reduced }: { value: number; reduced: boolean }) 
 }
 
 /**
- * Horizontal navigation for a handful of peer sections. The selection is a liquid lens: an inverted copy of the tabs clipped
- * to a pill whose two edges ride different springs, so it stretches toward the new tab and thins while it stretches.
+ * A row of tabs for a few sibling views. The selection is a gooey blob: an inverted copy of the tabs is clipped to a pill
+ * whose leading and trailing edges ride separate springs, so it reaches for the next tab and narrows mid-travel.
  */
-export function LiquidTabBar({ tabs, value, onValueChange, labels = "active", label = "Sections", id, className }: LiquidTabBarProps) {
+export function BlobTabs({ tabs, value, onValueChange, captions = "selected", label = "Views", id, className }: BlobTabsProps) {
   const motionTokens = useMotionTokens()
   const trailing = motionTokens.spring.smooth
   const reduced = useReducedMotion() ?? false
@@ -120,8 +120,8 @@ export function LiquidTabBar({ tabs, value, onValueChange, labels = "active", la
   }, [tabsKey])
 
   const showsLabel = useCallback(
-    (index: number) => labels === "always" || (labels === "active" && index === selectedIndex),
-    [labels, selectedIndex],
+    (index: number) => captions === "all" || (captions === "selected" && index === selectedIndex),
+    [captions, selectedIndex],
   )
   const widthOf = useCallback(
     (index: number) => {
@@ -311,7 +311,7 @@ export function LiquidTabBar({ tabs, value, onValueChange, labels = "active", la
     if (target < 0 || !tabs[target]) return
     event.preventDefault()
     onValueChange(tabs[target].value)
-    document.getElementById(liquidTabId(baseId, tabs[target].value))?.focus()
+    document.getElementById(blobTabId(baseId, tabs[target].value))?.focus()
   }
 
   // The lens leans toward a hovered tab, mouse only.
@@ -328,14 +328,14 @@ export function LiquidTabBar({ tabs, value, onValueChange, labels = "active", la
   const renderRow = (inverted: boolean) =>
     tabs.map((tab, index) => {
       const open = showsLabel(index)
-      const badge = tab.badge ? (
+      const tallyDot = tab.tally ? (
         <span
           className={cn(
             "absolute top-[3px] left-[22px] inline-flex h-4 min-w-[17px] items-center justify-center rounded-pill px-[5px] text-[11px] leading-none font-medium",
             inverted ? "bg-background text-foreground" : "bg-foreground text-background",
           )}
         >
-          <RollingNumber value={tab.badge} reduced={reduced} />
+          <RollingNumber value={tab.tally} reduced={reduced} />
         </span>
       ) : null
       const content = (
@@ -343,7 +343,7 @@ export function LiquidTabBar({ tabs, value, onValueChange, labels = "active", la
           <span className="relative flex h-10 w-10 flex-none items-center pl-3 [&_svg]:size-5">
             {/* The lens shows the same icon, only recoloured by its inverted text colour. */}
             {tab.icon}
-            {badge}
+            {tallyDot}
           </span>
           {/* Measured: the outgoing label is gone by ~210ms; the incoming one starts ~60ms later and lands by ~280ms. No blur. */}
           <motion.span
@@ -384,13 +384,13 @@ export function LiquidTabBar({ tabs, value, onValueChange, labels = "active", la
       return (
         <motion.button
           key={key}
-          id={liquidTabId(baseId, tab.value)}
+          id={blobTabId(baseId, tab.value)}
           type="button"
           role="tab"
           data-index={index}
           aria-selected={selected}
-          aria-controls={liquidPanelId(baseId, tab.value)}
-          aria-label={tab.badge ? `${tab.label}, ${tab.badgeLabel ?? tab.badge}` : tab.label}
+          aria-controls={blobPanelId(baseId, tab.value)}
+          aria-label={tab.tally ? `${tab.label} (${tab.tallyLabel ?? tab.tally})` : tab.label}
           tabIndex={selected ? 0 : -1}
           className={cn(
             "flex h-10 flex-none cursor-pointer items-center overflow-hidden rounded-pill border-0 bg-transparent p-0 text-text-secondary outline-none",
@@ -451,4 +451,4 @@ export function LiquidTabBar({ tabs, value, onValueChange, labels = "active", la
   )
 }
 
-export default LiquidTabBar
+export default BlobTabs

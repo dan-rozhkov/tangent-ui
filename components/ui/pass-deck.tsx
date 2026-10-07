@@ -11,59 +11,58 @@ import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export type WalletCardVariant = "metal" | "black" | "glass" | "color"
+export type PassFinish = "brushed" | "onyx" | "frost" | "tint"
 
-export interface WalletTransaction {
+export interface PassActivity {
   id: string
-  merchant: string
+  name: string
   detail: string
-  /** Negative for spending, positive for money in. */
-  amount: number
+  /** Negative when credit is used, positive when it is added. */
+  delta: number
   icon?: ReactNode
-  /** Replaces the icon for transfers between people. */
+  /** Replaces the icon for entries tied to a person. */
   avatar?: string
 }
 
-export interface WalletCard {
+export interface Pass {
   id: string
-  issuer: string
-  product: string
-  lastFour: string
-  holder: string
-  /** The material. Metal by default. */
-  variant?: WalletCardVariant
-  /** Any CSS color for the color variant. */
+  brand: string
+  title: string
+  /** The trailing digits of the pass number. */
+  tail: string
+  owner: string
+  /** The surface treatment. Brushed by default. */
+  finish?: PassFinish
+  /** Any CSS color for the tint finish. */
   tint?: string
-  /** Shown as Valid thru. */
-  expires?: string
-  /** Replaces the built-in fictional Halo mark; null hides it. */
-  network?: ReactNode
+  /** Shown under Renews. */
+  renews?: string
+  /** Replaces the built-in fictional mark; null hides it. */
+  emblem?: ReactNode
   /** Optional artwork under the finish. */
   image?: string
-  balance: number
-  balanceLabel: string
-  transactions: WalletTransaction[]
-  /** Older material names: paper maps to metal, graphite to black, clay and photo to color. */
-  finish?: "paper" | "graphite" | "clay" | "photo"
+  amount: number
+  amountLabel: string
+  activity: PassActivity[]
 }
 
-export interface WalletStackProps {
-  /** Cards in stack order, the first in front. */
-  cards: WalletCard[]
-  /** Heading above the stack, also its accessible name. */
+export interface PassDeckProps {
+  /** Passes in stack order, the first in front. */
+  passes: Pass[]
+  /** Heading above the deck, also its accessible name. */
   label?: string
-  /** ISO currency code for balances and amounts. */
+  /** ISO currency code for amounts. */
   currency?: string
   /** Locale for number formatting. */
   locale?: string
-  /** Called with the opened card, or null when it goes back into the stack. */
-  onSelectedChange?: (card: WalletCard | null) => void
+  /** Called with the opened pass, or null when it goes back into the deck. */
+  onOpenChange?: (pass: Pass | null) => void
   className?: string
 }
 
-/** ID-1 card proportions: 85.6 by 53.98 mm. */
+/** Pass proportions, close to a bank-card ratio: 85.6 by 53.98 mm. */
 const RATIO = 53.98 / 85.6
-/** Geometry is tuned at a 296px card and scales with the measured width. */
+/** Geometry is tuned at a 296px pass and scales with the measured width. */
 const REFERENCE = 296
 /** Room above the front card, so the fanned and lifted cards stay inside the stage. */
 const TOP = 12
@@ -95,9 +94,6 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 const mix = (from: number, to: number, amount: number) => from + (to - from) * amount
 /** Past the first and last card the stack resists like a rubber band. */
 const rubber = (value: number, max: number) => (value < 0 ? -(1 - 1 / (-value * 1.6 + 1)) * 0.35 : value > max ? max + (1 - 1 / ((value - max) * 1.6 + 1)) * 0.35 : value)
-
-const legacy: Record<NonNullable<WalletCard["finish"]>, WalletCardVariant> = { paper: "metal", graphite: "black", clay: "color", photo: "color" }
-const materialOf = (card: WalletCard): WalletCardVariant => card.variant ?? (card.finish ? legacy[card.finish] : "metal")
 
 interface Geometry {
   width: MotionValue<number>
@@ -150,12 +146,12 @@ function place(index: number, position: number, opened: number, fan: number, hov
   return { y: mix(y, openY, opened), scale: mix(scale, openScale, opened), opacity: mix(opacity, openOpacity, opened) }
 }
 
-/** The fictional network mark: two overlapping rings. */
-function HaloMark() {
+/** The fictional emblem: two nested diamonds. */
+function Emblem() {
   return (
     <svg viewBox="0 0 40 24" className="h-[9cqw] w-auto" aria-hidden="true">
-      <circle cx="14" cy="12" r="9" fill="none" stroke="currentColor" strokeOpacity=".85" strokeWidth="2.4" />
-      <circle cx="26" cy="12" r="9" fill="none" stroke="currentColor" strokeOpacity=".55" strokeWidth="2.4" />
+      <path d="M20 1.5 31.5 12 20 22.5 8.5 12Z" fill="none" stroke="currentColor" strokeOpacity=".85" strokeWidth="2.4" strokeLinejoin="round" />
+      <path d="M20 7 25.5 12 20 17 14.5 12Z" fill="currentColor" fillOpacity=".55" />
     </svg>
   )
 }
@@ -170,17 +166,17 @@ function Contactless() {
   )
 }
 
-const finishes: Record<WalletCardVariant, { className: string; style: (tint?: string) => CSSProperties }> = {
+const finishes: Record<PassFinish, { className: string; style: (tint?: string) => CSSProperties }> = {
   // Brushed metal: a soft sheen over fine horizontal grain.
-  metal: {
+  brushed: {
     className: "text-[oklch(30%_0.01_260)]",
     style: () => ({
       backgroundImage:
         "repeating-linear-gradient(0deg, oklch(100% 0 0/.07) 0 1px, transparent 1px 3px), linear-gradient(125deg, oklch(90% 0.005 260), oklch(74% 0.01 260) 38%, oklch(93% 0.004 260) 58%, oklch(70% 0.012 260))",
     }),
   },
-  // A black card with a fine guilloche of overlapping rings.
-  black: {
+  // A dark pass with a fine guilloche of overlapping rings.
+  onyx: {
     className: "text-[oklch(92%_0_0)]",
     style: () => ({
       backgroundColor: "oklch(17% 0.005 260)",
@@ -189,14 +185,14 @@ const finishes: Record<WalletCardVariant, { className: string; style: (tint?: st
     }),
   },
   // Frosted glass: whatever sits behind shows through a blur.
-  glass: {
+  frost: {
     className: "text-foreground backdrop-blur-[14px] backdrop-saturate-150",
     style: () => ({
       backgroundColor: "color-mix(in oklab, var(--surface-raised) 52%, transparent)",
       backgroundImage: "linear-gradient(135deg, oklch(100% 0 0/.38), oklch(100% 0 0/.04) 55%, oklch(100% 0 0/.18))",
     }),
   },
-  color: {
+  tint: {
     className: "text-[oklch(98%_0_0)]",
     style: tint => ({
       backgroundColor: tint ?? "oklch(45% 0.15 262)",
@@ -205,61 +201,60 @@ const finishes: Record<WalletCardVariant, { className: string; style: (tint?: st
   },
 }
 
-/** The card itself. Every detail is sized in container units, so the card scales as one object; the corner radius is inherited from the card button. */
-function CardFace({ card }: { card: WalletCard }) {
-  const material = materialOf(card)
+/** The pass itself. Every detail is sized in container units, so it scales as one object; the corner radius is inherited from the pass button. */
+function PassFace({ pass }: { pass: Pass }) {
+  const material = pass.finish ?? "brushed"
   const finish = finishes[material]
   return (
     <span className="@container absolute inset-0 block overflow-hidden rounded-[inherit] text-left" aria-hidden="true">
-      {card.image ? (
-        // eslint-disable-next-line @next/next/no-img-element -- card art can come from any host.
-        <img src={card.image} alt="" draggable={false} className="absolute inset-0 size-full object-cover" />
+      {pass.image ? (
+        // eslint-disable-next-line @next/next/no-img-element -- pass art can come from any host.
+        <img src={pass.image} alt="" draggable={false} className="absolute inset-0 size-full object-cover" />
       ) : null}
       <span
         className={cn("absolute inset-0 flex flex-col justify-between rounded-[inherit] p-[6cqw] ring-1 ring-[oklch(100%_0_0/.18)] ring-inset", finish.className)}
-        // Artwork shows through a color finish; metal and black stay opaque, and glass already lets it through.
+        // Artwork shows through a tint finish; brushed and onyx stay opaque, and frost already lets it through.
         style={{
-          ...finish.style(card.tint),
-          ...(card.image && material === "color" ? { backgroundColor: `color-mix(in oklab, ${card.tint ?? "oklch(45% 0.15 262)"} 62%, transparent)` } : null),
+          ...finish.style(pass.tint),
+          ...(pass.image && material === "tint" ? { backgroundColor: `color-mix(in oklab, ${pass.tint ?? "oklch(45% 0.15 262)"} 62%, transparent)` } : null),
         }}
       >
         <span className="flex items-start justify-between gap-[3cqw]">
           <span className="grid min-w-0 leading-tight">
-            <span className="truncate text-[6.1cqw] font-medium tracking-[-0.01em]">{card.issuer}</span>
-            <span className="truncate text-[3.7cqw] opacity-72">{card.product}</span>
+            <span className="truncate text-[6.1cqw] font-medium tracking-[-0.01em]">{pass.brand}</span>
+            <span className="truncate text-[3.7cqw] opacity-72">{pass.title}</span>
           </span>
           <Contactless />
         </span>
-        {/* An EMV chip: gold contacts split by thin lines. */}
-        <span className="relative block h-[9.5cqw] w-[12.5cqw] overflow-hidden rounded-[1.8cqw] bg-[linear-gradient(135deg,oklch(86%_0.09_85),oklch(70%_0.1_75)_50%,oklch(84%_0.08_88))] shadow-[inset_0_0_0_0.6px_oklch(40%_0.05_70/.5)]">
-          <span className="absolute inset-x-0 top-1/3 h-px bg-[oklch(40%_0.05_70/.45)]" />
-          <span className="absolute inset-x-0 top-2/3 h-px bg-[oklch(40%_0.05_70/.45)]" />
-          <span className="absolute inset-y-0 left-1/2 w-px bg-[oklch(40%_0.05_70/.45)]" />
-          <span className="absolute inset-[28%_30%] rounded-[1cqw] border border-[oklch(40%_0.05_70/.45)]" />
+        {/* A short barcode: bars of uneven width. */}
+        <span className="flex h-[9.5cqw] items-stretch gap-[0.7cqw] opacity-80">
+          {[1, 2, 1, 3, 1, 1, 2, 3, 1, 2, 1, 1, 3, 1, 2].map((weight, bar) => (
+            <span key={bar} className="bg-current" style={{ width: `${weight * 0.55}cqw` }} />
+          ))}
         </span>
         <span className="flex items-baseline gap-[2.5cqw] whitespace-nowrap tabular-nums [text-shadow:0_1px_0_oklch(100%_0_0/.3),0_-1px_0_oklch(0%_0_0/.35)]">
-          <span className="text-[5cqw] tracking-[0.08em] opacity-82">•••• •••• ••••</span>
-          <span className="text-[6.35cqw] tracking-[0.04em]">{card.lastFour}</span>
+          <span className="text-[3.7cqw] tracking-[0.14em] uppercase opacity-72">No.</span>
+          <span className="text-[6.35cqw] tracking-[0.04em]">{pass.tail}</span>
         </span>
         <span className="flex items-end justify-between gap-[3cqw]">
           <span className="flex min-w-0 items-end gap-[5cqw] leading-tight">
-            <span className="truncate text-[4cqw]">{card.holder}</span>
-            {card.expires ? (
+            <span className="truncate text-[4cqw]">{pass.owner}</span>
+            {pass.renews ? (
               <span className="grid flex-none">
-                <span className="text-[2.5cqw] opacity-72">Valid thru</span>
-                <span className="text-[4cqw] tabular-nums">{card.expires}</span>
+                <span className="text-[2.5cqw] opacity-72">Renews</span>
+                <span className="text-[4cqw] tabular-nums">{pass.renews}</span>
               </span>
             ) : null}
           </span>
-          {card.network === undefined ? <HaloMark /> : card.network}
+          {pass.emblem === undefined ? <Emblem /> : pass.emblem}
         </span>
       </span>
     </span>
   )
 }
 
-interface StackCardProps {
-  card: WalletCard
+interface StackPassProps {
+  pass: Pass
   index: number
   count: number
   active: boolean
@@ -280,7 +275,7 @@ interface StackCardProps {
   dragged: () => boolean
 }
 
-function StackCard({ card, index, count, active, open, lifted, reduced, position, opened, fan, light, geometry, label, buttonRef, onActivate, onKeyDown, dragged }: StackCardProps) {
+function StackPass({ pass, index, count, active, open, lifted, reduced, position, opened, fan, light, geometry, label, buttonRef, onActivate, onKeyDown, dragged }: StackPassProps) {
   const motionTokens = useMotionTokens()
   const hoverTarget = useMotionValue(0)
   const hover = useSpring(hoverTarget, motionTokens.spring.smooth)
@@ -349,7 +344,7 @@ function StackCard({ card, index, count, active, open, lifted, reduced, position
         style={{ opacity: shadow }}
         aria-hidden="true"
       />
-      <CardFace card={card} />
+      <PassFace pass={pass} />
       {/* A pre-painted highlight that only moves and fades. */}
       <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]" aria-hidden="true">
         <motion.span
@@ -362,14 +357,14 @@ function StackCard({ card, index, count, active, open, lifted, reduced, position
 }
 
 /**
- * A stack of payment cards with real materials and depth. Hover to fan the stack, drag or use the arrow keys to cycle cards,
- * and choose a card to lift it into its balance and recent activity.
+ * A deck of passes (memberships, transit, loyalty) with tactile surfaces. Hover to fan the deck, drag or use the arrow keys to
+ * shuffle through, and pick one to lift it out beside its credit and recent activity.
  */
-export function WalletStack({ cards, label = "Wallet", currency = "USD", locale = "en-US", onSelectedChange, className }: WalletStackProps) {
+export function PassDeck({ passes, label = "Passes", currency = "USD", locale = "en-US", onOpenChange, className }: PassDeckProps) {
   const reduced = useReducedMotion() ?? false
   const motionTokens = useMotionTokens()
   const glide = useMemo(() => ({ ...motionTokens.spring.smooth, visualDuration: 0.45 }), [motionTokens.spring.smooth])
-  const count = cards.length
+  const count = passes.length
   const headingId = useId()
   const hintId = useId()
   const [active, setActive] = useState(0)
@@ -436,7 +431,7 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
     [glide, reduced],
   )
 
-  const describe = (index: number) => `${cards[index].product}, card ${index + 1} of ${count}`
+  const describe = (index: number) => `${passes[index].title}, pass ${index + 1} of ${count}`
 
   const bringToFront = useCallback(
     (index: number, velocity?: number) => {
@@ -452,8 +447,8 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
     (index: number) => {
       const next = bringToFront(index)
       setSelected(next)
-      setAnnouncement(`${cards[next].product} open. ${cards[next].balanceLabel} ${money.format(cards[next].balance)}`)
-      onSelectedChange?.(cards[next])
+      setAnnouncement(`${passes[next].title} open. ${passes[next].amountLabel} ${money.format(passes[next].amount)}`)
+      onOpenChange?.(passes[next])
       // Switching the open card puts the current one back quickly, then lifts the new one on the same spring.
       if (!reduced && lifted !== null && lifted !== next && opened.get() > 0.05) {
         animate(opened, 0, { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] }).then(() => {
@@ -465,17 +460,17 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
       setLifted(next)
       settle(opened, 1)
     },
-    [bringToFront, cards, lifted, money, motionTokens.duration.fast, motionTokens.ease.standard, onSelectedChange, opened, reduced, settle],
+    [bringToFront, passes, lifted, money, motionTokens.duration.fast, motionTokens.ease.standard, onOpenChange, opened, reduced, settle],
   )
 
   const close = useCallback(
     (velocity?: number) => {
       settle(opened, 0, velocity)
       setSelected(null)
-      setAnnouncement("Card back in the stack")
-      onSelectedChange?.(null)
+      setAnnouncement("Pass back in the deck")
+      onOpenChange?.(null)
     },
-    [onSelectedChange, opened, settle],
+    [onOpenChange, opened, settle],
   )
 
   function cardKey(event: KeyboardEvent<HTMLButtonElement>, index: number) {
@@ -574,23 +569,23 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
     if (next !== state.from) setAnnouncement(describe(next))
   }
 
-  const card = lifted === null ? null : cards[lifted]
+  const pass = lifted === null ? null : passes[lifted]
   const activityTop = useTransform(() => measure(width.get(), activity.get()).activityTop)
   // The activity trails the lift: it only reads once the card is mostly up, and leaves first on the way back.
   const activityOpacity = useTransform(() => Math.pow(clamp(opened.get(), 0, 1), 2.5))
   const counter = useMotionValue(0)
-  const balanceText = useTransform(counter, value => money.format(value))
-  const selectedId = selected === null ? undefined : cards[selected]?.id
-  // The balance counts up each time a card opens.
+  const amountText = useTransform(counter, value => money.format(value))
+  const selectedId = selected === null ? undefined : passes[selected]?.id
+  // The credit counts up each time a pass opens.
   useEffect(() => {
-    const target = selected === null ? undefined : cards[selected]
+    const target = selected === null ? undefined : passes[selected]
     if (!target) return
     if (reduced) {
-      counter.jump(target.balance)
+      counter.jump(target.amount)
       return
     }
     counter.jump(0)
-    const controls = animate(counter, target.balance, { duration: motionTokens.duration.considered * 1.4, ease: [...motionTokens.ease.enter] })
+    const controls = animate(counter, target.amount, { duration: motionTokens.duration.considered * 1.4, ease: [...motionTokens.ease.enter] })
     return () => controls.stop()
     // Only a newly opened card restarts the count.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -614,7 +609,7 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
             <motion.span
               key="count"
               className="inline-flex h-5 min-w-[38px] flex-none items-center justify-center overflow-hidden rounded-pill bg-surface-muted px-2 text-xs leading-none text-text-secondary tabular-nums"
-              aria-label={count === 1 ? "1 card" : `${count} cards`}
+              aria-label={count === 1 ? "1 pass" : `${count} passes`}
               {...swap}
             >
               {/* The digit rolls when the count changes. */}
@@ -644,13 +639,13 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
               {...swap}
             >
               <CaretLeftIcon size={16} aria-hidden="true" className="flex-none" />
-              All cards
+              All passes
             </motion.button>
           )}
         </AnimatePresence>
       </div>
       <span id={hintId} className="sr-only">
-        Use the arrow keys to move through the cards. Press Enter to open a card and Escape to put it back.
+        Use the arrow keys to move through the passes. Press Enter to open a pass and Escape to put it back.
       </span>
       <motion.div
         ref={stageRef}
@@ -668,10 +663,10 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
         onPointerUp={up}
         onPointerCancel={up}
       >
-        {cards.map((item, index) => (
-          <StackCard
+        {passes.map((item, index) => (
+          <StackPass
             key={item.id}
-            card={item}
+            pass={item}
             index={index}
             count={count}
             active={index === active}
@@ -683,7 +678,7 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
             fan={fan}
             light={light}
             geometry={geometry}
-            label={`${item.issuer} ${item.product} ending in ${item.lastFour}, ${index + 1} of ${count}, ${item.balanceLabel.toLowerCase()} ${money.format(item.balance)}`}
+            label={`${item.brand} ${item.title}, number ending ${item.tail}, ${index + 1} of ${count}, ${item.amountLabel.toLowerCase()} ${money.format(item.amount)}`}
             buttonRef={node => {
               buttons.current[index] = node
             }}
@@ -700,13 +695,13 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
           style={{ top: activityTop, opacity: activityOpacity }}
         >
           <div className="flex items-baseline justify-between gap-3 px-0.5 pb-2">
-            <span className="min-w-0 truncate text-sm text-text-secondary">{card?.balanceLabel ?? "Balance"}</span>
-            <motion.span className="text-[22px] leading-body tabular-nums">{balanceText}</motion.span>
+            <span className="min-w-0 truncate text-sm text-text-secondary">{pass?.amountLabel ?? "Credit"}</span>
+            <motion.span className="text-[22px] leading-body tabular-nums">{amountText}</motion.span>
           </div>
           <ul className="m-0 grid list-none p-0" aria-label="Recent activity">
-            {(card?.transactions ?? []).slice(0, 3).map((transaction, index) => (
+            {(pass?.activity ?? []).slice(0, 3).map((entry, index) => (
               <motion.li
-                key={`${card?.id}-${transaction.id}`}
+                key={`${pass?.id}-${entry.id}`}
                 className="flex items-center gap-2.5 px-0.5 py-1"
                 // Rows fade in place, about 50ms apart, once the lift is under way.
                 initial={{ opacity: 0 }}
@@ -714,21 +709,21 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
                 transition={{ duration: 0.35, ease: [...motionTokens.ease.standard], delay: reduced ? 0 : 0.1 + index * 0.05 }}
               >
                 <span className="grid size-8 flex-none place-items-center overflow-hidden rounded-pill bg-surface-muted text-xs text-text-secondary" aria-hidden="true">
-                  {transaction.avatar ? (
+                  {entry.avatar ? (
                     // eslint-disable-next-line @next/next/no-img-element -- avatars can come from any host.
-                    <img src={transaction.avatar} alt="" className="size-full object-cover" />
+                    <img src={entry.avatar} alt="" className="size-full object-cover" />
                   ) : (
-                    (transaction.icon ?? transaction.merchant.slice(0, 1))
+                    (entry.icon ?? entry.name.slice(0, 1))
                   )}
                 </span>
                 <span className="grid min-w-0 flex-1 leading-[1.3]">
-                  <span className="truncate text-sm">{transaction.merchant}</span>
-                  <span className="truncate text-xs text-text-muted">{transaction.detail}</span>
+                  <span className="truncate text-sm">{entry.name}</span>
+                  <span className="truncate text-xs text-text-muted">{entry.detail}</span>
                 </span>
-                <span className={cn("text-sm tabular-nums", transaction.amount > 0 ? "text-success" : "text-foreground")}>{signed.format(transaction.amount)}</span>
+                <span className={cn("text-sm tabular-nums", entry.delta > 0 ? "text-success" : "text-foreground")}>{signed.format(entry.delta)}</span>
               </motion.li>
             ))}
-            {card && card.transactions.length === 0 ? <li className="py-1.5 text-sm text-text-secondary">No activity yet</li> : null}
+            {pass && pass.activity.length === 0 ? <li className="py-1.5 text-sm text-text-secondary">No activity yet</li> : null}
           </ul>
         </motion.div>
       </motion.div>
@@ -739,4 +734,4 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
   )
 }
 
-export default WalletStack
+export default PassDeck

@@ -2,21 +2,21 @@
 
 import { useState } from "react"
 import type { ReactNode } from "react"
-import { CaretRightIcon } from "@phosphor-icons/react"
+import { CaretRightIcon, LeafIcon } from "@phosphor-icons/react"
 
 import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import SegmentedControl from "@/components/ui/segmented-control"
-import { Sheet, SheetStack, SheetTrigger, useSheetStack } from "@/components/ui/sheet-stack"
-import type { SheetStackMode } from "@/components/ui/sheet-stack"
+import { DrillSheet, DrillSheets, DrillTrigger, useDrill } from "@/components/ui/drill-sheets"
+import type { DrillPresentation } from "@/components/ui/drill-sheets"
 import { Switch } from "@/components/ui/switch"
 import { avatar } from "@/lib/media"
 
 const modes = [
   { value: "auto", label: "Auto" },
-  { value: "sheet", label: "Sheets" },
-  { value: "dialog", label: "Dialogs" },
+  { value: "sheet", label: "Bottom" },
+  { value: "dialog", label: "Centered" },
 ]
 
 /** A bordered card that drills one level deeper. */
@@ -27,10 +27,10 @@ const group = "m-0 grid list-none overflow-hidden rounded-[26px] border border-b
 const groupRow = "flex items-center gap-3 px-3.5 py-3"
 
 /** A card row that pushes a sheet, styled as content rather than as a button. */
-function DrillRow({ sheet, children }: { sheet: string; children: ReactNode }) {
-  const { stack, push } = useSheetStack()
+function DrillRow({ to, children }: { to: string; children: ReactNode }) {
+  const { path, open } = useDrill()
   return (
-    <button type="button" aria-haspopup="dialog" aria-expanded={stack.includes(sheet)} className={card} onClick={() => push(sheet)}>
+    <button type="button" aria-haspopup="dialog" aria-expanded={path.includes(to)} className={card} onClick={() => open(to)}>
       {children}
       <CaretRightIcon size={18} aria-hidden="true" className="flex-none text-text-muted" />
     </button>
@@ -38,16 +38,16 @@ function DrillRow({ sheet, children }: { sheet: string; children: ReactNode }) {
 }
 
 function SaveButton() {
-  const { close } = useSheetStack()
+  const { dismiss } = useDrill()
   return (
-    <Button size="sm" onClick={close}>
+    <Button size="sm" onClick={dismiss}>
       Save
     </Button>
   )
 }
 
-function Blocked() {
-  const { pop } = useSheetStack()
+function SharedWith() {
+  const { back } = useDrill()
   return (
     <ul className={group}>
       {(["ryan-sullivan", "hannah-walsh"] as const).map(id => {
@@ -56,8 +56,8 @@ function Blocked() {
           <li key={id} className={groupRow}>
             <Avatar src={avatar(id)} name={name} />
             <span className="min-w-0 flex-1 truncate">{name}</span>
-            <Button size="sm" variant="ghost" onClick={pop}>
-              Unblock
+            <Button size="sm" variant="ghost" onClick={back}>
+              Stop sharing
             </Button>
           </li>
         )
@@ -67,60 +67,64 @@ function Blocked() {
 }
 
 export default function Demo() {
-  const [mode, setMode] = useState<SheetStackMode>("auto")
+  const [presentation, setPresentation] = useState<DrillPresentation>("auto")
 
   return (
     <div className="grid w-full max-w-[46rem] gap-4">
-      <SegmentedControl label="Presentation" options={modes} value={mode} onValueChange={value => setMode(value as SheetStackMode)} className="justify-self-center" />
-      {/* The stack fills this stage instead of the page, and switches to dialogs when the stage is wide. */}
+      <SegmentedControl label="Presentation" options={modes} value={presentation} onValueChange={value => setPresentation(value as DrillPresentation)} className="justify-self-center" />
+      {/* The sheets fill this stage instead of the page, and switch to dialogs when the stage is wide. */}
       <div className="relative h-[36rem] overflow-hidden supports-[overflow:clip]:overflow-clip rounded-surface bg-surface-muted">
-        <SheetStack contained mode={mode}>
+        <DrillSheets inline presentation={presentation}>
           <div className="grid h-full place-items-center content-center gap-3 p-6 text-center">
-            <p className="m-0 max-w-xs text-sm text-text-secondary">Drill into settings. Each level keeps its parent in view; drag a sheet down to go back.</p>
-            <SheetTrigger sheet="settings">Settings</SheetTrigger>
+            <p className="m-0 max-w-xs text-sm text-text-secondary">Open a plant, then its watering plan. Swipe down on a sheet to return one level.</p>
+            <DrillTrigger to="plants">Plant shelf</DrillTrigger>
           </div>
 
-          <Sheet id="settings" title="Settings">
-            <DrillRow sheet="profile">
-              <Avatar src={avatar("emma-collins")} name="Emma Collins" className="size-11" />
+          <DrillSheet id="plants" title="My plants">
+            <DrillRow to="monstera">
+              <span className="grid size-11 flex-none place-items-center rounded-full bg-success/15 text-success" aria-hidden="true">
+                <LeafIcon size={22} />
+              </span>
               <span className="grid min-w-0 flex-1">
-                <span className="truncate text-sm font-medium">Emma Collins</span>
-                <span className="truncate text-xs text-text-secondary">Edit profile</span>
+                <span className="truncate text-sm font-medium">Monstera</span>
+                <span className="truncate text-xs text-text-secondary">Water on Friday</span>
               </span>
             </DrillRow>
             <ul className={group}>
               <li className={groupRow}>
                 <span className="grid min-w-0 flex-1">
-                  <span className="text-sm">Mentions</span>
-                  <span className="text-xs text-text-secondary">Email me when someone mentions me</span>
+                  <span className="text-sm">Mist leaves</span>
+                  <span className="text-xs text-text-secondary">Remind me on dry days</span>
                 </span>
-                <Switch aria-label="Mentions" defaultChecked />
+                <Switch aria-label="Mist leaves" defaultChecked />
               </li>
               <li className={groupRow}>
                 <span className="grid min-w-0 flex-1">
-                  <span className="text-sm">Weekly summary</span>
-                  <span className="text-xs text-text-secondary">A digest every Monday</span>
+                  <span className="text-sm">Weekly check-in</span>
+                  <span className="text-xs text-text-secondary">A short round on Sunday</span>
                 </span>
-                <Switch aria-label="Weekly summary" />
+                <Switch aria-label="Weekly check-in" />
               </li>
             </ul>
-          </Sheet>
+          </DrillSheet>
 
-          <Sheet id="profile" title="Edit profile" footer={<SaveButton />}>
+          <DrillSheet id="monstera" title="Monstera" actions={<SaveButton />}>
             <div className="grid justify-items-center gap-2 py-2">
-              <Avatar src={avatar("emma-collins")} name="Emma Collins" size="xl" />
+              <span className="grid size-20 place-items-center rounded-full bg-success/15 text-success" aria-hidden="true">
+                <LeafIcon size={40} />
+              </span>
             </div>
-            <Input label="Name" defaultValue="Emma Collins" />
-            <Input label="Email" type="email" defaultValue="emma@arc.dev" />
-            <DrillRow sheet="blocked">
-              <span className="min-w-0 flex-1 truncate text-sm">Blocked people</span>
+            <Input label="Nickname" defaultValue="Monty" />
+            <Input label="Spot" defaultValue="Living room window" />
+            <DrillRow to="watering">
+              <span className="min-w-0 flex-1 truncate text-sm">Watering plan</span>
             </DrillRow>
-          </Sheet>
+          </DrillSheet>
 
-          <Sheet id="blocked" title="Blocked people">
-            <Blocked />
-          </Sheet>
-        </SheetStack>
+          <DrillSheet id="watering" title="Watering plan">
+            <SharedWith />
+          </DrillSheet>
+        </DrillSheets>
       </div>
     </div>
   )

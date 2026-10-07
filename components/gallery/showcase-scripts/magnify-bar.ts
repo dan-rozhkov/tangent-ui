@@ -13,31 +13,31 @@ const script: AutoplayScript = async ctx => {
 
   await ctx.wait(500)
   // Hover glides the label; a tap springs the selection across.
-  const hand = await slot("Hand")
-  ctx.hover(hand)
+  const photos = await slot("Photos")
+  ctx.hover(photos)
   await ctx.wait(500)
-  await ctx.tap(hand)
-  ctx.unhover(hand)
+  await ctx.tap(photos)
+  ctx.unhover(photos)
   await ctx.wait(700)
-  const text = await slot("Text")
-  ctx.hover(text)
+  const notes = await slot("Notes")
+  ctx.hover(notes)
   await ctx.wait(450)
-  await ctx.tap(text)
-  ctx.unhover(text)
+  await ctx.tap(notes)
+  ctx.unhover(notes)
   await ctx.wait(700)
   // A group opens its tray.
-  await pickFromTray("Shapes", "Ellipse")
+  await pickFromTray("Capture", "Voice memo")
   await ctx.wait(1000)
-  await pickFromTray("Shapes", "Diamond")
+  await pickFromTray("Capture", "Scan document")
   await ctx.wait(1000)
-  // Opening comments clears the badge.
-  await ctx.tap(await slot("Comment"))
+  // Opening the inbox clears its count.
+  await ctx.tap(await slot("Inbox"))
   await ctx.wait(900)
-  // Drag a tool to a new place.
-  const sticky = (await slot("Sticky note")).parentElement
-  if (sticky) await ctx.drag(sticky, { dx: -130, duration: 900 })
+  // Drag an app to a new place.
+  const maps = (await slot("Maps")).parentElement
+  if (maps) await ctx.drag(maps, { dx: -130, duration: 900 })
   await ctx.wait(900)
-  await ctx.tap(await slot("Move"))
+  await ctx.tap(await slot("Music"))
   await ctx.wait(600)
 }
 

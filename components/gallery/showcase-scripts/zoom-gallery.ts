@@ -4,7 +4,7 @@ const script: AutoplayScript = async ctx => {
   const global = { global: true }
 
   await ctx.wait(500)
-  const thumb = await ctx.findByLabel(/^Open Yasaka Pagoda/)
+  const thumb = await ctx.findByLabel(/^Open Spiral stair/)
   ctx.hover(thumb)
   await ctx.wait(500)
   // The photo grows out of its thumbnail.

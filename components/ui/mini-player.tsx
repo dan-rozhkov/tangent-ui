@@ -20,10 +20,10 @@ import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { ReducedMotionConfig, useReducedMotion } from "@/lib/reduced-motion"
 
-export interface NowPlayingTrack {
+export interface MiniPlayerTrack {
   id: string
   title: string
-  artist: string
+  performer: string
   /** Length in seconds. */
   duration: number
   artwork: string
@@ -31,15 +31,15 @@ export interface NowPlayingTrack {
   artworkAlt?: string
 }
 
-export interface NowPlayingProps {
-  tracks: NowPlayingTrack[]
+export interface MiniPlayerProps {
+  queue: MiniPlayerTrack[]
   index?: number
   defaultIndex?: number
   /** Called when the track changes by skip or when a track ends. The queue wraps at both ends. */
-  onIndexChange?: (index: number) => void
-  playing?: boolean
-  defaultPlaying?: boolean
-  onPlayingChange?: (playing: boolean) => void
+  onTrackChange?: (index: number) => void
+  running?: boolean
+  defaultRunning?: boolean
+  onRunningChange?: (running: boolean) => void
   /** Starts as the full player. */
   defaultExpanded?: boolean
   /** Accessible name of the player section. */
@@ -47,8 +47,8 @@ export interface NowPlayingProps {
   className?: string
 }
 
-export interface NowPlayingLevelsProps {
-  playing: boolean
+export interface MiniPlayerLevelsProps {
+  running: boolean
   className?: string
 }
 
@@ -98,7 +98,7 @@ function waveformOf(id: string) {
 }
 
 /** Three small level bars that dance while a track plays and rest while paused. */
-export function NowPlayingLevels({ playing, className }: NowPlayingLevelsProps) {
+export function MiniPlayerLevels({ running: playing, className }: MiniPlayerLevelsProps) {
   const motionTokens = useMotionTokens()
   const reduced = useReducedMotion() ?? false
   const moving = playing && !reduced
@@ -130,7 +130,7 @@ export function NowPlayingLevels({ playing, className }: NowPlayingLevelsProps) 
   )
 }
 
-/** Title and artist swap with a short rise when the track changes, in step with the artwork and without blur. */
+/** Title and performer swap with a short rise when the track changes, in step with the artwork and without blur. */
 function SwapText({ text, className }: { text: string; className?: string }) {
   const motionTokens = useMotionTokens()
   const fadeIn = fadeInOf(motionTokens)
@@ -164,7 +164,7 @@ const slideTransitionOf = (motionTokens: MotionTokens): Transition => ({
   filter: { duration: 0.36, ease: [...motionTokens.ease.standard] },
 })
 
-function Artwork({ track, direction, layoutId, className, radius }: { track: NowPlayingTrack; direction: number; layoutId: string; className?: string; radius: number }) {
+function Artwork({ track, direction, layoutId, className, radius }: { track: MiniPlayerTrack; direction: number; layoutId: string; className?: string; radius: number }) {
   const motionTokens = useMotionTokens()
   const slide = useMemo(() => slideOf(motionTokens), [motionTokens])
   const slideTransition = useMemo(() => slideTransitionOf(motionTokens), [motionTokens])
@@ -198,7 +198,7 @@ function Artwork({ track, direction, layoutId, className, radius }: { track: Now
 }
 
 interface WaveformProps {
-  track: NowPlayingTrack
+  track: MiniPlayerTrack
   elapsed: MotionValue<number>
   scrubbingRef: RefObject<boolean>
   onSeek: (seconds: number) => void
@@ -306,35 +306,35 @@ const iconButton = [
 const press = { scale: 0.92 }
 
 /**
- * A compact player that grows from a mini bar into a full player in one continuous morph,
- * with a waveform scrubber and artwork that slides in the direction you skip.
- * Playback runs on an internal clock; wire onPlayingChange and onIndexChange to a real audio element when needed.
+ * A small player bar that unfolds into a full-screen-style player through a single shared-layout morph,
+ * with a waveform seek strip and cover art that slides toward the side you skip to.
+ * Playback runs on an internal clock; wire onRunningChange and onTrackChange to a real audio element when needed.
  */
-export function NowPlaying({
-  tracks,
+export function MiniPlayer({
+  queue,
   index: indexProp,
   defaultIndex = 0,
-  onIndexChange,
-  playing: playingProp,
-  defaultPlaying = false,
-  onPlayingChange,
+  onTrackChange,
+  running: playingProp,
+  defaultRunning = false,
+  onRunningChange,
   defaultExpanded = false,
-  label = "Now playing",
+  label = "Listening queue",
   className,
-}: NowPlayingProps) {
+}: MiniPlayerProps) {
   const motionTokens = useMotionTokens()
   const fadeIn = fadeInOf(motionTokens)
   const leave = leaveOf(motionTokens)
   const reduced = useReducedMotion() ?? false
   const group = useId()
   const [innerIndex, setInnerIndex] = useState(defaultIndex)
-  const [innerPlaying, setInnerPlaying] = useState(defaultPlaying)
+  const [innerPlaying, setInnerPlaying] = useState(defaultRunning)
   const [expanded, setExpanded] = useState(defaultExpanded)
   const [direction, setDirection] = useState(1)
-  const count = Math.max(tracks.length, 1)
+  const count = Math.max(queue.length, 1)
   const index = wrap(indexProp ?? innerIndex, count)
   const playing = playingProp ?? innerPlaying
-  const track = tracks[index] as NowPlayingTrack | undefined
+  const track = queue[index] as MiniPlayerTrack | undefined
   const elapsed = useMotionValue(0)
   const scrubbingRef = useRef(false)
   const pull = useMotionValue(0)
@@ -368,16 +368,16 @@ export function NowPlaying({
       setDirection(step)
       elapsed.set(0)
       if (indexProp === undefined) setInnerIndex(target)
-      onIndexChange?.(target)
+      onTrackChange?.(target)
     },
-    [count, elapsed, indexProp, onIndexChange],
+    [count, elapsed, indexProp, onTrackChange],
   )
   const setPlaying = useCallback(
     (next: boolean) => {
       if (playingProp === undefined) setInnerPlaying(next)
-      onPlayingChange?.(next)
+      onRunningChange?.(next)
     },
-    [onPlayingChange, playingProp],
+    [onRunningChange, playingProp],
   )
 
   // The internal clock: it returns early while paused or scrubbing but stays registered.
@@ -427,10 +427,10 @@ export function NowPlaying({
     else animate(pull, 0, motionTokens.spring.snappy)
   }
 
-  const ids = { artwork: "artwork", title: "title", artist: "artist", play: "play", next: "next" }
+  const ids = { artwork: "artwork", title: "title", performer: "performer", play: "play", next: "next" }
   // Height and radius move in lock-step on one critically damped curve both ways; only the height changes, never the width.
   const shellTransition = motionTokens.spring.smooth
-  const announcement = `${track.title} by ${track.artist}, ${playing ? "playing" : "paused"}`
+  const announcement = `${track.title} by ${track.performer}, ${playing ? "playing" : "paused"}`
   const appear = {
     initial: { opacity: 0, y: 6, filter: `blur(${motionTokens.blur.subtle}px)` },
     animate: { opacity: 1, y: 0, filter: "blur(0px)" },
@@ -529,8 +529,8 @@ export function NowPlaying({
                   <motion.h3 layoutId={ids.title} layout="position" layoutCrossfade={false} className="m-0 block min-w-0 text-lg leading-[1.28] font-medium">
                     <SwapText text={track.title} />
                   </motion.h3>
-                  <motion.span layoutId={ids.artist} layout="position" layoutCrossfade={false} className="block min-w-0 text-sm leading-[1.64] text-text-secondary">
-                    <SwapText text={track.artist} />
+                  <motion.span layoutId={ids.performer} layout="position" layoutCrossfade={false} className="block min-w-0 text-sm leading-[1.64] text-text-secondary">
+                    <SwapText text={track.performer} />
                   </motion.span>
                 </div>
                 <motion.div style={{ opacity: detailOpacity }}>
@@ -564,7 +564,7 @@ export function NowPlaying({
                   ref={expandRef}
                   type="button"
                   aria-expanded="false"
-                  aria-label={`Expand player, ${track.title} by ${track.artist}`}
+                  aria-label={`Expand player, ${track.title} by ${track.performer}`}
                   className="absolute inset-0 cursor-pointer rounded-[inherit] [-webkit-tap-highlight-color:transparent]"
                   onClick={expand}
                 />
@@ -573,11 +573,11 @@ export function NowPlaying({
                   <motion.span layoutId={ids.title} layout="position" layoutCrossfade={false} className="block min-w-0 text-sm leading-body font-medium">
                     <SwapText text={track.title} />
                   </motion.span>
-                  <motion.span layoutId={ids.artist} layout="position" layoutCrossfade={false} className="block min-w-0 text-xs text-text-secondary">
-                    <SwapText text={track.artist} />
+                  <motion.span layoutId={ids.performer} layout="position" layoutCrossfade={false} className="block min-w-0 text-xs text-text-secondary">
+                    <SwapText text={track.performer} />
                   </motion.span>
                 </div>
-                <NowPlayingLevels playing={playing} className="pointer-events-none text-foreground" />
+                <MiniPlayerLevels running={playing} className="pointer-events-none text-foreground" />
                 {playButton(false)}
                 {nextButton(false)}
                 {/* A hairline of progress just inside the bottom edge. */}
@@ -596,4 +596,4 @@ export function NowPlaying({
   )
 }
 
-export default NowPlaying
+export default MiniPlayer

@@ -9,23 +9,23 @@ import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export type MorphLoaderVariant = "dots" | "bars" | "ring" | "square"
-export type MorphLoaderStatus = "loading" | "success" | "error"
+export type ShapeSpinnerShape = "pulse" | "columns" | "orbit" | "frame"
+export type ShapeSpinnerState = "busy" | "done" | "failed"
 
-export interface MorphLoaderProps {
-  /** Loading shape. Changing it while loading morphs the strokes into the new shape. */
-  variant?: MorphLoaderVariant
-  /** success folds the strokes into a check, error into a cross, loading gathers them back. */
-  status?: MorphLoaderStatus
+export interface ShapeSpinnerProps {
+  /** Resting shape of the loop. Switching it mid-loop regroups the strokes into the new shape. */
+  shape?: ShapeSpinnerShape
+  /** done folds the strokes into a check, failed into a cross, busy gathers them back into the loop. */
+  state?: ShapeSpinnerState
   /** Rendered size in px. The drawing uses a 24 unit grid. */
   size?: number
-  /** Stroke thickness in grid units for ring, square, check, and cross. */
+  /** Stroke thickness in grid units for orbit, frame, check, and cross. */
   strokeWidth?: number
   /** Colors the check with --success and the cross with --danger. Off keeps currentColor. */
   tone?: boolean
   label?: string
-  successLabel?: string
-  errorLabel?: string
+  doneLabel?: string
+  failedLabel?: string
   /** Drops the status role and text, for loaders inside a control that announces its own state. */
   decorative?: boolean
   className?: string
@@ -78,8 +78,8 @@ function segment(x1: number, y1: number, x2: number, y2: number, w: number): Pos
 /** Unused strokes shrink to nothing on the end of the last visible one, so they never flash across the mark. */
 const hidden = (at: Pose): Pose => ({ ...at, len: 0, bend: 0, w: 0 })
 
-function shapeOf(variant: MorphLoaderVariant, status: MorphLoaderStatus, strokeWidth: number): Pose[] {
-  if (status === "success") {
+function shapeOf(shape: ShapeSpinnerShape, state: ShapeSpinnerState, strokeWidth: number): Pose[] {
+  if (state === "done") {
     // All four strokes fold into the check, two per arm, so it draws in order from the short arm to the long one.
     const start = { x: 5, y: 12.7 }
     const vertex = { x: 10.2, y: 17.7 }
@@ -94,7 +94,7 @@ function shapeOf(variant: MorphLoaderVariant, status: MorphLoaderStatus, strokeW
       segment(longMid.x, longMid.y, end.x, end.y, strokeWidth),
     ]
   }
-  if (status === "error") {
+  if (state === "failed") {
     // Four arms reach in from the corners and stop just short of the center.
     const outer = 5.8
     const inner = 0.6
@@ -104,14 +104,14 @@ function shapeOf(variant: MorphLoaderVariant, status: MorphLoaderStatus, strokeW
       return segment(CENTER + sx * outer, CENTER + sy * outer, CENTER + sx * inner, CENTER + sy * inner, strokeWidth)
     })
   }
-  if (variant === "dots") {
+  if (shape === "pulse") {
     // Three dots on the grid; the fourth stroke hides on the last one.
     const dots = [5, 12, 19].map(x => ({ x, y: CENTER, len: 0, dir: 0, bend: 0, w: 4 }))
     return [...dots, hidden(dots[2])]
   }
   return STROKES.map(index => {
-    if (variant === "bars") return { x: 4.5 + index * 5, y: CENTER, len: 6, dir: 90, bend: 0, w: 3 }
-    if (variant === "ring") return arc(index * 90, RING_SPAN, strokeWidth)
+    if (shape === "columns") return { x: 4.5 + index * 5, y: CENTER, len: 6, dir: 90, bend: 0, w: 3 }
+    if (shape === "orbit") return arc(index * 90, RING_SPAN, strokeWidth)
     return {
       x: CENTER + SQUARE_HALF * Math.cos(rad(index * 90)),
       y: CENTER + SQUARE_HALF * Math.sin(rad(index * 90)),
@@ -142,20 +142,20 @@ const tumbleProgress = (clock: number) => Math.min(1, ((clock % TUMBLE_PERIOD) /
 const tumbleAngle = (clock: number) => 90 * Math.floor(clock / TUMBLE_PERIOD) + 90 * inOut(tumbleProgress(clock))
 
 /** The loop's motion on top of the settled shape, at full strength. */
-function loopOffset(variant: MorphLoaderVariant, index: number, clock: number, strokeWidth: number): Pose {
+function loopOffset(shape: ShapeSpinnerShape, index: number, clock: number, strokeWidth: number): Pose {
   const none = { x: 0, y: 0, len: 0, dir: 0, bend: 0, w: 0 }
-  if (variant === "dots") {
+  if (shape === "pulse") {
     // A wave left to right: each dot hops and lands, then all three rest on the baseline until the next cycle.
     const phase = (((clock - index * DOT_LAG) % DOT_PERIOD) + DOT_PERIOD) % DOT_PERIOD
     const lift = index > 2 || phase > DOT_HOP ? 0 : Math.sin((Math.PI * phase) / DOT_HOP)
     // The dot squashes slightly wider at the top of its hop.
     return { ...none, y: -3.3 * lift, w: 0.6 * lift }
   }
-  if (variant === "bars") {
+  if (shape === "columns") {
     const grow = 0.5 - 0.5 * Math.cos((2 * Math.PI * (clock - index * BAR_LAG)) / BAR_PERIOD)
     return { ...none, len: -6 + 12 * grow }
   }
-  if (variant === "ring") {
+  if (shape === "orbit") {
     // Each arc breathes its span on the circle; the offset is the exact difference, so the arcs stay round.
     const span = RING_SPAN + RING_BREATH * Math.sin((2 * Math.PI * clock) / 1.2 + index * 0.4)
     const base = arc(index * 90, RING_SPAN, strokeWidth)
@@ -192,8 +192,8 @@ function strokePath(pose: Pose, turn: number, scale: number) {
 interface StrokeProps {
   index: number
   pose: Pose
-  variant: MorphLoaderVariant
-  status: MorphLoaderStatus
+  shape: ShapeSpinnerShape
+  state: ShapeSpinnerState
   strokeWidth: number
   reduced: boolean
   clock: MotionValue<number>
@@ -202,7 +202,7 @@ interface StrokeProps {
   pop: MotionValue<number>
 }
 
-function Stroke({ index, pose, variant, status, strokeWidth, reduced, clock, amp, turn, pop }: StrokeProps) {
+function Stroke({ index, pose, shape, state, strokeWidth, reduced, clock, amp, turn, pop }: StrokeProps) {
   const motionTokens = useMotionTokens()
   const shapeSpring = useMemo(() => shapeSpringOf(motionTokens.spring.morph), [motionTokens.spring.morph])
   // Each part of the stroke rides its own spring, so any shape morphs into any other and interruptions keep velocity.
@@ -213,7 +213,7 @@ function Stroke({ index, pose, variant, status, strokeWidth, reduced, clock, amp
   const bend = useSpring(pose.bend, shapeSpring)
   const width = useSpring(pose.w, shapeSpring)
   const draw = useMotionValue(1)
-  const lastStatus = useRef(status)
+  const lastState = useRef(state)
 
   useEffect(() => {
     // Turn the shortest way round, so a stroke never spins a full circle to reach the same line.
@@ -227,27 +227,27 @@ function Stroke({ index, pose, variant, status, strokeWidth, reduced, clock, amp
   }, [bend, dir, len, pose, reduced, width, x, y])
 
   useEffect(() => {
-    const previous = lastStatus.current
-    lastStatus.current = status
+    const previous = lastState.current
+    lastState.current = state
     if (reduced) {
       draw.jump(1)
       return
     }
     // Entering a mark, its strokes draw in order after the loop has faded; going back to loading restores them at once.
-    if (status !== "loading" && previous !== status) {
+    if (state !== "busy" && previous !== state) {
       draw.jump(0)
       const controls = animate(draw, 1, { duration: 0.16, delay: 0.1 + index * 0.08, ease: [...motionTokens.ease.standard] })
       return () => controls.stop()
     }
     const controls = animate(draw, 1, { duration: motionTokens.duration.fast })
     return () => controls.stop()
-  }, [draw, index, reduced, status, motionTokens.ease.standard, motionTokens.duration.fast])
+  }, [draw, index, reduced, state, motionTokens.ease.standard, motionTokens.duration.fast])
 
   const d = useTransform(() => {
     // Every value is read on each run, so Motion keeps all of them subscribed whatever the loop strength is.
     const strength = amp.get()
     const time = clock.get()
-    const offset = strength > 0.0005 ? loopOffset(variant, index, time, strokeWidth) : null
+    const offset = strength > 0.0005 ? loopOffset(shape, index, time, strokeWidth) : null
     const shown: Pose = {
       x: x.get() + (offset ? offset.x * strength : 0),
       y: y.get() + (offset ? offset.y * strength : 0),
@@ -262,7 +262,7 @@ function Stroke({ index, pose, variant, status, strokeWidth, reduced, clock, amp
     // Read the clock even while the loop is off, or a render at zero strength drops its subscription and the squash freezes.
     const strength = amp.get()
     const time = clock.get()
-    const squash = strength > 0.0005 ? loopOffset(variant, index, time, strokeWidth).w * strength : 0
+    const squash = strength > 0.0005 ? loopOffset(shape, index, time, strokeWidth).w * strength : 0
     return Math.max(0, width.get() + squash) * pop.get()
   })
   // A stroke with no width is also fully transparent, so its round caps never leave a speck.
@@ -272,30 +272,30 @@ function Stroke({ index, pose, variant, status, strokeWidth, reduced, clock, amp
 }
 
 /**
- * A tiny loader drawn from four strokes that morph between dots, bars, ring, and square shapes, then into a check or a cross when status changes.
+ * A small spinner made of four strokes that regroup between pulse, columns, orbit, and frame shapes, then settle into a check or a cross when state changes.
  * It inherits currentColor, so it sits inside buttons and text without extra styling.
  */
-export function MorphLoader({
-  variant = "dots",
-  status = "loading",
-  size = 24,
-  strokeWidth = 2.5,
+export function ShapeSpinner({
+  shape = "pulse",
+  state = "busy",
+  size = 28,
+  strokeWidth = 2,
   tone = true,
-  label = "Loading",
-  successLabel = "Done",
-  errorLabel = "Failed",
+  label = "Working",
+  doneLabel = "Ready",
+  failedLabel = "Did not finish",
   decorative = false,
   className,
   style,
-}: MorphLoaderProps) {
+}: ShapeSpinnerProps) {
   const motionTokens = useMotionTokens()
   const reduced = useReducedMotion() ?? false
   const clock = useMotionValue(0)
   /** Strength of the loop motion: 1 while loading, fading to 0 when the loader settles into a mark. */
-  const amp = useMotionValue(reduced || status !== "loading" ? 0 : 1)
+  const amp = useMotionValue(reduced || state !== "busy" ? 0 : 1)
   const turn = useMotionValue(0)
   const pop = useMotionValue(1)
-  const poses = shapeOf(variant, status, strokeWidth)
+  const poses = shapeOf(shape, state, strokeWidth)
 
   // One frame loop, alive only while loading or while the loop is still fading out.
   useEffect(() => {
@@ -305,15 +305,15 @@ export function MorphLoader({
       pop.jump(1)
       return
     }
-    const loading = status === "loading"
-    const spins = loading && (variant === "ring" || variant === "square")
+    const loading = state === "busy"
+    const spins = loading && (shape === "orbit" || shape === "frame")
     const upright = Math.ceil(turn.get() / 360 - 0.001) * 360
     const controls = [animate(amp, loading ? 1 : 0, { duration: loading ? motionTokens.duration.standard : motionTokens.duration.exit, ease: [...motionTokens.ease.standard] })]
     if (spins) turn.stop()
     // The drawing turns forward to upright rather than unwinding, for dots, bars, and every finished mark.
     // A spinning ring hands its speed to the settle, so it decelerates into upright instead of stopping and restarting.
     else if (turn.get() !== upright) {
-      const velocity = variant === "ring" && amp.get() > 0.5 ? RING_SPEED : 0
+      const velocity = shape === "orbit" && amp.get() > 0.5 ? RING_SPEED : 0
       controls.push(animate(turn, upright, { ...motionTokens.spring.smooth, visualDuration: 0.55, velocity }))
     }
     if (!loading) controls.push(animate(pop, [1, 1, 1.14, 1], { duration: 0.6, times: [0, 0.55, 0.75, 1], ease: "easeOut" }))
@@ -326,8 +326,8 @@ export function MorphLoader({
       const before = clock.get()
       const after = before + dt
       clock.set(after)
-      if (spins && variant === "ring") turn.set(turn.get() + dt * RING_SPEED)
-      if (spins && variant === "square") turn.set(turn.get() + tumbleAngle(after) - tumbleAngle(before))
+      if (spins && shape === "orbit") turn.set(turn.get() + dt * RING_SPEED)
+      if (spins && shape === "frame") turn.set(turn.get() + tumbleAngle(after) - tumbleAngle(before))
       if (!loading && amp.get() < 0.0005) return
       frame = requestAnimationFrame(tick)
     }
@@ -336,10 +336,10 @@ export function MorphLoader({
       cancelAnimationFrame(frame)
       for (const control of controls) control.stop()
     }
-  }, [amp, clock, pop, reduced, status, turn, variant, motionTokens])
+  }, [amp, clock, pop, reduced, state, turn, shape, motionTokens])
 
-  const text = status === "success" ? successLabel : status === "error" ? errorLabel : label
-  const color = tone && status === "success" ? "var(--success)" : tone && status === "error" ? "var(--danger)" : undefined
+  const text = state === "done" ? doneLabel : state === "failed" ? failedLabel : label
+  const color = tone && state === "done" ? "var(--success)" : tone && state === "failed" ? "var(--danger)" : undefined
 
   return (
     <span
@@ -365,8 +365,8 @@ export function MorphLoader({
             key={index}
             index={index}
             pose={poses[index]}
-            variant={variant}
-            status={status}
+            shape={shape}
+            state={state}
             strokeWidth={strokeWidth}
             reduced={reduced}
             clock={clock}
@@ -381,4 +381,4 @@ export function MorphLoader({
   )
 }
 
-export default MorphLoader
+export default ShapeSpinner

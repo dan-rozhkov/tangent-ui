@@ -24,43 +24,43 @@ import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export interface SharePerson {
+export interface PanelContact {
   id: string
   name: string
   avatar: string
 }
-export interface ShareAccess {
-  value: string
+export interface PanelAudience {
+  id: string
   label: string
-  description: string
+  note: string
   icon: ReactNode
 }
-export interface ShareChannel {
+export interface PanelRoute {
   id: string
   label: string
   icon: ReactNode
-  /** Shown once onChannel resolves. Keep it about as long as label. */
-  doneLabel: string
+  /** Shown once onRoute resolves. Keep it about as long as label. */
+  sentLabel: string
 }
-export interface ShareSubmission {
-  people: SharePerson[]
-  access: string
+export interface PanelDelivery {
+  contacts: PanelContact[]
+  audience: string
 }
-export interface ShareSheetProps {
-  title: string
-  link: string
-  people: SharePerson[]
-  access: ShareAccess[]
-  channels?: ShareChannel[]
-  defaultAccess?: string
-  onSend?: (submission: ShareSubmission) => void | Promise<unknown>
-  onChannel?: (channel: string) => void | Promise<unknown>
-  onCopy?: (access: string) => void
-  /** Called when Undo is pressed on the confirmation; the picked people come back into the panel. */
-  onUndo?: (submission: ShareSubmission) => void
+export interface SharePanelProps {
+  subject: string
+  url: string
+  contacts: PanelContact[]
+  audiences: PanelAudience[]
+  routes?: PanelRoute[]
+  defaultAudience?: string
+  onDeliver?: (delivery: PanelDelivery) => void | Promise<unknown>
+  onRoute?: (route: string) => void | Promise<unknown>
+  onCopyUrl?: (audience: string) => void
+  /** Called when Take back is pressed on the confirmation; the picked contacts return to the panel. */
+  onTakeBack?: (delivery: PanelDelivery) => void
   label?: string
-  align?: "start" | "end" | "center"
-  sheetOnPhones?: boolean
+  anchor?: "start" | "end" | "center"
+  dockOnPhones?: boolean
   className?: string
 }
 
@@ -137,7 +137,7 @@ const alignClass = {
 function FaceLayer({
   id,
   reduced,
-  align,
+  anchor,
   onSize,
   className,
   children,
@@ -146,7 +146,7 @@ function FaceLayer({
 }: {
   id: Face
   reduced: boolean
-  align: keyof typeof alignClass
+  anchor: keyof typeof alignClass
   onSize: (id: Face, width: number, height: number) => void
   className?: string
   children: ReactNode
@@ -177,7 +177,7 @@ function FaceLayer({
       animate="shown"
       exit="gone"
       inert={!present || undefined}
-      className={cn("absolute top-0", alignClass[align], className)}
+      className={cn("absolute top-0", alignClass[anchor], className)}
     >
       {children}
     </motion.div>
@@ -274,26 +274,26 @@ function joinNames(names: string[]) {
   return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`
 }
 
-export function ShareSheet({
-  title,
-  link,
-  people,
-  access,
-  channels = [],
-  defaultAccess,
-  onSend,
-  onChannel,
-  onCopy,
-  onUndo,
+export function SharePanel({
+  subject,
+  url,
+  contacts,
+  audiences,
+  routes = [],
+  defaultAudience,
+  onDeliver,
+  onRoute,
+  onCopyUrl,
+  onTakeBack,
   label = "Share",
-  align = "end",
-  sheetOnPhones = true,
+  anchor = "end",
+  dockOnPhones = true,
   className,
-}: ShareSheetProps) {
+}: SharePanelProps) {
   const { motionTokens, enter, standard, blur, GROW, FOLD, RESIZE, faceVariants } = useShareMotion()
   const reduced = useReducedFlag()
   const phone = usePhone()
-  const sheet = sheetOnPhones && phone
+  const sheet = dockOnPhones && phone
   const uid = useId()
   const titleId = `${uid}-title`
   const listId = `${uid}-access`
@@ -304,10 +304,10 @@ export function ShareSheet({
   const sheetRef = useRef<HTMLDivElement>(null)
 
   const [face, setFace] = useState<Face>("trigger")
-  const [accessValue, setAccessValue] = useState(defaultAccess ?? access[0]?.value ?? "")
+  const [accessValue, setAccessValue] = useState(defaultAudience ?? audiences[0]?.id ?? "")
   const [listOpen, setListOpen] = useState(false)
   const [picked, setPicked] = useState<string[]>([])
-  const [sentTo, setSentTo] = useState<SharePerson[]>([])
+  const [sentTo, setSentTo] = useState<PanelContact[]>([])
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle")
   const [channelState, setChannelState] = useState<Record<string, ChannelState>>({})
   const [sending, setSending] = useState(false)
@@ -370,7 +370,7 @@ export function ShareSheet({
     setFace(next)
   }, [])
 
-  // Opening moves focus to Copy, sending moves it to Done, closing returns it to the Share button.
+  // Opening moves focus to Copy, sending moves it to Got it, closing returns it to the Share button.
   useEffect(() => {
     const selector = focusNext.current
     focusNext.current = null
@@ -428,15 +428,15 @@ export function ShareSheet({
     close(true)
   }
 
-  const selectedAccess = access.find(option => option.value === accessValue) ?? access[0]
-  const pickedPeople = picked.map(id => people.find(person => person.id === id)).filter((person): person is SharePerson => !!person)
+  const selectedAccess = audiences.find(option => option.id === accessValue) ?? audiences[0]
+  const pickedPeople = picked.map(id => contacts.find(person => person.id === id)).filter((person): person is PanelContact => !!person)
 
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(link)
+      await navigator.clipboard.writeText(url)
       setCopyState("copied")
       setAnnouncement("Link copied")
-      onCopy?.(accessValue)
+      onCopyUrl?.(accessValue)
     } catch {
       setCopyState("failed")
       setAnnouncement("Couldn’t copy the link")
@@ -451,8 +451,8 @@ export function ShareSheet({
   const chooseAccess = (value: string) => {
     setAccessValue(value)
     setListOpen(false)
-    const option = access.find(item => item.value === value)
-    if (option) setAnnouncement(`Access: ${option.label}`)
+    const option = audiences.find(item => item.id === value)
+    if (option) setAnnouncement(`Audience: ${option.label}`)
     document.querySelector<HTMLElement>(`[data-share="${CSS.escape(uid)}"] [data-access-trigger]`)?.focus()
   }
   const onListKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -483,24 +483,24 @@ export function ShareSheet({
     document.querySelector<HTMLElement>(`#${CSS.escape(listId)} [aria-selected="true"]`)?.focus()
   }, [listOpen, listId])
 
-  const runChannel = async (channel: ShareChannel) => {
+  const runChannel = async (channel: PanelRoute) => {
     if (channelState[channel.id] === "pending") return
     const set = (state: ChannelState) => setChannelState(all => ({ ...all, [channel.id]: state }))
     try {
-      const result = onChannel?.(channel.id)
+      const result = onRoute?.(channel.id)
       if (result && typeof (result as Promise<unknown>).then === "function") {
         set("pending")
         await result
       }
       set("done")
-      setAnnouncement(`${channel.label}: ${channel.doneLabel}`)
+      setAnnouncement(`${channel.label}: ${channel.sentLabel}`)
     } catch {
       set("failed")
       setAnnouncement(`${channel.label}: failed`)
     }
   }
 
-  const togglePerson = (person: SharePerson, source: HTMLElement | null) => {
+  const togglePerson = (person: PanelContact, source: HTMLElement | null) => {
     if (picked.includes(person.id)) {
       setPicked(all => all.filter(id => id !== person.id))
       setAnnouncement(`Removed ${person.name}`)
@@ -515,7 +515,7 @@ export function ShareSheet({
     const rect = img.getBoundingClientRect()
     setFlight({ id: person.id, src: person.avatar, from: { x: rect.left - base.left, y: rect.top - base.top, size: rect.width } })
   }
-  const removePerson = (person: SharePerson) => {
+  const removePerson = (person: PanelContact) => {
     setPicked(all => all.filter(id => id !== person.id))
     setAnnouncement(`Removed ${person.name}`)
     if (flight?.id === person.id) setFlight(null)
@@ -525,14 +525,14 @@ export function ShareSheet({
   const send = async () => {
     if (sending) return
     if (!pickedPeople.length) {
-      setAnnouncement("Pick someone to send to")
+      setAnnouncement("Choose someone to deliver to")
       if (!reduced) void shakeRow.start({ x: [0, -8, 7, -5, 3, 0], transition: { duration: 0.4, ease: standard } })
       return
     }
     const token = ++run.current
     setFailed(false)
     try {
-      const result = onSend?.({ people: pickedPeople, access: accessValue })
+      const result = onDeliver?.({ contacts: pickedPeople, audience: accessValue })
       if (result && typeof (result as Promise<unknown>).then === "function") {
         setSending(true)
         await result
@@ -541,35 +541,35 @@ export function ShareSheet({
       if (token !== run.current) return
       setSending(false)
       setFailed(true)
-      setAnnouncement("Couldn’t send. Try again.")
+      setAnnouncement("Not delivered. Try again.")
       return
     }
     if (token !== run.current) return
     setSending(false)
     setSentTo(pickedPeople)
     setPicked([])
-    setAnnouncement(`Sent to ${joinNames(pickedPeople.map(person => person.name))}`)
+    setAnnouncement(`Delivered to ${joinNames(pickedPeople.map(person => person.name))}`)
     go("sent", "[data-done]")
   }
 
   const undo = () => {
     if (!sentTo.length) return
-    onUndo?.({ people: sentTo, access: accessValue })
+    onTakeBack?.({ contacts: sentTo, audience: accessValue })
     setPicked(sentTo.map(person => person.id))
-    setAnnouncement(`Undone. ${joinNames(sentTo.map(person => person.name))} picked again`)
+    setAnnouncement(`Taken back. ${joinNames(sentTo.map(person => person.name))} picked again`)
     go("panel", "[data-send]")
   }
 
   const copyLabels = [
     { key: "idle", text: "Copy", icon: <CopyIcon size={24} /> },
-    { key: "copied", text: "Copied", icon: <CheckIcon size={24} /> },
+    { key: "copied", text: "Link copied", icon: <CheckIcon size={24} /> },
     { key: "failed", text: "Retry", icon: <ArrowsClockwiseIcon size={24} /> },
   ] as const
   const panelBody = (
     <div ref={setLayer} className="relative flex flex-col gap-3 p-2">
       <div className="flex h-9 items-center gap-2 pl-2">
         <h2 id={titleId} className="min-w-0 flex-1 truncate text-base leading-body font-medium">
-          Share “{title}”
+          Share “{subject}”
         </h2>
         <button
           type="button"
@@ -585,13 +585,13 @@ export function ShareSheet({
       <div className="flex flex-col rounded-[20px] bg-surface-muted/70 ring-1 ring-border-subtle ring-inset">
         <div className="flex h-12 items-center gap-2.5 pr-1.5 pl-3.5">
           <LinkIcon className="size-4 flex-none text-text-secondary" aria-hidden="true" />
-          <span className="min-w-0 flex-1 truncate text-sm leading-body text-text-secondary" title={link}>
-            {link.replace(/^https?:\/\//, "")}
+          <span className="min-w-0 flex-1 truncate text-sm leading-body text-text-secondary" title={url}>
+            {url.replace(/^https?:\/\//, "")}
           </span>
           <button
             type="button"
             data-copy=""
-            aria-label="Copy link"
+            aria-label="Copy URL"
             onClick={() => void copy()}
             className={cn(
               "grid h-[34px] flex-none cursor-pointer rounded-full bg-surface-raised px-3 text-sm leading-body font-medium text-foreground shadow-resting ring-1 ring-border outline-none",
@@ -644,7 +644,7 @@ export function ShareSheet({
               </span>
               <span className="flex min-w-0 flex-1 flex-col gap-px">
                 <span className="truncate text-sm leading-body font-medium text-foreground">{selectedAccess.label}</span>
-                <span className="truncate text-xs leading-body text-text-secondary">{selectedAccess.description}</span>
+                <span className="truncate text-xs leading-body text-text-secondary">{selectedAccess.note}</span>
               </span>
               <CaretDownIcon
                 className={cn(
@@ -655,20 +655,20 @@ export function ShareSheet({
               />
             </button>
             {listOpen && (
-              <div id={listId} role="listbox" aria-label="Link access" className="flex flex-col px-1.5 pt-1 pb-1.5" onKeyDown={onListKeyDown}>
-                {access.map((option, index) => {
-                  const selected = option.value === accessValue
-                  const tabbable = focusedOption ? focusedOption === option.value : selected
+              <div id={listId} role="listbox" aria-label="Who can open" className="flex flex-col px-1.5 pt-1 pb-1.5" onKeyDown={onListKeyDown}>
+                {audiences.map((option, index) => {
+                  const selected = option.id === accessValue
+                  const tabbable = focusedOption ? focusedOption === option.id : selected
                   return (
                     <motion.button
-                      key={option.value}
+                      key={option.id}
                       type="button"
                       role="option"
                       aria-selected={selected}
                       tabIndex={tabbable ? 0 : -1}
-                      onFocus={() => setFocusedOption(option.value)}
+                      onFocus={() => setFocusedOption(option.id)}
                       onBlur={() => setFocusedOption(null)}
-                      onClick={() => chooseAccess(option.value)}
+                      onClick={() => chooseAccess(option.id)}
                       initial={reduced ? { opacity: 0 } : { opacity: 0, y: -4, filter: `blur(${blur.subtle}px)` }}
                       animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                       transition={{
@@ -683,7 +683,7 @@ export function ShareSheet({
                       </span>
                       <span className="flex min-w-0 flex-1 flex-col gap-px">
                         <span className="truncate text-sm leading-body font-medium text-foreground">{option.label}</span>
-                        <span className="truncate text-xs leading-body text-text-secondary">{option.description}</span>
+                        <span className="truncate text-xs leading-body text-text-secondary">{option.note}</span>
                       </span>
                       {selected && <CheckIcon className="size-4 flex-none text-foreground" aria-hidden="true" />}
                     </motion.button>
@@ -695,11 +695,11 @@ export function ShareSheet({
         )}
       </div>
 
-      {channels.length > 0 && (
-        <div role="group" aria-label="Share to" className="flex gap-1.5">
-          {channels.map(channel => {
+      {routes.length > 0 && (
+        <div role="group" aria-label="Post via" className="flex gap-1.5">
+          {routes.map(channel => {
             const state = channelState[channel.id] ?? "idle"
-            const text = state === "done" ? channel.doneLabel : state === "failed" ? "Failed" : channel.label
+            const text = state === "done" ? channel.sentLabel : state === "failed" ? "Not sent" : channel.label
             return (
               <button
                 key={channel.id}
@@ -738,9 +738,9 @@ export function ShareSheet({
 
       {/* Send to */}
       <motion.div animate={shakeRow} className="flex flex-col gap-1.5">
-        <span className="pl-2 text-xs leading-body text-text-muted">Send to</span>
+        <span className="pl-2 text-xs leading-body text-text-muted">Deliver to</span>
         <div data-chips="" className="flex h-9 items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {pickedPeople.length === 0 && <span className="pl-2 text-sm leading-body text-text-muted">Pick people below</span>}
+          {pickedPeople.length === 0 && <span className="pl-2 text-sm leading-body text-text-muted">Choose contacts below</span>}
           <ul className="flex items-center gap-1.5" aria-label="Recipients">
             <AnimatePresence initial={false}>
               {pickedPeople.map(person => (
@@ -774,13 +774,13 @@ export function ShareSheet({
         </div>
       </motion.div>
 
-      {people.length > 0 && (
+      {contacts.length > 0 && (
         <div
           role="group"
-          aria-label="Recent people"
+          aria-label="Frequent contacts"
           className="grid auto-cols-[minmax(4rem,1fr)] grid-flow-col gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {people.map(person => {
+          {contacts.map(person => {
             const on = picked.includes(person.id)
             return (
               <button
@@ -810,12 +810,12 @@ export function ShareSheet({
         </div>
       )}
 
-      {failed && <span className="-mb-1 pl-2 text-xs leading-body text-danger">Couldn’t send. Try again.</span>}
+      {failed && <span className="-mb-1 pl-2 text-xs leading-body text-danger">Not delivered. Try again.</span>}
       <Button
         data-send=""
         loading={sending}
         onClick={() => void send()}
-        aria-label={pickedPeople.length ? `Send to ${pickedPeople.length} ${pickedPeople.length === 1 ? "person" : "people"}` : "Send"}
+        aria-label={pickedPeople.length ? `Deliver to ${pickedPeople.length} ${pickedPeople.length === 1 ? "contact" : "contacts"}` : "Deliver"}
         className={cn(
           "min-h-11 w-full rounded-full border-transparent [&_.animate-spin]:motion-reduce:animate-[spin_1.6s_linear_infinite]",
           pickedPeople.length
@@ -869,23 +869,23 @@ export function ShareSheet({
         </motion.span>
       </motion.span>
       <h2 id={sentId} className="mt-3 max-w-full truncate text-base leading-body font-medium">
-        Sent to {sentTo.length === 1 ? lead?.name : joinNames(sentTo.map(person => person.name.split(" ")[0]))}
+        Delivered to {sentTo.length === 1 ? lead?.name : joinNames(sentTo.map(person => person.name.split(" ")[0]))}
       </h2>
       <p className="mt-0.5 max-w-full truncate text-xs leading-body text-text-secondary">
-        {selectedAccess ? `${selectedAccess.label} – ${selectedAccess.description.toLowerCase()}` : `They can open “${title}” now.`}
+        {selectedAccess ? `${selectedAccess.label} – ${selectedAccess.note.toLowerCase()}` : `“${subject}” is ready for them to open.`}
       </p>
       <div className="mt-4 flex w-full gap-2">
         <Button variant="secondary" className="min-h-10 flex-1 rounded-full" onClick={undo}>
-          Undo
+          Take back
         </Button>
         <Button data-done="" className="min-h-10 flex-1 rounded-full" onClick={() => close(true)}>
-          Done
+          Got it
         </Button>
       </div>
     </div>
   )
 
-  const panelWidth = "w-[var(--share-sheet-width,min(24rem,calc(100vw-2rem)))]"
+  const panelWidth = "w-[var(--share-panel-width,min(24rem,calc(100vw-2rem)))]"
   const sentWidth = "w-[min(19rem,calc(100vw-2rem))]"
   const opened = face !== "trigger"
   const showTrigger = sheet || face === "trigger"
@@ -905,14 +905,14 @@ export function ShareSheet({
           "absolute top-0 z-20 overflow-hidden",
           "transition-[background-color,color,box-shadow] duration-200 ease-standard motion-reduce:transition-none",
           opened && !sheet ? "bg-surface-raised text-foreground shadow-floating" : "bg-foreground text-background",
-          align === "start" ? "left-0" : align === "end" ? "right-0" : "left-1/2 -translate-x-1/2",
+          anchor === "start" ? "left-0" : anchor === "end" ? "right-0" : "left-1/2 -translate-x-1/2",
         )}
         style={{ width, height, borderRadius: radius }}
         onKeyDown={onKeyDown}
       >
         <AnimatePresence initial={false}>
           {showTrigger && (
-            <FaceLayer key="trigger" id="trigger" reduced={reduced} align={align} onSize={sheet ? resize : onSize}>
+            <FaceLayer key="trigger" id="trigger" reduced={reduced} anchor={anchor} onSize={sheet ? resize : onSize}>
               <button
                 type="button"
                 data-trigger=""
@@ -930,12 +930,12 @@ export function ShareSheet({
             </FaceLayer>
           )}
           {!sheet && face === "panel" && (
-            <FaceLayer key="panel" id="panel" role="dialog" labelledBy={titleId} reduced={reduced} align={align} onSize={onSize} className={panelWidth}>
+            <FaceLayer key="panel" id="panel" role="dialog" labelledBy={titleId} reduced={reduced} anchor={anchor} onSize={onSize} className={panelWidth}>
               {panelBody}
             </FaceLayer>
           )}
           {!sheet && face === "sent" && (
-            <FaceLayer key="sent" id="sent" role="dialog" labelledBy={sentId} reduced={reduced} align={align} onSize={onSize} className={sentWidth}>
+            <FaceLayer key="sent" id="sent" role="dialog" labelledBy={sentId} reduced={reduced} anchor={anchor} onSize={onSize} className={sentWidth}>
               {sentBody}
             </FaceLayer>
           )}
@@ -1046,4 +1046,4 @@ function PhoneSheet({
   )
 }
 
-export default ShareSheet
+export default SharePanel

@@ -1,54 +1,54 @@
 "use client"
 
 import { useState } from "react"
-import { BookmarkSimpleIcon, BookOpenIcon, BroadcastIcon, HouseIcon, MagnifyingGlassIcon, TrayIcon, UserIcon } from "@phosphor-icons/react"
+import { CreditCardIcon, EraserIcon, EyedropperIcon, PackageIcon, PaintBucketIcon, PencilSimpleIcon, SquaresFourIcon, UsersThreeIcon } from "@phosphor-icons/react"
 
-import { LiquidTabBar, liquidPanelId, liquidTabId } from "@/components/ui/liquid-tab-bar"
+import { BlobTabs, blobPanelId, blobTabId } from "@/components/ui/blob-tabs"
 
 const copy: Record<string, string> = {
-  home: "Picked for you, updated every morning.",
-  saved: "Everything you saved, in one place.",
-  inbox: "Two unread messages since your last visit.",
-  profile: "Your name, photo and preferences.",
+  overview: "Revenue is up 8% on last week.",
+  orders: "Three orders are waiting to ship.",
+  customers: "Eleven new customers this month.",
+  billing: "Your next invoice is due on the 1st.",
 }
 
 export default function Demo() {
-  const [tab, setTab] = useState("home")
-  const [compact, setCompact] = useState("radio")
+  const [tab, setTab] = useState("overview")
+  const [tool, setTool] = useState("draw")
 
   return (
     <div className="grid w-full max-w-[720px] justify-items-center gap-8">
       <section
-        id={liquidPanelId("nav", tab)}
+        id={blobPanelId("nav", tab)}
         role="tabpanel"
-        aria-labelledby={liquidTabId("nav", tab)}
+        aria-labelledby={blobTabId("nav", tab)}
         className="grid h-24 w-full max-w-sm place-items-center rounded-panel border border-border bg-surface text-sm text-text-secondary"
       >
         {copy[tab]}
       </section>
-      <LiquidTabBar
+      <BlobTabs
         id="nav"
-        label="Sections"
+        label="Dashboard views"
         value={tab}
         onValueChange={setTab}
         tabs={[
-          { value: "home", label: "Home", icon: <HouseIcon size={24} /> },
-          { value: "saved", label: "Saved", icon: <BookmarkSimpleIcon size={24} /> },
-          { value: "inbox", label: "Inbox", icon: <TrayIcon size={24} />, badge: 2, badgeLabel: "2 unread" },
-          { value: "profile", label: "Profile", icon: <UserIcon size={24} /> },
+          { value: "overview", label: "Overview", icon: <SquaresFourIcon size={24} /> },
+          { value: "orders", label: "Orders", icon: <PackageIcon size={24} />, tally: 3, tallyLabel: "3 to ship" },
+          { value: "customers", label: "Customers", icon: <UsersThreeIcon size={24} /> },
+          { value: "billing", label: "Billing", icon: <CreditCardIcon size={24} /> },
         ]}
       />
-      <LiquidTabBar
-        id="compact"
-        label="Compact sections"
-        labels="none"
-        value={compact}
-        onValueChange={setCompact}
+      <BlobTabs
+        id="tools"
+        label="Drawing tools"
+        captions="hidden"
+        value={tool}
+        onValueChange={setTool}
         tabs={[
-          { value: "home", label: "Home", icon: <HouseIcon size={24} /> },
-          { value: "radio", label: "Radio", icon: <BroadcastIcon size={24} /> },
-          { value: "library", label: "Library", icon: <BookOpenIcon size={24} /> },
-          { value: "search", label: "Search", icon: <MagnifyingGlassIcon size={24} /> },
+          { value: "draw", label: "Draw", icon: <PencilSimpleIcon size={24} /> },
+          { value: "erase", label: "Erase", icon: <EraserIcon size={24} /> },
+          { value: "fill", label: "Fill", icon: <PaintBucketIcon size={24} /> },
+          { value: "pick", label: "Pick color", icon: <EyedropperIcon size={24} /> },
         ]}
       />
     </div>

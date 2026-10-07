@@ -10,30 +10,30 @@ import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export interface DockItem {
+export interface MagnifyItem {
   id: string
   label: string
   icon: ReactNode
-  /** Display-only key hint. The page binds the key. */
-  shortcut?: string
+  /** Display-only key hint; the page binds the key itself. */
+  hotkey?: string
   /** A rolling count that leaves at 0. */
-  badge?: number
+  count?: number
   /** Turns the entry into a group with a tray. */
-  items?: DockItem[]
+  members?: MagnifyItem[]
 }
 
-export interface DockMove {
+export interface MagnifyMove {
   type: "move"
   id: string
   index: number
 }
 
-export interface DockProps {
-  items: DockItem[]
-  value?: string | null
-  onValueChange?: (id: string) => void
+export interface MagnifyBarProps {
+  slots: MagnifyItem[]
+  active?: string | null
+  onActiveChange?: (id: string) => void
   /** Enables drag to reorder and Alt with the arrow keys. */
-  onItemsChange?: (items: DockItem[], change: DockMove) => void
+  onReorder?: (slots: MagnifyItem[], change: MagnifyMove) => void
   /** Accessible name of the toolbar. */
   label?: string
   className?: string
@@ -58,12 +58,12 @@ const STROKE = 1
 /** The selection glides with about 1% of overshoot and lands in ~300ms, a touch livelier than morph. */
 const selectionSpring = { type: "spring", visualDuration: 0.3, bounce: 0.18 } as const
 
-const isGroup = (item: DockItem) => !!item.items?.length
-const holds = (item: DockItem, value: string | null | undefined) =>
-  value != null && (item.id === value || !!item.items?.some((member) => member.id === value))
+const isGroup = (item: MagnifyItem) => !!item.members?.length
+const holds = (item: MagnifyItem, active: string | null | undefined) =>
+  active != null && (item.id === active || !!item.members?.some((member) => member.id === active))
 
-function accessibleName(label: string, shortcut?: string, badge?: number) {
-  return [label, shortcut, badge ? String(badge) : null].filter(Boolean).join(", ")
+function accessibleName(label: string, hotkey?: string, count?: number) {
+  return [label, hotkey, count ? String(count) : null].filter(Boolean).join(", ")
 }
 
 const barWidth = (count: number) => count * SLOT + Math.max(0, count - 1) * GAP + PAD * 2
@@ -145,7 +145,7 @@ function Badge({ count, reduced }: { count?: number; reduced: boolean }) {
     <AnimatePresence initial={false}>
       {count ? (
         <motion.span
-          key="badge"
+          key="count"
           aria-hidden="true"
           className="pointer-events-none absolute top-[3px] left-[26px] z-2 inline-flex h-4 min-w-[17px] items-center justify-center rounded-pill bg-foreground px-[5px] text-[11px] leading-none font-medium text-background"
           initial={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.4 }}
@@ -213,11 +213,11 @@ function makeVariants(motionTokens: MotionTokens) {
 }
 
 /**
- * A floating command dock. A label glides between items, a selection springs to the chosen one, and groups grow a tray out
- * of the dock surface: bar and tray tab are one SVG outline whose tab rises from the top edge. Only the focused item is a
- * tab stop; arrows move along the dock, ArrowUp enters a group's tray.
+ * A floating icon bar. A label glides between slots, the selection springs to the active one, and group slots open a
+ * tray from the bar's own surface: bar and tray tab are one SVG outline whose tab rises from the top edge. Only the
+ * focused slot is a tab stop; arrows move along the bar, ArrowUp enters a group's tray.
  */
-export function Dock({ items, value = null, onValueChange, onItemsChange, label = "Tools", className }: DockProps) {
+export function MagnifyBar({ slots, active = null, onActiveChange, onReorder, label = "Launcher", className }: MagnifyBarProps) {
   const motionTokens = useMotionTokens()
   const { trayVariants, memberVariants, fadeVariants } = useMemo(() => makeVariants(motionTokens), [motionTokens])
   const reduced = useReducedMotion() ?? false
@@ -237,21 +237,21 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
   const [remembered, setRemembered] = useState<Record<string, string>>({})
   const [lifted, setLifted] = useState<string | null>(null)
 
-  const trayGroup = items.find((item) => item.id === trayId && isGroup(item)) ?? null
+  const trayGroup = slots.find((item) => item.id === trayId && isGroup(item)) ?? null
   const open = !!openId && trayGroup?.id === openId
   const trayDomId = `${uid}-tray`
 
   const shownMember = useCallback(
-    (group: DockItem) => {
-      const members = group.items ?? []
-      return members.find((member) => member.id === value) ?? members.find((member) => member.id === remembered[group.id]) ?? members[0]
+    (group: MagnifyItem) => {
+      const members = group.members ?? []
+      return members.find((member) => member.id === active) ?? members.find((member) => member.id === remembered[group.id]) ?? members[0]
     },
-    [remembered, value],
+    [remembered, active],
   )
 
-  const stop = items.some((item) => item.id === tabStop) ? tabStop : (items.find((item) => holds(item, value)) ?? items[0])?.id
+  const stop = slots.some((item) => item.id === tabStop) ? tabStop : (slots.find((item) => holds(item, active)) ?? slots[0])?.id
   const trayFocusId = trayGroup
-    ? ((trayGroup.items ?? []).some((member) => member.id === trayStop) ? trayStop : shownMember(trayGroup)?.id)
+    ? ((trayGroup.members ?? []).some((member) => member.id === trayStop) ? trayStop : shownMember(trayGroup)?.id)
     : null
 
   // Focus lands after the render that makes its target focusable (the tray mounts on open).
@@ -281,22 +281,22 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
   const focusKey = useRef<string | null>(null)
 
   const labelFor = useCallback(
-    (key: string | null): { text: string; shortcut?: string } | null => {
+    (key: string | null): { text: string; hotkey?: string } | null => {
       if (!key) return null
       const [scope, id] = key.split(":")
       if (scope === "bar") {
-        const item = items.find((entry) => entry.id === id)
+        const item = slots.find((entry) => entry.id === id)
         if (!item) return null
         if (isGroup(item)) {
           const member = shownMember(item)
-          return { text: member ? `${item.label}: ${member.label}` : item.label, shortcut: member?.shortcut }
+          return { text: member ? `${item.label}: ${member.label}` : item.label, hotkey: member?.hotkey }
         }
-        return { text: item.label, shortcut: item.shortcut }
+        return { text: item.label, hotkey: item.hotkey }
       }
-      const member = trayGroup?.items?.find((entry) => entry.id === id)
-      return member ? { text: member.label, shortcut: member.shortcut } : null
+      const member = trayGroup?.members?.find((entry) => entry.id === id)
+      return member ? { text: member.label, hotkey: member.hotkey } : null
     },
-    [items, shownMember, trayGroup],
+    [slots, shownMember, trayGroup],
   )
 
   /** Pointer wins over keyboard focus. The first label waits a beat; while warm the next follows at once. */
@@ -350,7 +350,7 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
 
   /* ---------- surface ---------- */
   // The bar and the tray tab are one SVG outline. Its size starts from the item count so the first paint has a body.
-  const surfaceW = useMotionValue(barWidth(items.length))
+  const surfaceW = useMotionValue(barWidth(slots.length))
   const surfaceH = useMotionValue(BAR_HEIGHT)
   const tabLeft = useMotionValue(0)
   const tabRight = useMotionValue(0)
@@ -359,7 +359,7 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
     dockPath(w, h, l, r, t),
   )
   const [trayLeft, setTrayLeft] = useState(0)
-  const trayCount = trayGroup?.items?.length ?? 0
+  const trayCount = trayGroup?.members?.length ?? 0
 
   const placeTray = useCallback(() => {
     const host = root.current
@@ -406,7 +406,7 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
   }, [motionTokens.spring.morph, motionTokens.spring.smooth, open, reduced, surfaceH, surfaceW, tabLeft, tabRight, tabTop, trayCount, trayId])
   useLayoutEffect(() => {
     placeTray()
-  }, [placeTray, items])
+  }, [placeTray, slots])
 
   // One observer on the bar keeps the tray and label anchored when the dock reflows.
   useEffect(() => {
@@ -431,50 +431,50 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
   }, [openId])
 
   /* ---------- actions ---------- */
-  const openTray = (group: DockItem) => {
+  const openTray = (group: MagnifyItem) => {
     setTrayId(group.id)
     setOpenId(group.id)
     setTrayStop(shownMember(group)?.id ?? null)
   }
 
-  const choose = (item: DockItem) => {
+  const choose = (item: MagnifyItem) => {
     if (justDragged.current) return
     setTabStop(item.id)
     if (!isGroup(item)) {
       setOpenId(null)
-      onValueChange?.(item.id)
+      onActiveChange?.(item.id)
       return
     }
     const member = shownMember(item)
-    if (member) onValueChange?.(member.id)
+    if (member) onActiveChange?.(member.id)
     if (openId === item.id) setOpenId(null)
     else openTray(item)
   }
 
-  const chooseMember = (group: DockItem, member: DockItem) => {
+  const chooseMember = (group: MagnifyItem, member: MagnifyItem) => {
     setRemembered((current) => ({ ...current, [group.id]: member.id }))
-    onValueChange?.(member.id)
+    onActiveChange?.(member.id)
     setOpenId(null)
     setTabStop(group.id)
     focusLater(`bar:${group.id}`)
   }
 
   const move = (index: number, delta: number) => {
-    if (!onItemsChange) return
+    if (!onReorder) return
     const target = index + delta
-    if (target < 0 || target >= items.length) return
-    const next = items.slice()
+    if (target < 0 || target >= slots.length) return
+    const next = slots.slice()
     const [moved] = next.splice(index, 1)
     next.splice(target, 0, moved)
-    onItemsChange(next, { type: "move", id: moved.id, index: target })
+    onReorder(next, { type: "move", id: moved.id, index: target })
     focusLater(`bar:${moved.id}`)
   }
 
-  const onBarKey = (event: KeyboardEvent<HTMLButtonElement>, item: DockItem, index: number) => {
-    const last = items.length - 1
+  const onBarKey = (event: KeyboardEvent<HTMLButtonElement>, item: MagnifyItem, index: number) => {
+    const last = slots.length - 1
     let target = -1
     if (event.altKey && (event.key === "ArrowLeft" || event.key === "ArrowRight")) {
-      if (!onItemsChange) return
+      if (!onReorder) return
       event.preventDefault()
       move(index, event.key === "ArrowLeft" ? -1 : 1)
       return
@@ -495,13 +495,13 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
     }
     if (target < 0) return
     event.preventDefault()
-    setTabStop(items[target].id)
-    if (openId && items[target].id !== openId) setOpenId(null)
-    nodes.current.get(`bar:${items[target].id}`)?.focus()
+    setTabStop(slots[target].id)
+    if (openId && slots[target].id !== openId) setOpenId(null)
+    nodes.current.get(`bar:${slots[target].id}`)?.focus()
   }
 
-  const onTrayKey = (event: KeyboardEvent<HTMLButtonElement>, group: DockItem, index: number) => {
-    const members = group.items ?? []
+  const onTrayKey = (event: KeyboardEvent<HTMLButtonElement>, group: MagnifyItem, index: number) => {
+    const members = group.members ?? []
     const last = members.length - 1
     let target = -1
     if (event.key === "ArrowRight") target = index === last ? 0 : index + 1
@@ -536,15 +536,15 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
   }
 
   /* ---------- render ---------- */
-  const reorderable = !!onItemsChange
+  const reorderable = !!onReorder
 
-  const renderSlot = (item: DockItem, index: number) => {
+  const renderSlot = (item: MagnifyItem, index: number) => {
     const group = isGroup(item)
     const member = group ? shownMember(item) : undefined
-    const selected = holds(item, value)
+    const selected = holds(item, active)
     const name = group
-      ? `${accessibleName(`${item.label}: ${member?.label ?? ""}`, member?.shortcut, item.badge)}${selected ? ", selected" : ""}`
-      : accessibleName(item.label, item.shortcut, item.badge)
+      ? `${accessibleName(`${item.label}: ${member?.label ?? ""}`, member?.hotkey, item.count)}${selected ? ", selected" : ""}`
+      : accessibleName(item.label, item.hotkey, item.count)
     const key = `bar:${item.id}`
     return (
       <button
@@ -584,12 +584,12 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
           // A small dot hints that the slot opens a tray.
           <span aria-hidden="true" className="absolute top-5 left-8 z-1 size-[5px] rounded-full bg-current opacity-55" />
         ) : null}
-        <Badge count={item.badge} reduced={reduced} />
+        <Badge count={item.count} reduced={reduced} />
       </button>
     )
   }
 
-  const trayItems = trayGroup?.items ?? []
+  const trayItems = trayGroup?.members ?? []
 
   return (
     <div ref={root} className={cn("relative inline-flex max-w-full", className)}>
@@ -615,7 +615,7 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
           >
             {trayItems.map((member, index) => {
               const key = `tray:${member.id}`
-              const selected = member.id === value
+              const selected = member.id === active
               return (
                 <motion.button
                   key={member.id}
@@ -628,7 +628,7 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
                     "size-10 rounded-[14px] data-selected:bg-surface-muted data-selected:text-foreground",
                   )}
                   data-selected={selected || undefined}
-                  aria-label={accessibleName(member.label, member.shortcut, member.badge)}
+                  aria-label={accessibleName(member.label, member.hotkey, member.count)}
                   aria-pressed={selected}
                   tabIndex={member.id === trayFocusId ? 0 : -1}
                   onClick={() => chooseMember(trayGroup, member)}
@@ -642,7 +642,7 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
                   onPointerLeave={pointerLabel(null)}
                 >
                   <span className="relative z-1 grid place-items-center [&_svg]:size-5">{member.icon}</span>
-                  <Badge count={member.badge} reduced={reduced} />
+                  <Badge count={member.count} reduced={reduced} />
                 </motion.button>
               )
             })}
@@ -667,7 +667,7 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
                   : { ...motionTokens.spring.snappy, opacity: { duration: motionTokens.duration.fast, ease: enter } }
               }
             >
-              <DockLabel text={label$.text} shortcut={label$.shortcut} reduced={reduced} />
+              <MagnifyLabel text={label$.text} hotkey={label$.hotkey} reduced={reduced} />
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -679,18 +679,18 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
             as="div"
             ref={bar}
             axis="x"
-            values={items}
-            onReorder={(next: DockItem[]) => {
+            values={slots}
+            onReorder={(next: MagnifyItem[]) => {
               const id = dragging.current
               if (!id) return
-              onItemsChange?.(next, { type: "move", id, index: next.findIndex((item) => item.id === id) })
+              onReorder?.(next, { type: "move", id, index: next.findIndex((item) => item.id === id) })
             }}
             role="toolbar"
             aria-label={label}
             aria-orientation="horizontal"
             className="relative z-1 flex max-w-full gap-0.5 overflow-visible p-1.5"
           >
-            {items.map((item, index) => (
+            {slots.map((item, index) => (
               <Reorder.Item
                 as="div"
                 key={item.id}
@@ -727,7 +727,7 @@ export function Dock({ items, value = null, onValueChange, onItemsChange, label 
             aria-orientation="horizontal"
             className="relative z-1 flex max-w-full gap-0.5 p-1.5"
           >
-            {items.map((item, index) => (
+            {slots.map((item, index) => (
               <div key={item.id} className="relative flex-none" style={{ touchAction: "pan-y" }}>
                 {renderSlot(item, index)}
               </div>
@@ -746,12 +746,12 @@ function TrayPanel(props: ComponentProps<typeof motion.div>) {
 }
 
 /** The label pill springs to the width of its text and crossfades between names. */
-function DockLabel({ text, shortcut, reduced }: { text: string; shortcut?: string; reduced: boolean }) {
+function MagnifyLabel({ text, hotkey, reduced }: { text: string; hotkey?: string; reduced: boolean }) {
   const motionTokens = useMotionTokens()
   const measure = useRef<HTMLSpanElement>(null)
   const width = useMotionValue<number | "auto">("auto")
   const measured = useRef(false)
-  const content = `${text}\u0000${shortcut ?? ""}`
+  const content = `${text}\u0000${hotkey ?? ""}`
   useLayoutEffect(() => {
     const node = measure.current
     if (!node) return
@@ -767,7 +767,7 @@ function DockLabel({ text, shortcut, reduced }: { text: string; shortcut?: strin
     >
       <span ref={measure} className="invisible absolute flex items-center gap-2 px-2.5">
         {text}
-        {shortcut ? <kbd className="font-sans text-xs opacity-60">{shortcut}</kbd> : null}
+        {hotkey ? <kbd className="font-sans text-xs opacity-60">{hotkey}</kbd> : null}
       </span>
       <AnimatePresence initial={false} mode="popLayout">
         <motion.span
@@ -779,11 +779,11 @@ function DockLabel({ text, shortcut, reduced }: { text: string; shortcut?: strin
           transition={{ duration: motionTokens.duration.fast, ease: enter }}
         >
           {text}
-          {shortcut ? <kbd className="font-sans text-xs opacity-60">{shortcut}</kbd> : null}
+          {hotkey ? <kbd className="font-sans text-xs opacity-60">{hotkey}</kbd> : null}
         </motion.span>
       </AnimatePresence>
     </motion.span>
   )
 }
 
-export default Dock
+export default MagnifyBar

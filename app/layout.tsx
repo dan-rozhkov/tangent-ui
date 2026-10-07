@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" })
 
 export const metadata: Metadata = {
   title: "Tangent UI",
-  description: "Animated React components on shadcn/ui, Base UI and Motion.",
+  description: "React components with calm, physical motion, built on Base UI, Tailwind and Motion.",
 }
 
 // maximumScale stops iOS Safari zooming into inputs on focus; pinch-zoom still works there.

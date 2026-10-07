@@ -9,9 +9,9 @@ import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export type DateReelMode = "datetime" | "date" | "time"
+export type TimeWheelMode = "datetime" | "date" | "time"
 
-export interface DateReelLabels {
+export interface TimeWheelCopy {
   /** Day reel in datetime mode. */
   day?: string
   month?: string
@@ -22,24 +22,24 @@ export interface DateReelLabels {
   minute?: string
   /** AM or PM reel. */
   period?: string
-  /** Joins the day and the time in the summary, as in "Tomorrow at 9:00 AM". */
-  at?: string
-  /** Name of the quick picks group. */
-  presets?: string
-  confirm?: string
-  confirming?: string
-  confirmed?: string
+  /** Goes between the day and the time in the summary, as in "Tomorrow, 9:00 AM". */
+  joiner?: string
+  /** Name of the shortcuts group. */
+  shortcuts?: string
+  commit?: string
+  committing?: string
+  committed?: string
   failed?: string
 }
 
-export interface DateReelPreset {
+export interface TimeWheelShortcut {
   label: string
   value: Date | ((today: Date) => Date)
 }
 
-export interface DateReelProps {
+export interface TimeWheelProps {
   /** Which reels to show: day, hour, minute and AM or PM; month, day and year; or time only. */
-  mode?: DateReelMode
+  mode?: TimeWheelMode
   /** Controlled value. When it changes from outside, every reel spins to it along the short way around. */
   value?: Date
   /** Starting value when uncontrolled. Pass a fixed date so the first render matches on server and client. */
@@ -53,21 +53,21 @@ export interface DateReelProps {
   /** Latest selectable day. Defaults to a year after today (10 years in date mode). */
   maxDate?: Date
   /** Minutes between entries on the minute reel. */
-  minuteStep?: 1 | 5 | 10 | 15 | 30
+  minuteInterval?: 1 | 5 | 10 | 15 | 30
   /** 12 hour clock with an AM or PM reel, or a 24 hour clock. */
-  hourCycle?: 12 | 24
+  clock?: 12 | 24
   /** BCP 47 locale for names, the time format, the AM and PM words and relative phrases. */
   locale?: string
-  /** Quick picks under the reels. false hides them. */
-  presets?: DateReelPreset[] | false
+  /** Shortcut pills under the wheels. false hides them. */
+  shortcuts?: TimeWheelShortcut[] | false
   /** Optional heading above the summary. */
-  title?: string
+  heading?: string
   /** Adds a primary button. Return a promise to show pending, success and failure in place. */
-  onConfirm?: (value: Date) => void | Promise<void>
+  onCommit?: (value: Date) => void | Promise<void>
   /** Words for localization. */
-  labels?: DateReelLabels
+  copy?: TimeWheelCopy
   /** Spins the reels into place, one after another, the first time the picker scrolls into view. */
-  intro?: boolean
+  spinIn?: boolean
   /** Multiplies the speed of glides, snaps and the intro. */
   speed?: number
   /** Stops automatic motion. Reels still follow a drag and land on the nearest entry at once. */
@@ -103,7 +103,7 @@ const GLIDE_FAST_SPEED = 14.3
 const GLIDE_JUMP = 10.5
 /** Keys, taps and the wheel: one spring whatever the distance, slightly overdamped, settling in about 0.4s. */
 const SPRING_STEP = { k: 380, c: 43 }
-/** Quick picks and outside changes: critically damped and calmer, settling in about 0.6s. */
+/** Shortcuts and outside changes: critically damped and calmer, settling in about 0.6s. */
 const SPRING_PICK = { k: 137, c: 23.4 }
 /** Back from a rubber band stretch: critically damped at 15 rad/s, no bounce at the edge. */
 const SPRING_BACK = { k: 225, c: 30 }
@@ -112,7 +112,7 @@ const RUBBER_C = 0.55
 const RUBBER_D = 2.5
 /** Pixels a press may wander and still count as a tap. */
 const TAP_SLOP = 3
-/** Quick picks wait for the pressed pill, then start one reel after another. */
+/** Shortcuts wait for the pressed pill, then start one reel after another. */
 const PICK_DELAY = 0.14
 const PICK_STAGGER = 0.05
 /** The intro waits a beat after the picker is first seen, then glides every reel in together. */
@@ -122,7 +122,7 @@ const PENDING_DELAY = 150
 const DEFAULT_VALUE = new Date(2026, 8, 24, 9, 30)
 const DAY = 86_400_000
 
-const DEFAULT_LABELS: Required<DateReelLabels> = {
+const DEFAULT_COPY: Required<TimeWheelCopy> = {
   day: "Day",
   month: "Month",
   date: "Day",
@@ -130,12 +130,12 @@ const DEFAULT_LABELS: Required<DateReelLabels> = {
   hour: "Hour",
   minute: "Minute",
   period: "AM or PM",
-  at: "at",
-  presets: "Quick picks",
-  confirm: "Confirm",
-  confirming: "Saving",
-  confirmed: "Saved",
-  failed: "Try again",
+  joiner: ", ",
+  shortcuts: "Shortcuts",
+  commit: "Set",
+  committing: "Setting",
+  committed: "All set",
+  failed: "Not saved",
 }
 
 const mod = (value: number, count: number) => ((value % count) + count) % count
@@ -178,7 +178,7 @@ interface Reel {
 }
 
 interface Config {
-  mode: DateReelMode
+  mode: TimeWheelMode
   reels: Reel[]
   today: Date
   minDay: Date
@@ -196,20 +196,20 @@ function numberMatch(query: string) {
 }
 
 function buildConfig(options: {
-  mode: DateReelMode
+  mode: TimeWheelMode
   today: Date
   minDate?: Date
   maxDate?: Date
   step: number
-  hourCycle: 12 | 24
+  clock: 12 | 24
   locale: string
-  labels: Required<DateReelLabels>
+  labels: Required<TimeWheelCopy>
 }): Config {
-  const { mode, today, step, hourCycle, locale, labels } = options
+  const { mode, today, step, clock, locale, labels } = options
   const minDay = startOfDay(options.minDate ?? (mode === "date" ? addYears(today, -100) : addDays(today, -30)))
   const maxDay = startOfDay(options.maxDate ?? (mode === "date" ? addYears(today, 10) : addYears(today, 1)))
   const minYear = minDay.getFullYear()
-  const twelve = hourCycle === 12
+  const twelve = clock === 12
   const timeFormat = new Intl.DateTimeFormat(locale, { hour: "numeric", minute: "2-digit", hourCycle: twelve ? "h12" : "h23" })
   const dayShort = new Intl.DateTimeFormat(locale, { weekday: "short", month: "short", day: "numeric" })
   const fullDate = new Intl.DateTimeFormat(locale, { month: "long", day: "numeric", year: "numeric" })
@@ -467,7 +467,7 @@ function buildConfig(options: {
     const time = timeFormat.format(date)
     if (mode === "time") return { primary: time, secondary: "", spoken: time }
     if (mode === "date") return { primary: fullDate.format(date), secondary: relativeDay(date), spoken: `${fullDateDay.format(date)}, ${relativeDay(date)}` }
-    const primary = `${headlineDay(date)} ${labels.at} ${time}`
+    const primary = `${headlineDay(date)}${labels.joiner}${time}`
     const secondary = fullDateDay.format(date)
     return { primary, secondary, spoken: `${primary}, ${secondary}` }
   }
@@ -1001,13 +1001,13 @@ class ReelEngine {
 const at = (today: Date, days: number, hours: number, minutes = 0) =>
   new Date(today.getFullYear(), today.getMonth(), today.getDate() + days, hours, minutes)
 
-function defaultPresets(locale: string): DateReelPreset[] {
-  // Sep 28, 2026 is a Monday; only its weekday name is used.
-  const monday = new Intl.DateTimeFormat(locale, { weekday: "long" }).format(new Date(2026, 8, 28))
+function defaultShortcuts(locale: string): TimeWheelShortcut[] {
+  // Sep 26, 2026 is a Saturday; only its weekday name is used.
+  const saturday = new Intl.DateTimeFormat(locale, { weekday: "long" }).format(new Date(2026, 8, 26))
   return [
-    { label: "This evening", value: today => at(today, 0, 18) },
-    { label: "Tomorrow", value: today => at(today, 1, 9) },
-    { label: capitalize(monday), value: today => at(today, ((1 - today.getDay() + 7) % 7) || 7, 9) },
+    { label: "After lunch", value: today => at(today, 0, 13, 30) },
+    { label: "Early tomorrow", value: today => at(today, 1, 8) },
+    { label: capitalize(saturday), value: today => at(today, ((6 - today.getDay() + 7) % 7) || 7, 10) },
   ]
 }
 
@@ -1022,8 +1022,8 @@ const slotClass = "absolute inset-x-0 top-[calc(50%-var(--reel-row)/2)] block h-
 const stageMask = "linear-gradient(transparent, #000 24%, #000 76%, transparent)"
 const alignClass = { start: "text-left", center: "text-center", end: "text-right" } as const
 
-/** A 3D reel date and time picker, like the wheels on a phone. */
-export function DateReel({
+/** Date and time wheels that turn like a drum, with momentum, snapping and keyboard control. */
+export function TimeWheel({
   mode = "datetime",
   value,
   defaultValue,
@@ -1031,32 +1031,32 @@ export function DateReel({
   today: todayProp,
   minDate,
   maxDate,
-  minuteStep = 5,
-  hourCycle = 12,
+  minuteInterval = 5,
+  clock = 12,
   locale = "en-US",
-  presets,
-  title,
-  onConfirm,
-  labels,
-  intro = true,
+  shortcuts,
+  heading,
+  onCommit,
+  copy,
+  spinIn = true,
   speed = 1,
   paused = false,
   accent,
-  label = "Date and time",
+  label = "Moment picker",
   className,
   style,
-}: DateReelProps) {
+}: TimeWheelProps) {
   const reduced = useReducedMotion() ?? false
   const motionTokens = useMotionTokens()
-  const [first] = useState(() => normalize(value ?? defaultValue ?? DEFAULT_VALUE, minuteStep))
+  const [first] = useState(() => normalize(value ?? defaultValue ?? DEFAULT_VALUE, minuteInterval))
   const [inner, setInner] = useState(first)
-  const valueTime = value ? normalize(value, minuteStep).getTime() : undefined
+  const valueTime = value ? normalize(value, minuteInterval).getTime() : undefined
   const current = useMemo(() => (valueTime === undefined ? inner : new Date(valueTime)), [inner, valueTime])
   const todayTime = startOfDay(todayProp ?? first).getTime()
   const minTime = minDate?.getTime()
   const maxTime = maxDate?.getTime()
-  const labelsKey = JSON.stringify(labels ?? {})
-  const words = useMemo<Required<DateReelLabels>>(() => ({ ...DEFAULT_LABELS, ...(JSON.parse(labelsKey) as DateReelLabels) }), [labelsKey])
+  const copyKey = JSON.stringify(copy ?? {})
+  const words = useMemo<Required<TimeWheelCopy>>(() => ({ ...DEFAULT_COPY, ...(JSON.parse(copyKey) as TimeWheelCopy) }), [copyKey])
   const config = useMemo(
     () =>
       buildConfig({
@@ -1064,12 +1064,12 @@ export function DateReel({
         today: new Date(todayTime),
         minDate: minTime === undefined ? undefined : new Date(minTime),
         maxDate: maxTime === undefined ? undefined : new Date(maxTime),
-        step: minuteStep,
-        hourCycle,
+        step: minuteInterval,
+        clock,
         locale,
         labels: words,
       }),
-    [hourCycle, locale, maxTime, minTime, minuteStep, mode, todayTime, words],
+    [clock, locale, maxTime, minTime, minuteInterval, mode, todayTime, words],
   )
   const engineRef = useRef<ReelEngine | null>(null)
   if (engineRef.current === null) engineRef.current = new ReelEngine()
@@ -1134,7 +1134,7 @@ export function DateReel({
   }, [])
 
   // The intro waits off to one side until the picker is first seen. The loop sleeps off screen and in hidden tabs.
-  const introOn = intro && !reduced && !paused
+  const introOn = spinIn && !reduced && !paused
   useLayoutEffect(() => {
     if (introOn) reels().prepareIntro()
   }, [introOn])
@@ -1240,14 +1240,14 @@ export function DateReel({
     reels().dragEnd(reel, event.pointerId, event.timeStamp, event.clientY - (box.top + box.height / 2), event.type === "pointercancel")
   }
 
-  const picks = presets === false ? [] : (presets ?? defaultPresets(locale))
+  const picks = shortcuts === false ? [] : (shortcuts ?? defaultShortcuts(locale))
   const today = config.today
-  const resolve = (preset: DateReelPreset) => normalize(typeof preset.value === "function" ? preset.value(new Date(today)) : preset.value, minuteStep)
+  const resolve = (shortcut: TimeWheelShortcut) => normalize(typeof shortcut.value === "function" ? shortcut.value(new Date(today)) : shortcut.value, minuteInterval)
   const matches = (date: Date) => config.indicesOf(date).every((index, reel) => index === currentIndices[reel])
 
   const busy = useRef(false)
   const confirm = async () => {
-    if (!onConfirm || busy.current) return
+    if (!onCommit || busy.current) return
     busy.current = true
     window.clearTimeout(statusTimer.current)
     const date = reels().now()
@@ -1257,7 +1257,7 @@ export function DateReel({
       setAnnouncement(words)
     }
     try {
-      const result = onConfirm(date)
+      const result = onCommit(date)
       if (result && typeof (result as Promise<void>).then === "function") {
         // Pending shows only when the promise takes a moment, so a quick save goes straight to done.
         statusTimer.current = window.setTimeout(() => setStatus("pending"), PENDING_DELAY)
@@ -1271,7 +1271,7 @@ export function DateReel({
     }
   }
   const wordsFor = (state: ConfirmState) =>
-    state === "pending" ? words.confirming : state === "success" ? words.confirmed : state === "failure" ? words.failed : words.confirm
+    state === "pending" ? words.committing : state === "success" ? words.committed : state === "failure" ? words.failed : words.commit
 
   // Labels roll 4px and fade in place; hidden labels keep the same resting values either way, so server and client render alike.
   const swap = reduced
@@ -1298,7 +1298,7 @@ export function DateReel({
       >
         {/* The visual summary is hidden from assistive technology; the live region below speaks the committed moment. */}
         <div aria-hidden="true" className="grid gap-1 px-1">
-          {title ? <p className="m-0 text-sm leading-[1.1] tracking-[-0.03em] text-text-secondary">{title}</p> : null}
+          {heading ? <p className="m-0 text-sm leading-[1.1] tracking-[-0.03em] text-text-secondary">{heading}</p> : null}
           <p ref={node => void (reels().primary = node)} className="m-0 truncate text-[22px] leading-[1.25] font-medium tabular-nums">
             {firstSummary.primary}
           </p>
@@ -1383,10 +1383,10 @@ export function DateReel({
           ))}
         </div>
 
-        {picks.length || onConfirm ? (
+        {picks.length || onCommit ? (
           <div className="flex flex-col gap-3 border-t border-border pt-4 @[26rem]:flex-row @[26rem]:items-center @[26rem]:justify-between">
             {picks.length ? (
-              <div role="group" aria-label={words.presets} className="flex flex-wrap gap-2">
+              <div role="group" aria-label={words.shortcuts} className="flex flex-wrap gap-2">
                 {picks.map(preset => {
                   const date = resolve(preset)
                   return (
@@ -1408,7 +1408,7 @@ export function DateReel({
                 })}
               </div>
             ) : null}
-            {onConfirm ? (
+            {onCommit ? (
               <button
                 type="button"
                 aria-disabled={status === "pending" || undefined}
@@ -1445,4 +1445,4 @@ export function DateReel({
   )
 }
 
-export default DateReel
+export default TimeWheel

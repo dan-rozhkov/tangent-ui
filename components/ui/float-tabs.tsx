@@ -24,27 +24,27 @@ import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export interface GlassTabBarItem {
+export interface FloatTab {
   /** Unique value. */
   value: string
-  /** Visible label and accessible name. The action shows only its icon and uses the label as its name. */
+  /** Visible label and accessible name. The trailing button shows only its icon and uses the label as its name. */
   label: string
   /** Icon at 22px; Phosphor icons are sized automatically. */
   icon: ReactNode
-  /** Count shown as an accent badge on the icon. 0 or empty hides it. */
-  badge?: number | string
+  /** Count shown in an accent dot on the icon. 0 or empty hides it. */
+  unread?: number | string
 }
 
-export interface GlassTabBarProps {
-  items: GlassTabBarItem[]
-  /** Controlled active tab. A value that matches no tab, or the action, hides the lens. */
+export interface FloatTabsProps {
+  tabs: FloatTab[]
+  /** Controlled active tab. A value that matches no tab, or the trailing button, hides the lens. */
   value?: string
   /** Initial active tab when uncontrolled. Defaults to the first item. */
   defaultValue?: string
-  /** Called when a tab or the action is chosen by tap, drag, or keyboard. */
+  /** Called when a tab or the trailing button is chosen by tap, drag, or keyboard. */
   onValueChange?: (value: string) => void
   /** A separate round glass tab beside the bar, such as search. */
-  action?: GlassTabBarItem
+  trailing?: FloatTab
   /** Controlled compact state. */
   compact?: boolean
   /** Initial compact state when uncontrolled. */
@@ -54,7 +54,7 @@ export interface GlassTabBarProps {
   /** Scroll container to watch. Leave it out to watch the window. */
   scrollRef?: RefObject<HTMLElement | null>
   /** Shrink on scroll down and grow on scroll up. */
-  collapseOnScroll?: boolean
+  shrinkOnScroll?: boolean
   /** Accessible name of the navigation and its tab list. */
   label?: string
   className?: string
@@ -65,7 +65,7 @@ export interface GlassTabBarProps {
 
 /** Inset between the bar's rim and the lens at rest. */
 const PAD = 4
-/** Space between the bar and the action bubble. */
+/** Space between the bar and the trailing bubble. */
 const BUBBLE_GAP = 10
 /** Space kept free on both sides of the bar inside the nav. */
 const SIDE = 12
@@ -76,9 +76,9 @@ const SLOT_MIN = 56
 const SLOT_COMPACT = 48
 /** How far the icon sits above the bar's middle while the label shows under it. */
 const ICON_RISE = 8
-/** The bubble lens grows from this share of its size when the action is chosen. */
+/** The bubble lens grows from this share of its size when the trailing button is chosen. */
 const BUBBLE_LENS_FROM = 0.6
-/** The bar lens shrinks to this share as it fades out for the action. */
+/** The bar lens shrinks to this share as it fades out for the trailing button. */
 const LENS_HIDDEN_SCALE = 0.7
 
 /* ---------- lens dynamics ---------- */
@@ -279,21 +279,21 @@ function Icon({ children }: { children: ReactNode }) {
   )
 }
 
-const hasBadge = (badge: number | string | undefined): badge is number | string =>
-  badge !== undefined && badge !== 0 && badge !== ""
+const hasUnread = (unread: number | string | undefined): unread is number | string =>
+  unread !== undefined && unread !== 0 && unread !== ""
 
-/** What screen readers hear after the name, such as "3 new". */
-const badgeText = (badge: number | string) => (typeof badge === "number" ? `${badge} new` : badge)
+/** What screen readers hear after the name, such as "4 unread". */
+const unreadText = (unread: number | string) => (typeof unread === "number" ? `${unread} unread` : unread)
 
-function Badge({ badge }: { badge: number | string | undefined }) {
-  if (!hasBadge(badge)) return null
-  // The ring takes the glass color, so the badge reads as cut out of the icon.
+function Badge({ unread }: { unread: number | string | undefined }) {
+  if (!hasUnread(unread)) return null
+  // The ring takes the glass color, so the dot reads as cut out of the icon.
   return (
     <span
       aria-hidden="true"
       className="absolute -top-[5px] left-[14px] inline-flex h-4 min-w-4 items-center justify-center rounded-pill bg-accent px-1 text-[11px] leading-none font-medium text-accent-foreground tabular-nums shadow-[0_0_0_1.5px_var(--gtb-badge-ring)]"
     >
-      {badge}
+      {unread}
     </span>
   )
 }
@@ -339,7 +339,7 @@ function Material({ backdrop }: { backdrop: string }) {
 }
 
 interface TabProps {
-  item: GlassTabBarItem
+  item: FloatTab
   index: number
   pos: MotionValue<number>
   shown: MotionValue<number>
@@ -369,7 +369,7 @@ function Tab({ item, index, pos, shown, lift, slot, progress, selected, focusabl
       role="tab"
       aria-selected={selected}
       // The visible digit is hidden from screen readers; the name carries it as "3 new" instead.
-      aria-label={hasBadge(item.badge) ? `${item.label}, ${badgeText(item.badge)}` : undefined}
+      aria-label={hasUnread(item.unread) ? `${item.label} (${unreadText(item.unread)})` : undefined}
       tabIndex={focusable ? 0 : -1}
       data-index={index}
       className="relative h-full flex-none cursor-pointer border-0 bg-transparent p-0 outline-none [-webkit-tap-highlight-color:transparent]"
@@ -379,7 +379,7 @@ function Tab({ item, index, pos, shown, lift, slot, progress, selected, focusabl
     >
       <motion.span className="absolute top-1/2 left-1/2 -mt-[11px] -ml-[11px] size-[22px]" style={{ y: iconY, scale }}>
         <Icon>{item.icon}</Icon>
-        <Badge badge={item.badge} />
+        <Badge unread={item.unread} />
       </motion.span>
       {/* Labels only fade when compact, so every tab keeps its name. */}
       <motion.span
@@ -395,25 +395,25 @@ function Tab({ item, index, pos, shown, lift, slot, progress, selected, focusabl
 /* ---------- the bar ---------- */
 
 /**
- * A floating Liquid Glass tab bar. The bar frosts what scrolls under it (and refracts it at the rim in Chromium), and
- * the selected tab sits under a glass lens that glides, lifts and magnifies as it moves and can be dragged across the
- * tabs. An optional round action bubble sits beside it, and the bar shrinks to a compact pill of icons on scroll down.
+ * A tab bar that hovers over the page in frosted glass: it blurs whatever scrolls beneath (and bends it at the rim in Chromium),
+ * while a glass lens under the active tab slides, rises and magnifies as it travels, and can be dragged along the
+ * tabs. An optional round trailing bubble sits beside it, and the bar shrinks to a compact pill of icons on scroll down.
  */
-export function GlassTabBar({
-  items,
+export function FloatTabs({
+  tabs,
   value,
   defaultValue,
   onValueChange,
-  action,
+  trailing,
   compact,
   defaultCompact = false,
   onCompactChange,
   scrollRef,
-  collapseOnScroll = true,
+  shrinkOnScroll = true,
   label = "Tabs",
   className,
   style,
-}: GlassTabBarProps) {
+}: FloatTabsProps) {
   const motionTokens = useMotionTokens()
   const reduced = useReducedMotion() ?? false
   const reduceTransparency = useMedia("(prefers-reduced-transparency: reduce)")
@@ -422,13 +422,13 @@ export function GlassTabBar({
   const ids = { bar: `gtb-bar-${uid}`, bubble: `gtb-bubble-${uid}`, lens: `gtb-lens-${uid}` }
 
   /* ---------- value ---------- */
-  const [innerValue, setInnerValue] = useState(defaultValue ?? items[0]?.value)
+  const [innerValue, setInnerValue] = useState(defaultValue ?? tabs[0]?.value)
   const current = value !== undefined ? value : innerValue
-  const all = useMemo(() => (action ? [...items, action] : items), [action, items])
-  const count = items.length
-  const selectedIndex = items.findIndex((item) => item.value === current)
+  const all = useMemo(() => (trailing ? [...tabs, trailing] : tabs), [trailing, tabs])
+  const count = tabs.length
+  const selectedIndex = tabs.findIndex((item) => item.value === current)
   const selectedAll = all.findIndex((item) => item.value === current)
-  const actionSelected = !!action && action.value === current
+  const actionSelected = !!trailing && trailing.value === current
 
   const latest = useRef({ current, onValueChange, onCompactChange })
   useLayoutEffect(() => {
@@ -461,7 +461,7 @@ export function GlassTabBar({
   )
 
   useEffect(() => {
-    if (!collapseOnScroll) return
+    if (!shrinkOnScroll) return
     const element = scrollRef?.current ?? null
     const read = () => (element ? element.scrollTop : window.scrollY)
     let last = read()
@@ -481,7 +481,7 @@ export function GlassTabBar({
     const target: HTMLElement | Window = element ?? window
     target.addEventListener("scroll", onScroll, { passive: true })
     return () => target.removeEventListener("scroll", onScroll)
-  }, [collapseOnScroll, scrollRef, setCompact])
+  }, [shrinkOnScroll, scrollRef, setCompact])
 
   /* ---------- size ---------- */
   const navRef = useRef<HTMLElement>(null)
@@ -494,7 +494,7 @@ export function GlassTabBar({
     return () => observer.disconnect()
   }, [])
   // Tabs share the room left after the bubble, from 78px down to 56px each.
-  const room = (navWidth ?? 420) - SIDE * 2 - PAD * 2 - (action ? BAR_H + BUBBLE_GAP : 0)
+  const room = (navWidth ?? 420) - SIDE * 2 - PAD * 2 - (trailing ? BAR_H + BUBBLE_GAP : 0)
   const slotOpen = clamp(room / Math.max(1, count), SLOT_MIN, SLOT_MAX)
 
   // One spring drives the compact morph: slot width, bar height, icon lift and label fade all read from it, so the
@@ -512,7 +512,7 @@ export function GlassTabBar({
   const barW = useTransform(() => count * slot.get() + PAD * 2)
 
   /* ---------- lens ---------- */
-  // pos is the lens center in tab units, shown hides it in place for the action.
+  // pos is the lens center in tab units, shown hides it in place for the trailing.
   const pos = useMotionValue(Math.max(0, selectedIndex))
   const shown = useMotionValue(selectedIndex >= 0 ? 1 : 0)
   const speedLiftGoal = useMotionValue(0)
@@ -584,7 +584,7 @@ export function GlassTabBar({
 
   useLayoutEffect(() => {
     if (selectedIndex < 0) {
-      // The action takes the selection: the bar lens fades and shrinks where it is while the bubble lens grows.
+      // The trailing takes the selection: the bar lens fades and shrinks where it is while the bubble lens grows.
       if (reduced) shown.jump(0)
       else animate(shown, 0, { duration: 0.2, ease: [...motionTokens.ease.standard] })
       return
@@ -592,7 +592,7 @@ export function GlassTabBar({
     if (drag.current?.moved) return
     const hidden = shown.get() < 0.05
     if (!placed.current || reduced || hidden) {
-      // First placement, or back from the action: appear on the tab instead of travelling there.
+      // First placement, or back from the trailing: appear on the tab instead of travelling there.
       pos.jump(selectedIndex)
       if (!placed.current || reduced) shown.jump(1)
       else animate(shown, 1, { type: "spring", visualDuration: 0.3, bounce: 0 })
@@ -638,7 +638,7 @@ export function GlassTabBar({
       event.currentTarget.setPointerCapture(event.pointerId)
       if (!reduced) animate(pressLift, DRAG_LIFT, { type: "spring", visualDuration: 0.45, bounce: 0 })
     }
-    // The lens center chases the pointer, held to the tabs; it never reaches the action.
+    // The lens center chases the pointer, held to the tabs; it never reaches the trailing.
     const rect = event.currentTarget.getBoundingClientRect()
     const target = clamp((event.clientX - rect.left - PAD) / slot.get() - 0.5, 0, count - 1)
     if (reduced) pos.jump(target)
@@ -656,15 +656,15 @@ export function GlassTabBar({
     window.setTimeout(() => (suppressClick.current = false), 0)
     // Commit to the tab whose center is nearest the lens.
     const target = clamp(Math.round(pos.get()), 0, count - 1)
-    if (target !== selectedIndex) choose(items[target].value)
+    if (target !== selectedIndex) choose(tabs[target].value)
     else if (reduced) pos.jump(target)
     else animate(pos, target, motionTokens.spring.morph)
   }
 
   /* ---------- selection and keyboard ---------- */
-  const tabs = useRef<(HTMLButtonElement | null)[]>([])
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
   const register = useCallback((index: number, node: HTMLButtonElement | null) => {
-    tabs.current[index] = node
+    tabRefs.current[index] = node
   }, [])
 
   const onSelect = useCallback(
@@ -696,7 +696,7 @@ export function GlassTabBar({
       if (target < 0) return
       event.preventDefault()
       choose(all[target].value)
-      tabs.current[target]?.focus()
+      tabRefs.current[target]?.focus()
     },
     [all, choose],
   )
@@ -709,8 +709,8 @@ export function GlassTabBar({
   const targetW = Math.round(count * (isCompact ? SLOT_COMPACT : slotOpen) + PAD * 2)
   const barMap = useMemo(() => (mounted && refract ? paintMap(targetW, targetH, "rim") : undefined), [mounted, refract, targetH, targetW])
   const bubbleMap = useMemo(
-    () => (mounted && refract && action ? paintMap(targetH, targetH, "rim") : undefined),
-    [action, mounted, refract, targetH],
+    () => (mounted && refract && trailing ? paintMap(targetH, targetH, "rim") : undefined),
+    [trailing, mounted, refract, targetH],
   )
   const lensMap = useMemo(() => (mounted && refract ? paintMap(160, 80, "lens") : undefined), [mounted, refract])
 
@@ -783,7 +783,7 @@ export function GlassTabBar({
             <SpecularRing />
           </motion.span>
           <div className="relative flex h-full" style={{ paddingInline: PAD }}>
-            {items.map((item, index) => (
+            {tabs.map((item, index) => (
               <Tab
                 key={item.value}
                 item={item}
@@ -802,10 +802,10 @@ export function GlassTabBar({
             ))}
           </div>
         </motion.div>
-        {action ? (
+        {trailing ? (
           <motion.div className="pointer-events-auto relative flex-none [touch-action:pan-y]" style={{ width: barH, height: barH }}>
             <Material backdrop={glass(ids.bubble, bubbleMap)} />
-            {/* The bubble's own lens grows in when the action is chosen; the bar lens never travels here. */}
+            {/* The bubble's own lens grows in when the trailing button is chosen; the bar lens never travels here. */}
             <motion.span
               aria-hidden="true"
               className="pointer-events-none absolute rounded-pill bg-[var(--gtb-fill)] shadow-[inset_0_0_0_.5px_var(--gtb-lens-ring)]"
@@ -823,7 +823,7 @@ export function GlassTabBar({
               type="button"
               role="tab"
               aria-selected={actionSelected}
-              aria-label={hasBadge(action.badge) ? `${action.label}, ${badgeText(action.badge)}` : action.label}
+              aria-label={hasUnread(trailing.unread) ? `${trailing.label} (${unreadText(trailing.unread)})` : trailing.label}
               tabIndex={focusable === count ? 0 : -1}
               className={cn(
                 "relative grid size-full cursor-pointer place-items-center rounded-pill border-0 bg-transparent p-0 outline-none [-webkit-tap-highlight-color:transparent]",
@@ -834,8 +834,8 @@ export function GlassTabBar({
               onKeyDown={(event) => onKeyDown(event, count)}
             >
               <span className="relative">
-                <Icon>{action.icon}</Icon>
-                <Badge badge={action.badge} />
+                <Icon>{trailing.icon}</Icon>
+                <Badge unread={trailing.unread} />
               </span>
             </button>
           </motion.div>
@@ -893,4 +893,4 @@ export function GlassTabBar({
   )
 }
 
-export default GlassTabBar
+export default FloatTabs

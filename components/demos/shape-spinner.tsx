@@ -3,44 +3,44 @@
 import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
-import { MorphLoader } from "@/components/ui/morph-loader"
-import type { MorphLoaderStatus, MorphLoaderVariant } from "@/components/ui/morph-loader"
+import { ShapeSpinner } from "@/components/ui/shape-spinner"
+import type { ShapeSpinnerShape, ShapeSpinnerState } from "@/components/ui/shape-spinner"
 import SegmentedControl from "@/components/ui/segmented-control"
 
-const variants = [
-  { value: "dots", label: "Dots" },
-  { value: "bars", label: "Bars" },
-  { value: "ring", label: "Ring" },
-  { value: "square", label: "Square" },
+const shapes = [
+  { value: "pulse", label: "Pulse" },
+  { value: "columns", label: "Columns" },
+  { value: "orbit", label: "Orbit" },
+  { value: "frame", label: "Frame" },
 ]
 
-/** How long the check or cross stays before the loader gathers back into its loop. */
+/** How long the check or cross stays before the spinner gathers back into its loop. */
 const HOLD = 2000
 
 export default function Demo() {
-  const [variant, setVariant] = useState<MorphLoaderVariant>("dots")
-  const [status, setStatus] = useState<MorphLoaderStatus>("loading")
+  const [shape, setShape] = useState<ShapeSpinnerShape>("pulse")
+  const [state, setState] = useState<ShapeSpinnerState>("busy")
   const timer = useRef<number | undefined>(undefined)
   useEffect(() => () => window.clearTimeout(timer.current), [])
 
-  function finish(next: Exclude<MorphLoaderStatus, "loading">) {
+  function settle(next: Exclude<ShapeSpinnerState, "busy">) {
     window.clearTimeout(timer.current)
-    setStatus(next)
-    timer.current = window.setTimeout(() => setStatus("loading"), HOLD)
+    setState(next)
+    timer.current = window.setTimeout(() => setState("busy"), HOLD)
   }
 
   return (
     <div className="grid w-full max-w-sm justify-items-center gap-8">
-      {/* Changing the shape while loading morphs the same four strokes into the new one. */}
-      <MorphLoader variant={variant} status={status} size={72} successLabel="Published" errorLabel="Publish failed" className="text-accent" />
+      {/* Changing the shape mid-loop regroups the same four strokes into the new one. */}
+      <ShapeSpinner shape={shape} state={state} size={72} doneLabel="Backup complete" failedLabel="Backup failed" className="text-accent" />
       <div className="grid justify-items-center gap-3">
-        <SegmentedControl label="Shape" options={variants} value={variant} onValueChange={value => setVariant(value as MorphLoaderVariant)} />
+        <SegmentedControl label="Loop shape" options={shapes} value={shape} onValueChange={value => setShape(value as ShapeSpinnerShape)} />
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="secondary" onClick={() => finish("success")}>
-            Succeed
+          <Button size="sm" variant="secondary" onClick={() => settle("done")}>
+            Finish
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => finish("error")}>
-            Fail
+          <Button size="sm" variant="ghost" onClick={() => settle("failed")}>
+            Break
           </Button>
         </div>
       </div>

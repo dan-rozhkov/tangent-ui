@@ -2,7 +2,7 @@ import type { AutoplayContext, AutoplayScript } from "@/components/gallery/showc
 
 /** Press and drag out to an action, and release on it. */
 async function fling(ctx: AutoplayContext, label: string) {
-  const trigger = await ctx.find("button[aria-label='Photo actions']")
+  const trigger = await ctx.find("button[aria-label='Message options']")
   // A small first pull opens the arc; the press stays down so the action positions can be measured.
   await ctx.drag(trigger, { dy: -12, duration: 160, release: false })
   const action = await ctx.findByLabel(label)
@@ -25,9 +25,9 @@ async function fling(ctx: AutoplayContext, label: string) {
 
 const script: AutoplayScript = async ctx => {
   await ctx.wait(500)
-  await fling(ctx, "Favorite")
-  await fling(ctx, "Share with Ryan")
-  await fling(ctx, "Add to album")
+  await fling(ctx, "Save for later")
+  await fling(ctx, "Copy link")
+  await fling(ctx, "Attach a note")
 }
 
 export default script

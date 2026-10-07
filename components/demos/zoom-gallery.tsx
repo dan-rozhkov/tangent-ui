@@ -1,35 +1,35 @@
 "use client"
 
-import { LightboxGallery } from "@/components/ui/lightbox-gallery"
-import type { LightboxImage } from "@/components/ui/lightbox-gallery"
+import { ZoomGallery } from "@/components/ui/zoom-gallery"
+import type { ZoomShot } from "@/components/ui/zoom-gallery"
 import { photo } from "@/lib/media"
 import type { PhotoId } from "@/lib/media"
 
-/** A week in Kyoto and a few places further out: mixed portrait and landscape shots keep their own shapes. */
-const trip: { id: PhotoId; title: string; caption?: string }[] = [
-  { id: "kyoto-street", title: "Ninenzaka", caption: "Before the crowds arrive" },
-  { id: "kyoto-rooftops", title: "Yasaka Pagoda", caption: "Between the tiled roofs" },
-  { id: "sushi-counter", title: "Rolls at the counter", caption: "Gion, a little after eight" },
-  { id: "kyoto-temple", title: "Kiyomizu-dera", caption: "Above the green hills" },
-  { id: "pastel-arches", title: "Pink arcade", caption: "A long, quiet corridor" },
-  { id: "noodle-bar", title: "Noodles after dark", caption: "A small table by the window" },
-  { id: "rocky-cove", title: "A hidden cove", caption: "A steep path down the cliff" },
-  { id: "coffee-bar", title: "Espresso at the bar", caption: "Open until late" },
-  { id: "spiral-stair", title: "Looking up", caption: "Five floors, no lift" },
-  { id: "ramen-bowl", title: "A bowl of ramen" },
-  { id: "desert-house", title: "A house in the desert", caption: "Midday heat" },
-  { id: "misty-lake", title: "Last light", caption: "Thursday, before the mist" },
+/** Rooms and buildings from an interiors portfolio: mixed portrait and landscape shots keep their own shapes. */
+const portfolio: { id: PhotoId; name: string; note?: string }[] = [
+  { id: "concrete-tower", name: "Balcony tower", note: "Deep ledges, hard shadows" },
+  { id: "loft-living", name: "Loft living room", note: "Stairs as the centrepiece" },
+  { id: "spiral-stair", name: "Spiral stair", note: "Shot from the ground floor" },
+  { id: "plant-studio", name: "Greenhouse corner", note: "Forty plants, one window" },
+  { id: "desert-house", name: "Mesa cabin", note: "Built from local stone" },
+  { id: "attic-bedroom", name: "Attic bedroom", note: "Original beams, new linen" },
+  { id: "pastel-arches", name: "Rose arcade", note: "Late afternoon, no people" },
+  { id: "window-nook", name: "Reading nook", note: "Oak table, brass lamp" },
+  { id: "studio-desk", name: "Empty desk", note: "Before the move-in" },
+  { id: "clay-vases", name: "Blush and sage" },
+  { id: "paper-lantern", name: "Lantern cluster", note: "Hung at three heights" },
+  { id: "cane-chair", name: "Cane armchair", note: "Concrete floor, white wall" },
 ]
 
-const images: LightboxImage[] = trip.map(({ id, title, caption }) => {
+const shots: ZoomShot[] = portfolio.map(({ id, name, note }) => {
   const { src, width, height, alt } = photo(id)
-  return { src, width, height, alt, title, caption }
+  return { src, width, height, alt, name, note }
 })
 
 export default function Demo() {
   return (
     <div className="w-full max-w-[522px]">
-      <LightboxGallery images={images} label="Kyoto photos" minColumnWidth={160} gap={8} />
+      <ZoomGallery shots={shots} label="Interiors portfolio" minTile={160} spacing={8} />
     </div>
   )
 }

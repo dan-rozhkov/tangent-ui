@@ -12,56 +12,56 @@ import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-export type SheetStackMode = "auto" | "sheet" | "dialog"
+export type DrillPresentation = "auto" | "sheet" | "dialog"
 
-export interface SheetStackProps {
-  /** Page content, triggers, and Sheet declarations. */
+export interface DrillSheetsProps {
+  /** Page content, triggers, and DrillSheet declarations. */
   children: ReactNode
-  /** Controlled ids of open sheets, bottom first. Leave undefined for uncontrolled use. */
-  stack?: string[]
-  /** Sheets open at first when uncontrolled. */
-  defaultStack?: string[]
-  /** Called when sheets are pushed or popped. */
-  onStackChange?: (stack: string[]) => void
+  /** Controlled ids of the open levels, outermost first. Leave undefined for uncontrolled use. */
+  path?: string[]
+  /** Levels open at first when uncontrolled. */
+  defaultPath?: string[]
+  /** Called when a level is opened or left. */
+  onPathChange?: (path: string[]) => void
   /** auto picks bottom sheets below breakpoint and centered dialogs above it. */
-  mode?: SheetStackMode
-  /** Width in px of the viewport, or the container when contained, where auto switches to dialogs. */
+  presentation?: DrillPresentation
+  /** Width in px of the viewport, or the host when inline, where auto switches to dialogs. */
   breakpoint?: number
   /** Fill the nearest positioned ancestor instead of the viewport. */
-  contained?: boolean
+  inline?: boolean
 }
 
-export interface SheetProps {
-  /** Id used by push, popTo, SheetTrigger, and the stack array. */
+export interface DrillSheetProps {
+  /** Id used by open, backTo, DrillTrigger, and the path array. */
   id: string
   /** Heading and accessible name. */
   title: string
   /** A line under the title, wired as the dialog description. */
-  description?: string
+  subtitle?: string
   /** Scrolling body content. */
   children: ReactNode
   /** A row pinned under the scrolling body, such as the primary action. */
-  footer?: ReactNode
+  actions?: ReactNode
   /** Label for the back button of a sheet opened from this one. Defaults to title. */
-  backLabel?: string
+  returnLabel?: string
   /** Allow drag and fling to dismiss. */
-  dismissible?: boolean
+  swipeable?: boolean
   className?: string
   ref?: Ref<HTMLDivElement>
 }
 
-export interface SheetTriggerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  /** Id of the sheet to push. */
-  sheet: string
+export interface DrillTriggerProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Id of the sheet to open. */
+  to: string
   ref?: Ref<HTMLButtonElement>
 }
 
-export interface SheetStackApi {
-  stack: string[]
-  push: (id: string) => void
-  pop: () => void
-  popTo: (id: string) => void
-  close: () => void
+export interface DrillApi {
+  path: string[]
+  open: (id: string) => void
+  back: () => void
+  backTo: (id: string) => void
+  dismiss: () => void
 }
 
 interface Meta {
@@ -91,7 +91,12 @@ function createMetaStore() {
   }
 }
 
-interface StackContextValue extends SheetStackApi {
+interface StackContextValue {
+  stack: string[]
+  push: (id: string) => void
+  pop: () => void
+  popTo: (id: string) => void
+  close: () => void
   layer: HTMLDivElement | null
   wide: boolean
   contained: boolean
@@ -106,11 +111,11 @@ interface StackContextValue extends SheetStackApi {
 
 const StackContext = createContext<StackContextValue | null>(null)
 
-/** Returns { stack, push, pop, popTo, close } for buttons inside or beside the sheets. Throws outside SheetStack. */
-export function useSheetStack(): SheetStackApi {
+/** Returns { path, open, back, backTo, dismiss } for buttons inside or beside the sheets. Throws outside DrillSheets. */
+export function useDrill(): DrillApi {
   const context = useContext(StackContext)
-  if (!context) throw new Error("useSheetStack must be used inside SheetStack.")
-  return { stack: context.stack, push: context.push, pop: context.pop, popTo: context.popTo, close: context.close }
+  if (!context) throw new Error("useDrill must be used inside DrillSheets.")
+  return { path: context.stack, open: context.push, back: context.pop, backTo: context.popTo, dismiss: context.close }
 }
 
 /** Room each level gives up so the sheet below can peek above it. */
@@ -157,10 +162,10 @@ function useSheetMotion() {
   return { ...motion, latest }
 }
 
-/** Holds the stack of open sheets and renders the layer they appear in. Declare every Sheet inside one SheetStack. */
-export function SheetStack({ children, stack: stackProp, defaultStack = [], onStackChange, mode = "auto", breakpoint = 640, contained = false }: SheetStackProps) {
+/** Holds the path of open levels and renders the layer they appear in. Declare every DrillSheet inside one DrillSheets. */
+export function DrillSheets({ children, path: stackProp, defaultPath = [], onPathChange, presentation = "auto", breakpoint = 720, inline: contained = false }: DrillSheetsProps) {
   const { motionTokens, fade, latest } = useSheetMotion()
-  const [inner, setInner] = useState(defaultStack)
+  const [inner, setInner] = useState(defaultPath)
   const stack = stackProp ?? inner
   const [layer, setLayer] = useState<HTMLDivElement | null>(null)
   const [layerWidth, setLayerWidth] = useState(0)
@@ -170,7 +175,7 @@ export function SheetStack({ children, stack: stackProp, defaultStack = [], onSt
   const pull = useMotionValue(0)
   const layerHeight = useMotionValue(0)
   const topHeight = useMotionValue(0)
-  const wide = mode === "dialog" || (mode === "auto" && layerWidth >= breakpoint)
+  const wide = presentation === "dialog" || (presentation === "auto" && layerWidth >= breakpoint)
 
   // The layer is measured, not the window, so a contained stack switches on its own width.
   useLayoutEffect(() => {
@@ -188,9 +193,9 @@ export function SheetStack({ children, stack: stackProp, defaultStack = [], onSt
   const commit = useCallback(
     (next: string[]) => {
       if (stackProp === undefined) setInner(next)
-      onStackChange?.(next)
+      onPathChange?.(next)
     },
-    [onStackChange, stackProp],
+    [onPathChange, stackProp],
   )
 
   /** Popping returns focus to whatever opened the sheet, once the sheet below is interactive again. */
@@ -276,7 +281,7 @@ export function SheetStack({ children, stack: stackProp, defaultStack = [], onSt
   return (
     <StackContext.Provider value={value}>
       {children}
-      <div ref={setLayer} className={cn(contained ? "absolute" : "fixed", "pointer-events-none inset-0 z-50 overflow-hidden supports-[overflow:clip]:overflow-clip")} data-sheet-layer="">
+      <div ref={setLayer} className={cn(contained ? "absolute" : "fixed", "pointer-events-none inset-0 z-50 overflow-hidden supports-[overflow:clip]:overflow-clip")} data-drill-layer="">
         <motion.div
           aria-hidden="true"
           className={cn(
@@ -295,10 +300,10 @@ export function SheetStack({ children, stack: stackProp, defaultStack = [], onSt
 }
 
 /** One level of the stack. Renders nothing until its id is pushed. */
-export function Sheet(props: SheetProps) {
+export function DrillSheet(props: DrillSheetProps) {
   const context = useContext(StackContext)
-  if (!context) throw new Error("Sheet must be used inside SheetStack.")
-  const { id, title, backLabel } = props
+  if (!context) throw new Error("DrillSheet must be used inside DrillSheets.")
+  const { id, title, returnLabel: backLabel } = props
   const { metas } = context
   useLayoutEffect(() => {
     metas.set(id, { title, backLabel })
@@ -314,7 +319,7 @@ export function Sheet(props: SheetProps) {
   )
 }
 
-const interactive = "button, a, input, select, textarea, label, summary, [role='button'], [role='slider'], [role='switch'], [contenteditable='true'], [data-sheet-no-drag]"
+const interactive = "button, a, input, select, textarea, label, summary, [role='button'], [role='slider'], [role='switch'], [contenteditable='true'], [data-drill-no-drag]"
 
 /** Round 36px header buttons on the muted surface. */
 const headerButton = [
@@ -322,7 +327,7 @@ const headerButton = [
   "transition-[background-color,color] duration-160 ease-standard pointer-fine:hover:bg-border motion-reduce:transition-none",
 ].join(" ")
 
-function SheetPanel({ id, title, description, children, footer, dismissible = true, className, ref, level, parent }: SheetProps & { level: number; parent?: string }) {
+function SheetPanel({ id, title, subtitle: description, children, actions: footer, swipeable: dismissible = true, className, ref, level, parent }: DrillSheetProps & { level: number; parent?: string }) {
   const { latest } = useSheetMotion()
   const context = useContext(StackContext)!
   const { layerHeight, topHeight, pull, heights, wide } = context
@@ -584,7 +589,7 @@ function SheetPanel({ id, title, description, children, footer, dismissible = tr
     const start = (event: TouchEvent) => {
       const touch = event.touches[0]
       const target = event.target instanceof Element ? event.target : null
-      gesture = event.touches.length === 1 && touch && !target?.closest("[data-sheet-no-drag]") ? { x: touch.clientX, y: touch.clientY, mode: "pending" } : null
+      gesture = event.touches.length === 1 && touch && !target?.closest("[data-drill-no-drag]") ? { x: touch.clientX, y: touch.clientY, mode: "pending" } : null
     }
     const move = (event: TouchEvent) => {
       const touch = event.touches[0]
@@ -717,23 +722,23 @@ function SheetPanel({ id, title, description, children, footer, dismissible = tr
   )
 }
 
-/** A button that opens a sheet on top of the stack. Call preventDefault in onClick to skip the push. */
-export function SheetTrigger({ sheet, onClick, className, type = "button", ref, ...props }: SheetTriggerProps) {
-  const { stack, push } = useSheetStack()
+/** A button that opens a sheet on top of the path. Call preventDefault in onClick to skip it. */
+export function DrillTrigger({ to, onClick, className, type = "button", ref, ...props }: DrillTriggerProps) {
+  const { path, open } = useDrill()
   return (
     <button
       {...props}
       ref={ref}
       type={type}
       aria-haspopup="dialog"
-      aria-expanded={stack.includes(sheet)}
+      aria-expanded={path.includes(to)}
       className={cn(buttonVariants({ variant: "secondary" }), className)}
       onClick={event => {
         onClick?.(event)
-        if (!event.defaultPrevented) push(sheet)
+        if (!event.defaultPrevented) open(to)
       }}
     />
   )
 }
 
-export default SheetStack
+export default DrillSheets
