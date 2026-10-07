@@ -7,6 +7,9 @@ import { JSAnimation } from "motion/react"
  * their playback speed when they start, and Web Animations (Motion's accelerated ones, CSS transitions and keyframes)
  * get it as their playbackRate. Timers a component schedules itself, such as a toast's auto-dismiss, keep real time.
  */
+/** The rate the gallery calls 1×: demos play this much faster than their tokens, so they read snappier at a glance. */
+const BASE_SPEED = 1.5
+/** The rate in effect. 1 is the rate before anything is set, so the first call always installs the hooks. */
 let speed = 1
 let installed = false
 const scaled = new WeakSet<object>()
@@ -41,7 +44,9 @@ function install() {
   document.addEventListener("animationstart", onStart, true)
 }
 
-export function setAnimationSpeed(next: number) {
+/** Sets the speed the settings show; 1× plays at BASE_SPEED. */
+export function setAnimationSpeed(value: number) {
+  const next = value * BASE_SPEED
   if (next === speed) return
   if (!installed) install()
   const previous = speed
