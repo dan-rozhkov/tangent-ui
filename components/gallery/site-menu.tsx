@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "motion/react"
 import { XIcon } from "@phosphor-icons/react"
 
 import { demos } from "@/components/demos"
+import { HeaderBackdrop } from "@/components/gallery/header-backdrop"
 import { iconButton, iconGlyph } from "@/components/gallery/icon-button"
 import { useSiteMenu } from "@/components/gallery/site-menu-context"
 import { Dialog } from "@/components/ui/dialog"
@@ -72,47 +73,51 @@ export function SiteMenu() {
               }
             >
               <DialogPrimitive.Title className="sr-only">Menu</DialogPrimitive.Title>
-              <div className="flex h-14 shrink-0 items-center gap-2 px-4 sm:px-6">
-                <DialogPrimitive.Close aria-label="Close menu" className={cn(iconButton, "-ml-2")}>
-                  <XIcon className={iconGlyph} aria-hidden="true" />
-                </DialogPrimitive.Close>
-                <span aria-hidden="true" className="font-display text-base font-medium tracking-display">
-                  Menu
-                </span>
-              </div>
-              <nav aria-label="Site" className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-6 pb-16 sm:px-6">
-                <div className="flex flex-col gap-12">
-                  {sections.map(section => (
-                    <div key={section.label} className="flex flex-col gap-4">
-                      <motion.h2 className="text-sm text-text-muted" {...row(index++, reduced, duration.standard, ease.enter, stagger.item)}>
-                        {section.label}
-                      </motion.h2>
-                      <ul className="flex flex-col gap-3">
-                        {section.links.map(link => {
-                          const active = pathname === link.href
-                          return (
-                            <motion.li key={link.href} {...row(index++, reduced, duration.standard, ease.enter, stagger.item)}>
-                              <Link
-                                href={link.href}
-                                onClick={() => {
-                                  // The opener may unmount on navigation; let focus fall to the burger instead.
-                                  returnFocusRef.current = null
-                                  setOpen(false)
-                                }}
-                                aria-current={active ? "page" : undefined}
-                                className="inline-flex items-center gap-3 font-display text-3xl leading-tight font-medium tracking-display text-foreground transition-colors duration-160 ease-standard pointer-fine:hover:text-text-secondary motion-reduce:transition-none"
-                              >
-                                {link.title}
-                                {active && <span aria-hidden="true" className="size-1.5 rounded-full bg-foreground" />}
-                              </Link>
-                            </motion.li>
-                          )
-                        })}
-                      </ul>
-                    </div>
-                  ))}
+              {/* The bar lives inside the scroller so wheel, touch and the scrollbar all work under it, and content scrolls behind its blur. */}
+              <div className="min-h-0 flex-1 scroll-pt-20 overflow-y-auto overscroll-contain">
+                <div className="sticky top-0 z-10 flex h-14 items-center gap-2 px-4 sm:px-6">
+                  <HeaderBackdrop />
+                  <DialogPrimitive.Close aria-label="Close menu" className={cn(iconButton, "-ml-2")}>
+                    <XIcon className={iconGlyph} aria-hidden="true" />
+                  </DialogPrimitive.Close>
+                  <span aria-hidden="true" className="font-display text-base font-medium tracking-display">
+                    Menu
+                  </span>
                 </div>
-              </nav>
+                <nav aria-label="Site" className="px-4 pt-6 pb-16 sm:px-6">
+                  <div className="flex flex-col gap-12">
+                    {sections.map(section => (
+                      <div key={section.label} className="flex flex-col gap-4">
+                        <motion.h2 className="text-sm text-text-muted" {...row(index++, reduced, duration.standard, ease.enter, stagger.item)}>
+                          {section.label}
+                        </motion.h2>
+                        <ul className="flex flex-col gap-3">
+                          {section.links.map(link => {
+                            const active = pathname === link.href
+                            return (
+                              <motion.li key={link.href} {...row(index++, reduced, duration.standard, ease.enter, stagger.item)}>
+                                <Link
+                                  href={link.href}
+                                  onClick={() => {
+                                    // The opener may unmount on navigation; let focus fall to the burger instead.
+                                    returnFocusRef.current = null
+                                    setOpen(false)
+                                  }}
+                                  aria-current={active ? "page" : undefined}
+                                  className="inline-flex items-center gap-3 font-display text-3xl leading-tight font-medium tracking-display text-foreground transition-colors duration-160 ease-standard pointer-fine:hover:text-text-secondary motion-reduce:transition-none"
+                                >
+                                  {link.title}
+                                  {active && <span aria-hidden="true" className="size-1.5 rounded-full bg-foreground" />}
+                                </Link>
+                              </motion.li>
+                            )
+                          })}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </nav>
+              </div>
             </DialogPrimitive.Popup>
           </DialogPrimitive.Portal>
         )}
