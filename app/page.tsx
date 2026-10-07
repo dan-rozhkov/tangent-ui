@@ -9,7 +9,7 @@ export default function Home() {
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-14 px-4 py-14 sm:px-6">
-        <section className="flex max-w-2xl flex-col gap-4">
+        <section className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
           <h1 className="font-display text-4xl leading-display font-medium tracking-display text-balance">
             React components with calm, physical motion
           </h1>
@@ -20,8 +20,7 @@ export default function Home() {
             <OpenMenuButton />
           </div>
         </section>
-        <section className="flex flex-col gap-4">
-          <h2 className="font-display text-xl font-medium tracking-display">In motion</h2>
+        <section aria-label="In motion">
           <ShowcaseGrid />
         </section>
       </main>

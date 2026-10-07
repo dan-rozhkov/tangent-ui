@@ -52,9 +52,9 @@ function ShowcaseTile({ name }: { name: string }) {
 
 export function ShowcaseGrid() {
   return (
-    <ul className="grid grid-cols-1 border-t border-l border-border sm:grid-cols-2">
+    <ul className="grid grid-cols-1 gap-px overflow-hidden rounded-surface border border-border bg-border sm:grid-cols-2">
       {showcase.map(name => (
-        <li key={name} className="min-w-0 border-r border-b border-border">
+        <li key={name} className="min-w-0 bg-background">
           <ShowcaseTile name={name} />
         </li>
       ))}
