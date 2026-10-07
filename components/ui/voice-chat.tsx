@@ -154,7 +154,7 @@ function FaceLayer({
       animate="shown"
       exit="gone"
       inert={!present || undefined}
-      className={cn("absolute top-0 left-0", className)}
+      className={cn("absolute top-0 left-1/2 w-max -translate-x-1/2", className)}
       {...rest}
     >
       {children}
@@ -260,7 +260,7 @@ export function VoiceChat({
     <div ref={rootRef} className={cn("relative z-10 h-12 touch-manipulation", className)} style={{ width: pillWidth }}>
       <motion.div
         className={cn(
-          "absolute top-0 left-0 overflow-hidden bg-surface-raised text-foreground ring-1 ring-border",
+          "absolute top-0 left-1/2 -translate-x-1/2 overflow-hidden bg-surface-raised text-foreground ring-1 ring-border",
           open ? "shadow-floating" : "shadow-raised",
         )}
         style={{ width, height, borderRadius: radius }}
