@@ -933,7 +933,6 @@ export const catalog: CatalogItem[] = [
   {"name": "time-wheel", "title": "Time wheel", "description": "Drum-style wheels for choosing a date and clock time, with flick momentum, snapping, quick shortcuts and full keyboard control.", "category": "original", "kind": "component"},
   {"name": "onboarding-flow", "title": "Onboarding flow", "description": "A phone-sized sign-up flow whose one button rides up on a keypad, renames itself step to step, and wakes once the field is filled, while steps slide past and a dash tracks progress.", "category": "original", "kind": "component"},
   {"name": "progressive-blur-card", "title": "Progressive blur card", "description": "A stack of portrait creator cards whose lower third melts into a progressive blur that grows upward on hover to reveal a bio, with a Connect pill that morphs into Connected; swipe the front card away and it tucks in at the back.", "category": "original", "kind": "component"},
-  {"name": "stories", "title": "Stories", "description": "A tray of ringed avatars that open into a full-screen story viewer, with tap and hold controls, progress bars, and a 3D cube turning between authors.", "category": "original", "kind": "component"},
 ]
 
 /** The catalog grouped by category in `categories` order. Empty groups are left out; `filter` narrows the items first. */
