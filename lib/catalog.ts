@@ -1,6 +1,10 @@
 // Catalog of every component and block shown in the gallery.
 export type CatalogItem = { name: string; title: string; description: string; category: string; kind: "component" | "block" }
 
+/** Category order and display labels, shared by the sidebar and the search palette. */
+export const categories = ["original", "actions", "inputs", "disclosure", "data", "feedback", "text", "special", "blocks"]
+export const categoryLabel = (category: string) => (category === "original" ? "Signature" : category[0].toUpperCase() + category.slice(1))
+
 /** Our own implementations of signature components. */
 
 export const catalog: CatalogItem[] = [

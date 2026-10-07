@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { Appearance } from "@/components/gallery/appearance"
+import { HeaderActions } from "@/components/gallery/header-actions"
 import { catalog } from "@/lib/catalog"
 
 const sections = [
@@ -20,7 +20,7 @@ export default function Home() {
     <div className="min-h-dvh">
       <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border-subtle bg-background/90 px-4 backdrop-blur sm:px-6">
         <span className="font-display text-base font-medium tracking-display">Tangent UI</span>
-        <Appearance />
+        <HeaderActions />
       </header>
       <main className="mx-auto flex max-w-6xl flex-col gap-14 px-4 py-14 sm:px-6">
         <section className="flex max-w-2xl flex-col gap-4">

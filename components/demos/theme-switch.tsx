@@ -95,13 +95,15 @@ export function runThemeTransition(
 const noop = () => () => {}
 
 export function useThemeTransition() {
-  const { resolvedTheme, setTheme } = useTheme()
+  const { theme: stored, resolvedTheme, setTheme } = useTheme()
   // The server can't know the stored theme, so hydrate as light and take the real theme right after.
   const hydrated = useSyncExternalStore(noop, () => true, () => false)
   const theme: Theme = hydrated && resolvedTheme === "dark" ? "dark" : "light"
   const onThemeChange = (next: Theme, variant: ThemeSwitchVariant, trigger: HTMLElement) =>
     runThemeTransition(next, variant, trigger, setTheme)
-  return { theme, onThemeChange }
+  /** The stored choice, including "system", for pickers that offer it. */
+  const preference = hydrated ? (stored ?? "system") : "system"
+  return { theme, preference, setTheme, onThemeChange }
 }
 
 const variants: { variant: ThemeSwitchVariant; caption: string }[] = [

@@ -3,10 +3,8 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { catalog } from "@/lib/catalog"
+import { catalog, categories, categoryLabel } from "@/lib/catalog"
 import { cn } from "@/lib/utils"
-
-const categories = ["original", "actions", "inputs", "disclosure", "data", "feedback", "text", "special", "blocks"]
 
 export function Sidebar({ ported }: { ported: string[] }) {
   const pathname = usePathname()
@@ -14,7 +12,7 @@ export function Sidebar({ ported }: { ported: string[] }) {
     <nav className="flex flex-col gap-6 text-sm">
       {categories.map(category => (
         <div key={category} className="flex flex-col gap-0.5">
-          <h2 className="px-3 pb-1 text-xs text-text-muted capitalize">{category === "original" ? "Signature" : category}</h2>
+          <h2 className="px-3 pb-1 text-xs text-text-muted">{categoryLabel(category)}</h2>
           {catalog
             .filter(item => item.category === category)
             .map(item => {
