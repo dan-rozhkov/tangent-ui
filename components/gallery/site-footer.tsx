@@ -22,8 +22,8 @@ export function SiteFooter() {
             aria-hidden
             className="pointer-events-none flex h-[calc(var(--lockup)*0.66)] select-none items-start gap-[0.12em] overflow-hidden font-display font-medium leading-none tracking-[-0.04em] whitespace-nowrap text-foreground [--lockup:calc(100cqw/5.55)] text-[length:var(--lockup)] [mask-image:linear-gradient(to_bottom,black,color-mix(in_srgb,black_35%,transparent))]"
           >
-            <BrandMark className="mt-[0.14em] h-[0.72em] w-auto shrink-0" />
-            <span>Tangent UI</span>
+            <BrandMark className="mt-[0.07em] h-[0.72em] w-auto shrink-0" />
+            <span className="-translate-y-[0.07em]">Tangent UI</span>
           </div>
         </div>
       </div>
