@@ -4,7 +4,7 @@ import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { CSSProperties, FocusEvent, ReactNode } from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { AnimatePresence, motion } from "motion/react"
-import { ChevronDown } from "@mynaui/icons-react"
+import { CaretDownIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -151,10 +151,9 @@ export function DropdownMenu({ label, items, icon }: DropdownMenuProps) {
           </span>
         )}
         <TriggerLabel text={label} />
-        <ChevronDown
+        <CaretDownIcon
           className="flex-none text-text-muted [transition:rotate_var(--duration-spring)_var(--ease-spring),color_var(--duration-fast)_var(--ease-standard)] group-data-popup-open/trigger:rotate-180 motion-reduce:transition-none"
           size={15}
-          strokeWidth={1.8}
           aria-hidden="true"
         />
       </MenuPrimitive.Trigger>

@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } 
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, LayoutGroup, animate, motion } from "motion/react"
 import type { AnimationPlaybackControls, Transition } from "motion/react"
-import { Check, ChevronDown, ChevronRight, ChevronsUp, ChevronsUpDown, ChevronUp, Copy, Link, Search, X } from "@mynaui/icons-react"
+import { CaretDoubleUpIcon, CaretDownIcon, CaretRightIcon, CaretUpDownIcon, CaretUpIcon, CheckIcon, CopyIcon, LinkIcon, MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -231,9 +231,9 @@ function CopyButton({
   }
   const glyph =
     state === "done" ? (
-      <Check size={14} strokeWidth={2} aria-hidden="true" />
+      <CheckIcon size={14} aria-hidden="true" />
     ) : state === "error" ? (
-      <X size={14} strokeWidth={2} aria-hidden="true" />
+      <XIcon size={14} aria-hidden="true" />
     ) : (
       icon
     )
@@ -688,7 +688,7 @@ export const JsonViewer = forwardRef<HTMLDivElement, JsonViewerProps>(function J
         <div className="flex items-center gap-0.5 border-b border-border-subtle p-1.5">
           {searchable ? (
             <label className="relative flex min-h-[34px] min-w-0 flex-1 cursor-text items-center gap-1 rounded-[14px] bg-surface-muted pr-1 pl-2.5">
-              <Search size={15} strokeWidth={1.75} aria-hidden="true" className="flex-none text-text-muted" />
+              <MagnifyingGlassIcon size={15} aria-hidden="true" className="flex-none text-text-muted" />
               <input
                 ref={searchRef}
                 type="search"
@@ -725,7 +725,7 @@ export const JsonViewer = forwardRef<HTMLDivElement, JsonViewerProps>(function J
                       disabled={!matchCount}
                       onClick={() => stepMatch(-1)}
                     >
-                      <ChevronUp size={15} strokeWidth={1.75} aria-hidden="true" />
+                      <CaretUpIcon size={15} aria-hidden="true" />
                     </button>
                     <button
                       type="button"
@@ -734,7 +734,7 @@ export const JsonViewer = forwardRef<HTMLDivElement, JsonViewerProps>(function J
                       disabled={!matchCount}
                       onClick={() => stepMatch(1)}
                     >
-                      <ChevronDown size={15} strokeWidth={1.75} aria-hidden="true" />
+                      <CaretDownIcon size={15} aria-hidden="true" />
                     </button>
                   </motion.span>
                 ) : null}
@@ -745,10 +745,10 @@ export const JsonViewer = forwardRef<HTMLDivElement, JsonViewerProps>(function J
           )}
           <span className="mx-1 h-[18px] w-px bg-border-subtle" aria-hidden="true" />
           <button type="button" className={toolClass} aria-label="Expand all" title="Expand all" onClick={expandAll}>
-            <ChevronsUpDown size={15} strokeWidth={1.75} aria-hidden="true" />
+            <CaretUpDownIcon size={15} aria-hidden="true" />
           </button>
           <button type="button" className={toolClass} aria-label="Collapse all" title="Collapse all" onClick={collapseAll}>
-            <ChevronsUp size={15} strokeWidth={1.75} aria-hidden="true" />
+            <CaretDoubleUpIcon size={15} aria-hidden="true" />
           </button>
         </div>
       ) : null}
@@ -846,7 +846,7 @@ export const JsonViewer = forwardRef<HTMLDivElement, JsonViewerProps>(function J
                           data-branch={branch || undefined}
                           aria-hidden="true"
                         >
-                          {branch ? <ChevronRight size={14} strokeWidth={1.75} /> : null}
+                          {branch ? <CaretRightIcon size={14} /> : null}
                         </span>
                         <span
                           className={
@@ -915,13 +915,13 @@ export const JsonViewer = forwardRef<HTMLDivElement, JsonViewerProps>(function J
                           >
                             <CopyButton
                               label="Copy value"
-                              icon={<Copy size={14} strokeWidth={1.75} aria-hidden="true" />}
+                              icon={<CopyIcon size={14} aria-hidden="true" />}
                               reduced={reduced}
                               onCopy={() => copy(row, "value")}
                             />
                             <CopyButton
                               label="Copy path"
-                              icon={<Link size={14} strokeWidth={1.75} aria-hidden="true" />}
+                              icon={<LinkIcon size={14} aria-hidden="true" />}
                               reduced={reduced}
                               onCopy={() => copy(row, "path")}
                             />
@@ -959,7 +959,7 @@ export const JsonViewer = forwardRef<HTMLDivElement, JsonViewerProps>(function J
               focusable
               className="size-[30px] rounded-[10px]"
               label="Copy path"
-              icon={<Copy size={14} strokeWidth={1.75} aria-hidden="true" />}
+              icon={<CopyIcon size={14} aria-hidden="true" />}
               reduced={reduced}
               onCopy={() => copy(activeRow, "path")}
             />

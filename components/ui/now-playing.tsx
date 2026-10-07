@@ -14,7 +14,7 @@ import {
   useTransform,
 } from "motion/react"
 import type { MotionValue, PanInfo, Transition, Variants } from "motion/react"
-import { ChevronDown, PauseSolid, PlaySolid, SkipBackSolid, SkipForwardSolid } from "@mynaui/icons-react"
+import { CaretDownIcon, PauseIcon, PlayIcon, SkipBackIcon, SkipForwardIcon } from "@phosphor-icons/react"
 
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
@@ -453,9 +453,9 @@ export function NowPlaying({
       onClick={() => setPlaying(!playing)}
     >
       {playing ? (
-        <PauseSolid size={big ? 24 : 18} aria-hidden="true" />
+        <PauseIcon weight="fill" size={big ? 20 : 13} aria-hidden="true" />
       ) : (
-        <PlaySolid size={big ? 24 : 18} aria-hidden="true" className="translate-x-px" />
+        <PlayIcon weight="fill" size={big ? 20 : 13} aria-hidden="true" className="translate-x-px" />
       )}
     </motion.button>
   )
@@ -468,7 +468,7 @@ export function NowPlaying({
       whileTap={press}
       onClick={() => goTo(index + 1, 1)}
     >
-      <SkipForwardSolid size={big ? 22 : 18} aria-hidden="true" />
+      <SkipForwardIcon weight="fill" size={big ? 18 : 15} aria-hidden="true" />
     </motion.button>
   )
 
@@ -512,7 +512,7 @@ export function NowPlaying({
                     )}
                     onClick={collapse}
                   >
-                    <ChevronDown size={18} strokeWidth={2} aria-hidden="true" />
+                    <CaretDownIcon size={18} aria-hidden="true" />
                   </motion.button>
                 </motion.div>
                 {/* The artwork is the grab handle: pull it down to close. */}
@@ -551,7 +551,7 @@ export function NowPlaying({
                     whileTap={press}
                     onClick={previous}
                   >
-                    <SkipBackSolid size={22} aria-hidden="true" />
+                    <SkipBackIcon weight="fill" size={18} aria-hidden="true" />
                   </motion.button>
                   {playButton(true)}
                   {nextButton(true)}

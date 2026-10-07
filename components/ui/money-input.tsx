@@ -16,7 +16,7 @@ import {
 import type { ClipboardEvent as ReactClipboardEvent, FocusEvent as ReactFocusEvent, KeyboardEvent as ReactKeyboardEvent } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { Check, ChevronDown } from "@mynaui/icons-react"
+import { CaretDownIcon, CheckIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -845,7 +845,7 @@ export const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(function
                 animate={{ rotate: menuOpen ? 180 : 0 }}
                 transition={reduced ? { duration: 0 } : GLIDE}
               >
-                <ChevronDown size={16} strokeWidth={1.75} />
+                <CaretDownIcon size={16} />
               </motion.span>
             </button>
             <AnimatePresence>
@@ -921,7 +921,7 @@ export const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(function
                           data-on={option.code === code || undefined}
                           aria-hidden="true"
                         >
-                          <Check size={16} strokeWidth={1.75} />
+                          <CheckIcon size={16} />
                         </span>
                       </div>
                     ))}

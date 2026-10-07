@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import type { MouseEvent } from "react"
-import { ChevronRight } from "@mynaui/icons-react"
+import { CaretRightIcon } from "@phosphor-icons/react"
 import { AnimatePresence, motion } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
@@ -62,7 +62,7 @@ export function Breadcrumb({ items, ariaLabel = "Breadcrumb" }: BreadcrumbProps)
                 }
                 transition={reduced ? still : { duration: motionTokens.duration.standard, ease: [...motionTokens.ease.enter], layout: motionTokens.spring.smooth }}
               >
-                {index > 0 && <ChevronRight className="size-4 flex-none text-border-strong [&]:stroke-[1.75]" width={14} height={14} aria-hidden="true" />}
+                {index > 0 && <CaretRightIcon className="size-4 flex-none text-border-strong" width={14} height={14} aria-hidden="true" />}
                 {!current && item.href ? (
                   <Link href={item.href} className={interactive} data-label={item.label} onClick={item.onClick}>
                     {item.label}

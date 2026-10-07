@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Bookmark, BookOpen, Home, Inbox, Radio, Search, User } from "@mynaui/icons-react"
+import { BookmarkSimpleIcon, BookOpenIcon, BroadcastIcon, HouseIcon, MagnifyingGlassIcon, TrayIcon, UserIcon } from "@phosphor-icons/react"
 
 import { LiquidTabBar, liquidPanelId, liquidTabId } from "@/components/ui/liquid-tab-bar"
 
@@ -32,10 +32,10 @@ export default function Demo() {
         value={tab}
         onValueChange={setTab}
         tabs={[
-          { value: "home", label: "Home", icon: <Home /> },
-          { value: "saved", label: "Saved", icon: <Bookmark /> },
-          { value: "inbox", label: "Inbox", icon: <Inbox />, badge: 2, badgeLabel: "2 unread" },
-          { value: "profile", label: "Profile", icon: <User /> },
+          { value: "home", label: "Home", icon: <HouseIcon size={24} /> },
+          { value: "saved", label: "Saved", icon: <BookmarkSimpleIcon size={24} /> },
+          { value: "inbox", label: "Inbox", icon: <TrayIcon size={24} />, badge: 2, badgeLabel: "2 unread" },
+          { value: "profile", label: "Profile", icon: <UserIcon size={24} /> },
         ]}
       />
       <LiquidTabBar
@@ -45,10 +45,10 @@ export default function Demo() {
         value={compact}
         onValueChange={setCompact}
         tabs={[
-          { value: "home", label: "Home", icon: <Home /> },
-          { value: "radio", label: "Radio", icon: <Radio /> },
-          { value: "library", label: "Library", icon: <BookOpen /> },
-          { value: "search", label: "Search", icon: <Search /> },
+          { value: "home", label: "Home", icon: <HouseIcon size={24} /> },
+          { value: "radio", label: "Radio", icon: <BroadcastIcon size={24} /> },
+          { value: "library", label: "Library", icon: <BookOpenIcon size={24} /> },
+          { value: "search", label: "Search", icon: <MagnifyingGlassIcon size={24} /> },
         ]}
       />
     </div>

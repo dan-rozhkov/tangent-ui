@@ -2,7 +2,7 @@
 
 import { useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react"
-import { ChevronLeft, ChevronRight } from "@mynaui/icons-react"
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react"
 import { animate, AnimatePresence, motion, useMotionValue, useMotionValueEvent, useTransform } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue, Variants } from "motion/react"
 
@@ -492,7 +492,7 @@ export function Calendar({
               if (!previousDisabled && previousMonth) changeMonth(previousMonth)
             }}
           >
-            <ChevronLeft size={16} strokeWidth={1.75} aria-hidden="true" />
+            <CaretLeftIcon size={16} aria-hidden="true" />
           </button>
           <button
             type="button"
@@ -503,7 +503,7 @@ export function Calendar({
               if (!nextDisabled && nextMonth) changeMonth(nextMonth)
             }}
           >
-            <ChevronRight size={16} strokeWidth={1.75} aria-hidden="true" />
+            <CaretRightIcon size={16} aria-hidden="true" />
           </button>
         </div>
       </div>

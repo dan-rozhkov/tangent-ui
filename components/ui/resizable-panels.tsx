@@ -4,7 +4,7 @@ import { Children, Fragment, isValidElement, useEffect, useRef, useState } from 
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactElement, ReactNode } from "react";
 import { AnimatePresence, animate, motion, motionValue, useTransform } from "motion/react";
 import type { AnimationPlaybackControls, MotionValue, TargetAndTransition, Transition } from "motion/react";
-import { ChevronLeft, ChevronRight } from "@mynaui/icons-react";
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react"
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";
@@ -386,7 +386,7 @@ function Handle({ before, after, share, available, limits, mode, active, reduced
     <span className={gripClass} aria-hidden="true" />
     <AnimatePresence initial={false}>
       {mode !== "open" && <motion.span key={mode} className={restoreClass} data-side={mode} aria-hidden="true" initial={reduced ? { opacity: 0 } : tabIn} animate={tabRest} exit={reduced ? { opacity: 0, transition: { duration: motionTokens.duration.instant } } : tabOut} transition={reduced ? { duration: motionTokens.duration.instant } : tabEnter}>
-        {mode === "before" ? <ChevronRight size={14} strokeWidth={1.75} /> : <ChevronLeft size={14} strokeWidth={1.75} />}
+        {mode === "before" ? <CaretRightIcon size={14} /> : <CaretLeftIcon size={14} />}
       </motion.span>}
     </AnimatePresence>
   </div>;

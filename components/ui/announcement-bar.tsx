@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useEffect, useId, useLayoutEffect, useRef, use
 import type { CSSProperties, ReactNode } from "react";
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useTransform } from "motion/react";
 import type { AnimationPlaybackControls, Transition, Variants } from "motion/react";
-import { ArrowRight, ChevronDown, ChevronUp, Pause, Play, X } from "@mynaui/icons-react";
+import { ArrowRightIcon, CaretDownIcon, CaretUpIcon, PauseIcon, PlayIcon, XIcon } from "@phosphor-icons/react"
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";
@@ -150,8 +150,8 @@ function Face({ announcement, direction, reduced, position, total, onSize, onAct
   }, [onSize, present]);
   const { action, countdown } = announcement;
   const cta = action ? action.href
-    ? <a className={ctaClass} href={action.href} onClick={() => { action.onClick?.(); onAction?.(announcement); }}>{action.label}<ArrowRight size={14} strokeWidth={1.75} aria-hidden="true" /></a>
-    : <button type="button" className={ctaClass} onClick={() => { action.onClick?.(); onAction?.(announcement); }}>{action.label}<ArrowRight size={14} strokeWidth={1.75} aria-hidden="true" /></button> : null;
+    ? <a className={ctaClass} href={action.href} onClick={() => { action.onClick?.(); onAction?.(announcement); }}>{action.label}<ArrowRightIcon size={14} aria-hidden="true" /></a>
+    : <button type="button" className={ctaClass} onClick={() => { action.onClick?.(); onAction?.(announcement); }}>{action.label}<ArrowRightIcon size={14} aria-hidden="true" /></button> : null;
   return <motion.div ref={ref} className="absolute inset-x-0 top-0 flex min-h-8 items-center justify-center @max-[560px]:justify-start" custom={direction} variants={reduced ? fadeVariants : faceVariants} initial="hidden" animate="shown" exit="gone"
     role={total > 1 ? "group" : undefined} aria-roledescription={total > 1 ? "slide" : undefined} aria-label={total > 1 ? `${position} of ${total}` : undefined} inert={!present || undefined}>
     <p className="m-0 flex flex-wrap items-baseline justify-center gap-x-3 gap-y-0.5 py-1.5 text-center text-(length:--text-sm) leading-body text-balance @max-[560px]:justify-start @max-[560px]:gap-x-2.5 @max-[560px]:text-left">
@@ -270,17 +270,17 @@ export const AnnouncementBar = forwardRef<HTMLElement, AnnouncementBarProps>(fun
         </motion.div>
         <div className="flex items-center gap-(--control-gap)">
           {navigable ? <>
-            <button type="button" className={iconButton} aria-label="Previous announcement" aria-controls={`${uid}-slides`} onClick={() => go(-1)}><ChevronUp size={16} strokeWidth={1.75} aria-hidden="true" /></button>
+            <button type="button" className={iconButton} aria-label="Previous announcement" aria-controls={`${uid}-slides`} onClick={() => go(-1)}><CaretUpIcon size={16} aria-hidden="true" /></button>
             {rotating ? <button type="button" className={iconButton} aria-label={userPaused ? "Resume announcements" : "Pause announcements"} aria-pressed={userPaused} onClick={() => setUserPaused(paused => !paused)}>
               <svg className="size-5 -rotate-90 overflow-visible" viewBox="0 0 20 20" aria-hidden="true">
-                <circle cx="10" cy="10" r="8" className="fill-none stroke-current stroke-[1.75] [stroke-opacity:.22]" />
-                <motion.circle cx="10" cy="10" r="8" className="fill-none stroke-current stroke-[1.75] [stroke-linecap:round]" strokeDasharray={RING} style={{ strokeDashoffset: dash }} />
+                <circle cx="10" cy="10" r="8" className="fill-none stroke-current stroke-[1.25] [stroke-opacity:.22]" />
+                <motion.circle cx="10" cy="10" r="8" className="fill-none stroke-current stroke-[1.25] [stroke-linecap:round]" strokeDasharray={RING} style={{ strokeDashoffset: dash }} />
               </svg>
-              <span className="absolute inset-0 grid place-items-center">{userPaused ? <Play size={9} strokeWidth={2.4} className="fill-current" aria-hidden="true" /> : <Pause size={9} strokeWidth={2.4} className="fill-current" aria-hidden="true" />}</span>
+              <span className="absolute inset-0 grid place-items-center">{userPaused ? <PlayIcon size={9} weight="fill" aria-hidden="true" /> : <PauseIcon size={9} weight="fill" aria-hidden="true" />}</span>
             </button> : null}
-            <button type="button" className={iconButton} aria-label="Next announcement" aria-controls={`${uid}-slides`} onClick={() => go(1)}><ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" /></button>
+            <button type="button" className={iconButton} aria-label="Next announcement" aria-controls={`${uid}-slides`} onClick={() => go(1)}><CaretDownIcon size={16} aria-hidden="true" /></button>
           </> : null}
-          {dismissible ? <button type="button" className={iconButton} aria-label="Dismiss" onClick={dismiss}><X size={16} strokeWidth={1.75} aria-hidden="true" /></button> : null}
+          {dismissible ? <button type="button" className={iconButton} aria-label="Dismiss" onClick={dismiss}><XIcon size={16} aria-hidden="true" /></button> : null}
         </div>
       </div>
     </motion.section> : null}

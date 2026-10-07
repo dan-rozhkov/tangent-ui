@@ -4,7 +4,7 @@ import { useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { ComponentPropsWithoutRef, CSSProperties, KeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { ChevronDown } from "@mynaui/icons-react"
+import { CaretDownIcon } from "@phosphor-icons/react"
 
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
@@ -220,7 +220,7 @@ export function ExpandableCard({
             animate={{ rotate: expanded ? 180 : 0 }}
             transition={reduceMotion ? still : boxTransition(morph, expanded, hold)}
           >
-            <ChevronDown width={18} height={18} aria-hidden="true" />
+            <CaretDownIcon size={18} aria-hidden="true" />
           </motion.span>
         </button>
         {/* The panel stays mounted so a second click mid-animation reverses from where it is; inert keeps closed details out of reach.

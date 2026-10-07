@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Copy, FolderPlus, Heart, Send, Trash } from "@mynaui/icons-react"
+import { CopyIcon, FolderPlusIcon, HeartIcon, PaperPlaneTiltIcon, TrashIcon } from "@phosphor-icons/react"
 
 import { OrbitMenu } from "@/components/ui/orbit-menu"
 
@@ -28,11 +28,11 @@ export default function Demo() {
         label="Photo actions"
         onAction={setLast}
         actions={[
-          { id: "favorite", label: "Favorite", icon: <Heart />, done: "Added to favorites" },
-          { id: "share", label: "Share with Ryan", icon: <Send />, done: "Shared with Ryan" },
-          { id: "album", label: "Add to album", icon: <FolderPlus />, done: "Added to Fall trips" },
-          { id: "duplicate", label: "Duplicate", icon: <Copy />, done: "Duplicated" },
-          { id: "delete", label: "Delete", icon: <Trash />, tone: "danger", done: "Deleted" },
+          { id: "favorite", label: "Favorite", icon: <HeartIcon size={24} />, done: "Added to favorites" },
+          { id: "share", label: "Share with Ryan", icon: <PaperPlaneTiltIcon size={24} />, done: "Shared with Ryan" },
+          { id: "album", label: "Add to album", icon: <FolderPlusIcon size={24} />, done: "Added to Fall trips" },
+          { id: "duplicate", label: "Duplicate", icon: <CopyIcon size={24} />, done: "Duplicated" },
+          { id: "delete", label: "Delete", icon: <TrashIcon size={24} />, tone: "danger", done: "Deleted" },
         ]}
       />
     </div>

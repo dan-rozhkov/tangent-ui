@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import type { ReactNode } from "react"
-import { ChevronRight } from "@mynaui/icons-react"
+import { CaretRightIcon } from "@phosphor-icons/react"
 
 import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -32,7 +32,7 @@ function DrillRow({ sheet, children }: { sheet: string; children: ReactNode }) {
   return (
     <button type="button" aria-haspopup="dialog" aria-expanded={stack.includes(sheet)} className={card} onClick={() => push(sheet)}>
       {children}
-      <ChevronRight size={18} strokeWidth={1.75} aria-hidden="true" className="flex-none text-text-muted" />
+      <CaretRightIcon size={18} aria-hidden="true" className="flex-none text-text-muted" />
     </button>
   )
 }

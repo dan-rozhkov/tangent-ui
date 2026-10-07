@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useId, useRef, useState } from "react"
-import { Pause, Play } from "@mynaui/icons-react"
+import { PauseIcon, PlayIcon } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -158,12 +158,12 @@ export function LogoMarquee({
         >
           {paused ? (
             <>
-              <Play size={16} strokeWidth={1.75} aria-hidden="true" />
+              <PlayIcon size={14} weight="fill" aria-hidden="true" />
               Play
             </>
           ) : (
             <>
-              <Pause size={16} strokeWidth={1.75} aria-hidden="true" />
+              <PauseIcon size={14} weight="fill" aria-hidden="true" />
               Pause
             </>
           )}

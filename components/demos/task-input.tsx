@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
-import { Calendar } from "@mynaui/icons-react"
+import { CalendarBlankIcon } from "@phosphor-icons/react"
 
 import { Checkbox } from "@/components/ui/checkbox"
 import { TaskInput, formatDueLabel, type TaskInputList, type TaskInputTask } from "@/components/ui/task-input"
@@ -87,7 +87,7 @@ export default function Demo() {
                 <div className={`flex flex-none items-center gap-1.5 transition-opacity duration-200 motion-reduce:transition-none ${item.done ? "opacity-50" : ""}`}>
                   {item.due && (
                     <span className={chip}>
-                      <Calendar className="size-3" strokeWidth={2} aria-hidden="true" />
+                      <CalendarBlankIcon className="size-3" aria-hidden="true" />
                       {item.due}
                     </span>
                   )}

@@ -4,7 +4,7 @@ import { createPortal } from "react-dom"
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { CSSProperties, FocusEvent, KeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, motion } from "motion/react"
-import { Check, Copy, Dots, Trash } from "@mynaui/icons-react"
+import { CheckIcon, CopyIcon, DotsThreeIcon, TrashIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -309,7 +309,7 @@ export function ContextMenu({ children, items, label = "Context menu" }: Context
                         )}
                         aria-hidden="true"
                       >
-                        {item.icon ?? (item.checked ? <Check size={15} /> : <Dots size={15} />)}
+                        {item.icon ?? (item.checked ? <CheckIcon size={15} /> : <DotsThreeIcon size={15} />)}
                       </span>
                       <span>{item.label}</span>
                     </button>
@@ -325,8 +325,8 @@ export function ContextMenu({ children, items, label = "Context menu" }: Context
 }
 
 export const contextMenuExampleItems: ContextMenuItem[] = [
-  { id: "copy", label: "Copy link", icon: <Copy size={15} /> },
-  { id: "delete", label: "Delete project", icon: <Trash size={15} />, destructive: true },
+  { id: "copy", label: "Copy link", icon: <CopyIcon size={15} /> },
+  { id: "delete", label: "Delete project", icon: <TrashIcon size={15} />, destructive: true },
 ]
 
 export default ContextMenu

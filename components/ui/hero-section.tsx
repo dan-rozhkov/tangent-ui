@@ -4,7 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } fr
 import type { CSSProperties, ReactNode } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
-import { Activity, ArrowRight, ArrowUpRight, BookOpen, ChartBar, ChartLine, Check, ChevronsUpDown, Cog, Database, GitBranch, Minus, Search, Sparkles, Users } from "@mynaui/icons-react"
+import { ArrowRightIcon, ArrowUpRightIcon, BookOpenIcon, CaretUpDownIcon, ChartBarIcon, ChartLineIcon, CheckIcon, DatabaseIcon, GearIcon, GitBranchIcon, MagnifyingGlassIcon, MinusIcon, PulseIcon, SparkleIcon, UsersIcon } from "@phosphor-icons/react"
 
 import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -361,9 +361,9 @@ function ActionLink({ action: spec, kind, className }: { action: HeroAction; kin
     return () => window.clearTimeout(timer)
   }, [done])
   const icon = spec.external ? (
-    <ArrowUpRight size={16} strokeWidth={1.75} aria-hidden="true" />
+    <ArrowUpRightIcon size={16} aria-hidden="true" />
   ) : kind === "primary" ? (
-    <ArrowRight className={arrow} size={16} strokeWidth={1.75} aria-hidden="true" />
+    <ArrowRightIcon className={arrow} size={16} aria-hidden="true" />
   ) : null
   if (spec.href)
     return (
@@ -390,7 +390,7 @@ function ActionLink({ action: spec, kind, className }: { action: HeroAction; kin
     >
       {done ? (
         <>
-          <Check size={16} strokeWidth={1.75} aria-hidden="true" />
+          <CheckIcon size={16} aria-hidden="true" />
           {spec.doneLabel}
         </>
       ) : (
@@ -420,7 +420,7 @@ const layouts = {
 export function HeroContent({ layout, announcement, title, description, primaryAction, secondaryAction, install, media, meta, animateIn = true, className }: HeroContentProps) {
   const item = heroRise
   const command = install?.[0]
-  const arrowIcon = <ArrowRight className={arrow} size={14} strokeWidth={1.75} aria-hidden="true" />
+  const arrowIcon = <ArrowRightIcon className={arrow} size={14} aria-hidden="true" />
   // Reduced motion: Motion skips every transform (rise, zoom, tilt entrance); opacity still fades briefly.
   return (
     <ReducedMotionConfig>
@@ -714,12 +714,12 @@ const LUMEN_MESH: HeroMeshPoint[] = [
 ]
 
 const NAV = [
-  { label: "Overview", icon: Activity, active: true },
-  { label: "Revenue", icon: ChartLine },
-  { label: "Customers", icon: Users },
-  { label: "Cohorts", icon: ChartBar },
-  { label: "Forecasts", icon: Sparkles },
-  { label: "Reports", icon: BookOpen },
+  { label: "Overview", icon: PulseIcon, active: true },
+  { label: "Revenue", icon: ChartLineIcon },
+  { label: "Customers", icon: UsersIcon },
+  { label: "Cohorts", icon: ChartBarIcon },
+  { label: "Forecasts", icon: SparkleIcon },
+  { label: "Reports", icon: BookOpenIcon },
 ]
 const VIEWS = [
   { label: "Enterprise expansion", tone: "accent" },
@@ -882,10 +882,10 @@ function LumenDashboard({ narrow }: { narrow: boolean }) {
             <div className="flex items-center gap-2.5 px-2 pt-1.5 pb-2.5">
               <span className="grid size-[22px] place-items-center rounded-md bg-foreground text-xs font-medium text-background">A</span>
               <span className="flex-1 font-medium">Acme Cloud</span>
-              <ChevronsUpDown size={14} strokeWidth={1.75} className="text-text-muted" />
+              <CaretUpDownIcon size={14} className="text-text-muted" />
             </div>
             <div className="mb-2.5 flex items-center gap-2 rounded-[9px] border border-border-subtle bg-surface px-2 py-1.5 text-text-muted">
-              <Search size={14} strokeWidth={1.75} />
+              <MagnifyingGlassIcon size={14} />
               Search<kbd className="ml-auto font-sans text-xs">⌘K</kbd>
             </div>
             <div className="grid gap-px">
@@ -895,7 +895,7 @@ function LumenDashboard({ narrow }: { narrow: boolean }) {
                   className="flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-text-secondary data-[active]:bg-accent-subtle data-[active]:font-medium data-[active]:text-foreground [&>svg]:text-text-muted data-[active]:[&>svg]:text-accent"
                   data-active={active || undefined}
                 >
-                  <Icon size={15} strokeWidth={1.75} />
+                  <Icon size={15} />
                   {label}
                 </div>
               ))}
@@ -915,7 +915,7 @@ function LumenDashboard({ narrow }: { narrow: boolean }) {
                 <strong className="font-medium">Chloe Nguyen</strong>
                 <small className="text-xs text-text-muted">Data analyst</small>
               </span>
-              <Cog size={15} strokeWidth={1.75} className="text-text-muted" />
+              <GearIcon size={15} className="text-text-muted" />
             </div>
           </aside>
         )}
@@ -947,7 +947,7 @@ function LumenDashboard({ narrow }: { narrow: boolean }) {
             <div className={card}>
               <div className="flex items-start justify-between gap-4">
                 <p className="m-0 flex max-w-[46ch] gap-2 leading-[1.45] text-text-secondary [&_strong]:font-medium [&_strong]:text-foreground">
-                  <Sparkles size={15} strokeWidth={1.75} className="mt-0.5 flex-none text-accent" />
+                  <SparkleIcon size={15} className="mt-0.5 flex-none text-accent" />
                   <span>
                     <strong>{insight.lead}</strong> {insight.rest}
                   </span>
@@ -1279,7 +1279,7 @@ export function HeroRelay({
                 <RelayNode
                   box={layout.nodes.branch}
                   status={status("branch")}
-                  icon={<GitBranch size={17} strokeWidth={1.75} className={glyph} aria-hidden="true" />}
+                  icon={<GitBranchIcon size={17} className={glyph} aria-hidden="true" />}
                   title="Amount over $1,000"
                   sub={status("branch") === "done" ? (event.routed ? "Yes, alert the team" : "No, record only") : "Condition"}
                   meta={`${event.ms.branch} ms`}
@@ -1289,7 +1289,7 @@ export function HeroRelay({
                   const copy = {
                     slack: { icon: logo("slack-color"), title: narrow ? "Slack" : "Post to #revenue", waiting: "Slack" },
                     linear: { icon: logo("linear-color"), title: narrow ? "Linear" : "Create Linear issue", waiting: "Onboarding team" },
-                    warehouse: { icon: <Database size={16} strokeWidth={1.75} className={glyph} aria-hidden="true" />, title: narrow ? "Warehouse" : "Save to warehouse", waiting: "Postgres" },
+                    warehouse: { icon: <DatabaseIcon size={16} className={glyph} aria-hidden="true" />, title: narrow ? "Warehouse" : "Save to warehouse", waiting: "Postgres" },
                   }[id]
                   const sub =
                     s === "skipped" ? "Skipped" : s === "done" ? (narrow ? `${event.ms[id]} ms` : RESULTS[id](event)) : s === "running" ? "Running" : narrow ? "Waiting" : copy.waiting
@@ -1319,7 +1319,7 @@ export function HeroRelay({
                       >
                         {phase === DONE ? (
                           <>
-                            <Check size={14} strokeWidth={2} aria-hidden="true" />
+                            <CheckIcon size={14} aria-hidden="true" />
                             <span>
                               Completed in <span className="tabular-nums">{event.total} ms</span>
                             </span>
@@ -1381,10 +1381,10 @@ function RelayNode({ box, status, icon, title, sub, meta, compact = false }: { b
             ) : status === "done" ? (
               <>
                 {meta && <span className="text-xs text-text-muted tabular-nums">{meta}</span>}
-                <Check size={14} strokeWidth={2} className="text-success" role="img" aria-label="Done" />
+                <CheckIcon size={14} className="text-success" role="img" aria-label="Done" />
               </>
             ) : status === "skipped" ? (
-              <Minus size={14} strokeWidth={2} className="text-text-muted" role="img" aria-label="Skipped" />
+              <MinusIcon size={14} className="text-text-muted" role="img" aria-label="Skipped" />
             ) : (
               <i className="block size-2.5 rounded-full border-[1.5px] border-[color:var(--wire)]" role="img" aria-label="Waiting" />
             )}

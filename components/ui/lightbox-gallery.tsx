@@ -1,12 +1,12 @@
 "use client"
 
-import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { memo, startTransition, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react"
 import Image from "next/image"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { animate, motion, useMotionValue, useMotionValueEvent, useTransform } from "motion/react"
 import type { MotionValue } from "motion/react"
-import { ChevronLeft, ChevronRight, SearchMinus, SearchPlus, X } from "@mynaui/icons-react"
+import { CaretLeftIcon, CaretRightIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon, XIcon } from "@phosphor-icons/react"
 
 import { motionTokens as presets } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
@@ -267,7 +267,6 @@ function Viewer({
   const stageRef = useRef<HTMLDivElement>(null)
   const surfaceRef = useRef<HTMLDivElement>(null)
   const photoRef = useRef<HTMLDivElement>(null)
-  const thumbs = useRef<(HTMLButtonElement | null)[]>([])
   const [stage, setStage] = useState<Rect | null>(null)
   const [viewport, setViewport] = useState({ w: 0, h: 0 })
   const [zoomed, setZoomed] = useState(false)
@@ -383,17 +382,13 @@ function Viewer({
     return () => controls.stop()
   }, [index, motionTokens.spring.smooth, pitch, px, py, reduced, track, viewportWidth, z])
 
-  // The current thumbnail sits at the center of the strip. The first placement is instant.
-  const stripRef = useRef<HTMLDivElement>(null)
-  const centered = useRef(false)
+  /* The opening frame mounts only the current slide; the neighbours, all off screen, follow a frame later in a
+     transition, so React can slice their render between frames of the flight. */
+  const [warm, setWarm] = useState(false)
   useEffect(() => {
-    const strip = stripRef.current
-    const thumb = thumbs.current[index]
-    if (!strip || !thumb) return
-    const left = thumb.offsetLeft + thumb.offsetWidth / 2 - strip.clientWidth / 2
-    strip.scrollTo({ left, behavior: reduced || !centered.current ? "auto" : "smooth" })
-    centered.current = true
-  }, [index, reduced])
+    const frame = requestAnimationFrame(() => startTransition(() => setWarm(true)))
+    return () => cancelAnimationFrame(frame)
+  }, [])
 
   const close = useCallback(
     (velocity = 0) => {
@@ -718,7 +713,7 @@ function Viewer({
   }
 
   const image = images[index]
-  const near = (at: number) => Math.abs(at - index) <= 2
+  const near = (at: number) => at === index || (warm && Math.abs(at - index) <= 2)
 
   return (
     <div className="absolute inset-0">
@@ -775,10 +770,10 @@ function Viewer({
               className={iconButton}
               onClick={() => zoomTo(zoomed ? 1 : fillZoom())}
             >
-              {zoomed ? <SearchMinus size={20} strokeWidth={1.75} aria-hidden="true" /> : <SearchPlus size={20} strokeWidth={1.75} aria-hidden="true" />}
+              {zoomed ? <MagnifyingGlassMinusIcon size={20} aria-hidden="true" /> : <MagnifyingGlassPlusIcon size={20} aria-hidden="true" />}
             </button>
             <button type="button" aria-label="Close viewer" data-lightbox-close="" className={iconButton} onClick={() => close()}>
-              <X size={20} strokeWidth={1.75} aria-hidden="true" />
+              <XIcon size={20} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -789,7 +784,7 @@ function Viewer({
           className={cn(navButton, "left-4")}
           onClick={() => go(-1)}
         >
-          <ChevronLeft size={18} strokeWidth={1.75} aria-hidden="true" />
+          <CaretLeftIcon size={18} aria-hidden="true" />
         </button>
         <button
           type="button"
@@ -798,45 +793,76 @@ function Viewer({
           className={cn(navButton, "right-4")}
           onClick={() => go(1)}
         >
-          <ChevronRight size={18} strokeWidth={1.75} aria-hidden="true" />
+          <CaretRightIcon size={18} aria-hidden="true" />
         </button>
         <div className="pointer-events-auto absolute inset-x-0 bottom-0 flex h-32 flex-col items-center justify-end pb-4 sm:h-[140px]">
           <div className="flex min-h-[62px] max-w-[min(32rem,calc(100%-2rem))] flex-col items-center justify-end pb-2.5 text-center">
             {image?.title ? <p className="m-0 max-w-full truncate text-sm leading-[1.4] font-medium">{image.title}</p> : null}
             {image?.caption ? <p className="m-0 max-w-full truncate text-xs leading-[1.4] text-text-secondary">{image.caption}</p> : null}
           </div>
-          {/* Half a strip of padding on each side lets the first and last thumbnails reach the center too. */}
-          <div
-            ref={stripRef}
-            role="group"
-            aria-label="All photos"
-            className="flex h-[52px] w-full touch-pan-x items-center gap-1 overflow-x-auto px-[calc(50%-18px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-          >
-            {images.map((thumb, at) => (
-              <button
-                key={`${thumb.src}-${at}`}
-                ref={node => {
-                  thumbs.current[at] = node
-                }}
-                type="button"
-                aria-label={`Show ${nameOf(thumb)}`}
-                aria-current={at === index ? "true" : undefined}
-                className={cn(
-                  "relative h-12 w-9 flex-none cursor-pointer overflow-hidden rounded-[8px] bg-surface-muted opacity-50 outline-none [-webkit-tap-highlight-color:transparent]",
-                  "[transition:width_.24s_var(--ease-standard),opacity_.16s_var(--ease-standard)] pointer-fine:hover:opacity-75 focus-visible:opacity-75 motion-reduce:transition-none",
-                  "aria-[current='true']:w-[38.4px] aria-[current='true']:opacity-100",
-                )}
-                onClick={() => onIndexChange(at)}
-              >
-                <Image src={thumb.src} alt="" fill sizes="40px" className="object-cover" draggable={false} />
-              </button>
-            ))}
-          </div>
+          <ThumbStrip images={images} index={index} reduced={reduced} onSelect={onIndexChange} />
         </div>
       </motion.div>
     </div>
   )
 }
+
+/** The thumbnail strip. Memoized, so measuring the stage or zooming re-renders the viewer without it. */
+const ThumbStrip = memo(function ThumbStrip({
+  images,
+  index,
+  reduced,
+  onSelect,
+}: {
+  images: LightboxImage[]
+  index: number
+  reduced: boolean
+  onSelect: (index: number) => void
+}) {
+  const stripRef = useRef<HTMLDivElement>(null)
+  const thumbs = useRef<(HTMLButtonElement | null)[]>([])
+
+  // The current thumbnail sits at the center of the strip. The first placement is instant.
+  const centered = useRef(false)
+  useEffect(() => {
+    const strip = stripRef.current
+    const thumb = thumbs.current[index]
+    if (!strip || !thumb) return
+    const left = thumb.offsetLeft + thumb.offsetWidth / 2 - strip.clientWidth / 2
+    strip.scrollTo({ left, behavior: reduced || !centered.current ? "auto" : "smooth" })
+    centered.current = true
+  }, [index, reduced])
+
+  return (
+    // Half a strip of padding on each side lets the first and last thumbnails reach the center too.
+    <div
+      ref={stripRef}
+      role="group"
+      aria-label="All photos"
+      className="flex h-[52px] w-full touch-pan-x items-center gap-1 overflow-x-auto px-[calc(50%-18px)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
+      {images.map((thumb, at) => (
+        <button
+          key={`${thumb.src}-${at}`}
+          ref={node => {
+            thumbs.current[at] = node
+          }}
+          type="button"
+          aria-label={`Show ${nameOf(thumb)}`}
+          aria-current={at === index ? "true" : undefined}
+          className={cn(
+            "relative h-12 w-9 flex-none cursor-pointer overflow-hidden rounded-[8px] bg-surface-muted opacity-50 outline-none [-webkit-tap-highlight-color:transparent]",
+            "[transition:width_.24s_var(--ease-standard),opacity_.16s_var(--ease-standard)] pointer-fine:hover:opacity-75 focus-visible:opacity-75 motion-reduce:transition-none",
+            "aria-[current='true']:w-[38.4px] aria-[current='true']:opacity-100",
+          )}
+          onClick={() => onSelect(at)}
+        >
+          <Image src={thumb.src} alt="" fill sizes="40px" className="object-cover" draggable={false} />
+        </button>
+      ))}
+    </div>
+  )
+})
 
 /** 40px bare round icons in the top bar. No focus ring: focus fills them like a hover does. */
 const iconButton = [

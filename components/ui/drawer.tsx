@@ -5,7 +5,7 @@ import type { ReactNode, RefObject } from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { PanInfo, Transition } from "motion/react"
-import { X } from "@mynaui/icons-react"
+import { XIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -226,7 +226,7 @@ export function DrawerContent({ title, description, children, side = "right", co
           ) : null}
         </div>
         <DialogPrimitive.Close className={closeClass} aria-label="Close drawer">
-          <X size={16} strokeWidth={1.75} aria-hidden="true" />
+          <XIcon size={16} aria-hidden="true" />
         </DialogPrimitive.Close>
       </motion.div>
       <div className="min-h-0 overflow-auto overscroll-contain p-6 text-sm leading-body [scrollbar-width:thin] max-sm:p-5">{children}</div>

@@ -11,7 +11,7 @@ import {
   useTransform,
 } from "motion/react"
 import type { MotionValue } from "motion/react"
-import { Check, Undo, X } from "@mynaui/icons-react"
+import { ArrowUUpLeftIcon, CheckIcon, XIcon } from "@phosphor-icons/react"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
@@ -374,7 +374,7 @@ function StackCard({
           style={{ opacity: keep }}
           aria-hidden="true"
         >
-          <Check size={16} strokeWidth={2} />
+          <CheckIcon size={16} />
           {labels.right}
         </motion.span>
         <motion.span
@@ -383,7 +383,7 @@ function StackCard({
           style={{ opacity: pass }}
           aria-hidden="true"
         >
-          <X size={16} strokeWidth={2} />
+          <XIcon size={16} />
           {labels.left}
         </motion.span>
       </motion.div>
@@ -623,7 +623,7 @@ export function CardStack<T>({
                 <>
                   <p className="m-0 text-base font-medium">All cards reviewed</p>
                   <button type="button" className={controlVariants()} onClick={reset}>
-                    <Undo size={16} strokeWidth={1.75} aria-hidden="true" />
+                    <ArrowUUpLeftIcon size={16} aria-hidden="true" />
                     Start over
                   </button>
                 </>
@@ -634,15 +634,15 @@ export function CardStack<T>({
       </div>
       <div className="flex flex-wrap justify-center gap-2 max-[26rem]:flex-nowrap">
         <Control onClick={() => decide("left")} disabled={!top} reduced={reduced}>
-          <X size={16} strokeWidth={1.75} aria-hidden="true" />
+          <XIcon size={16} aria-hidden="true" />
           {labels.left}
         </Control>
         <Control onClick={undo} disabled={!history.length} reduced={reduced} tone="quiet">
-          <Undo size={16} strokeWidth={1.75} aria-hidden="true" />
+          <ArrowUUpLeftIcon size={16} aria-hidden="true" />
           <span className="max-[22.5rem]:sr-only">Undo</span>
         </Control>
         <Control onClick={() => decide("right")} disabled={!top} reduced={reduced} tone="primary">
-          <Check size={16} strokeWidth={1.75} aria-hidden="true" />
+          <CheckIcon size={16} aria-hidden="true" />
           {labels.right}
         </Control>
       </div>

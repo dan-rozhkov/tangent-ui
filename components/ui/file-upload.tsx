@@ -15,7 +15,7 @@ import {
   type TargetAndTransition,
   type Transition,
 } from "motion/react"
-import { Archive, CloudUpload, File, FileText, Image as ImageIcon, Refresh, X } from "@mynaui/icons-react"
+import { ArchiveIcon, ArrowsClockwiseIcon, CloudArrowUpIcon, FileIcon, FileTextIcon, ImageIcon, XIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -56,11 +56,11 @@ const iconButton = cn(
 )
 
 function FileTypeIcon({ file }: { file: File }) {
-  const props = { size: 16, strokeWidth: 1.8, "aria-hidden": true } as const
+  const props = { size: 16, "aria-hidden": true } as const
   if (file.type.startsWith("image/")) return <ImageIcon {...props} />
-  if (file.type.startsWith("text/")) return <FileText {...props} />
-  if (file.type.includes("zip") || file.name.endsWith(".gz")) return <Archive {...props} />
-  return <File {...props} />
+  if (file.type.startsWith("text/")) return <FileTextIcon {...props} />
+  if (file.type.includes("zip") || file.name.endsWith(".gz")) return <ArchiveIcon {...props} />
+  return <FileIcon {...props} />
 }
 
 function formatSize(bytes: number) {
@@ -208,7 +208,7 @@ function FileRow({
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth={2}
+                strokeWidth={2.15}
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 aria-hidden="true"
@@ -234,14 +234,14 @@ function FileRow({
               transition={reduce ? instant : motionTokens.spring.snappy}
             >
               <button type="button" className={cn(iconButton, "text-text-secondary")} aria-label={`Retry ${item.file.name}`} onClick={onRetry}>
-                <Refresh size={14} strokeWidth={1.8} aria-hidden="true" />
+                <ArrowsClockwiseIcon size={14} aria-hidden="true" />
               </button>
             </motion.span>
           )}
         </AnimatePresence>
       </span>
       <button ref={removeRef} type="button" className={cn(iconButton, "text-text-muted")} aria-label={`Remove ${item.file.name}`} onClick={onRemove}>
-        <X size={15} aria-hidden="true" />
+        <XIcon size={15} aria-hidden="true" />
       </button>
     </div>
   )
@@ -431,7 +431,7 @@ export function FileUpload({
       >
         {/* The cloud lifts toward the file while it hovers over the drop target. */}
         <span className="grid size-6 flex-[0_0_auto] place-items-center text-accent-strong transition-[translate] duration-(--duration-spring) ease-spring group-data-dragging/drop:-translate-y-[3px] motion-reduce:transition-none motion-reduce:group-data-dragging/drop:translate-y-0">
-          <CloudUpload size={20} strokeWidth={1.8} aria-hidden="true" />
+          <CloudArrowUpIcon size={20} aria-hidden="true" />
         </span>
         {/* While a file hovers over the target the label says what releasing it will do. */}
         <span className="grid min-w-0 flex-1 gap-[3px]">

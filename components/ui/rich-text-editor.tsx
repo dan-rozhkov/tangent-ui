@@ -4,8 +4,8 @@ import { forwardRef, useCallback, useEffect, useId, useImperativeHandle, useLayo
 import type { ClipboardEvent as ReactClipboardEvent, CSSProperties, FormEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useTransform } from "motion/react";
 import type { Transition, Variants } from "motion/react";
-import { ArrowLeft, Chat, Check, Code, CodeSquare, Heading1, Heading2, Heading3, Link, List, ListNumber, Minus, TypeBold, TypeItalic, TypeText, Unlink } from "@mynaui/icons-react";
-import { Strikethrough } from "@/components/ui/icons";
+import { ArrowLeftIcon, ChatTeardropIcon, CheckIcon, CodeBlockIcon, CodeIcon, LinkBreakIcon, LinkIcon, ListBulletsIcon, ListNumbersIcon, MinusIcon, TextBIcon, TextHOneIcon, TextHThreeIcon, TextHTwoIcon, TextItalicIcon, TextStrikethroughIcon, TextTIcon } from "@phosphor-icons/react"
+
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";
@@ -653,17 +653,17 @@ type SlashItem = { type: BlockType; label: string; hint: string; keywords: strin
 type Slash = { node: Text; offset: number; query: string; x: number; y: number; above: boolean; max: number };
 type Snapshot = { html: string; selection: Offsets | null; kind: "type" | "command"; at: number };
 
-const icon = { size: 16, strokeWidth: 1.75, "aria-hidden": true } as const;
+const icon = { size: 16, "aria-hidden": true } as const;
 const SLASH_ITEMS: SlashItem[] = [
-  { type: "p", label: "Text", hint: "", keywords: "paragraph plain body", icon: <TypeText {...icon} /> },
-  { type: "h1", label: "Heading 1", hint: "#", keywords: "title h1 large", icon: <Heading1 {...icon} /> },
-  { type: "h2", label: "Heading 2", hint: "##", keywords: "subtitle h2 section", icon: <Heading2 {...icon} /> },
-  { type: "h3", label: "Heading 3", hint: "###", keywords: "h3 small", icon: <Heading3 {...icon} /> },
-  { type: "ul", label: "Bulleted list", hint: "-", keywords: "bullet unordered ul points", icon: <List {...icon} /> },
-  { type: "ol", label: "Numbered list", hint: "1.", keywords: "ordered ol steps numbers", icon: <ListNumber {...icon} /> },
-  { type: "blockquote", label: "Quote", hint: ">", keywords: "blockquote citation callout", icon: <Chat {...icon} /> },
-  { type: "pre", label: "Code block", hint: "```", keywords: "pre snippet monospace", icon: <CodeSquare {...icon} /> },
-  { type: "hr", label: "Divider", hint: "---", keywords: "rule hr line separator", icon: <Minus {...icon} /> },
+  { type: "p", label: "Text", hint: "", keywords: "paragraph plain body", icon: <TextTIcon {...icon} /> },
+  { type: "h1", label: "Heading 1", hint: "#", keywords: "title h1 large", icon: <TextHOneIcon {...icon} /> },
+  { type: "h2", label: "Heading 2", hint: "##", keywords: "subtitle h2 section", icon: <TextHTwoIcon {...icon} /> },
+  { type: "h3", label: "Heading 3", hint: "###", keywords: "h3 small", icon: <TextHThreeIcon {...icon} /> },
+  { type: "ul", label: "Bulleted list", hint: "-", keywords: "bullet unordered ul points", icon: <ListBulletsIcon {...icon} /> },
+  { type: "ol", label: "Numbered list", hint: "1.", keywords: "ordered ol steps numbers", icon: <ListNumbersIcon {...icon} /> },
+  { type: "blockquote", label: "Quote", hint: ">", keywords: "blockquote citation callout", icon: <ChatTeardropIcon {...icon} /> },
+  { type: "pre", label: "Code block", hint: "```", keywords: "pre snippet monospace", icon: <CodeBlockIcon {...icon} /> },
+  { type: "hr", label: "Divider", hint: "---", keywords: "rule hr line separator", icon: <MinusIcon {...icon} /> },
 ];
 
 const { spring, duration, ease, blur } = motionTokens;
@@ -1562,21 +1562,21 @@ export const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorPro
         <AnimatePresence initial={false} custom={direction}>
           {face === "format" ? <Face key="format" direction={direction} reduced={reduced} onSize={onFaceSize}>
             <div className={styles.row}>
-              <ToolButton label="Bold" pressed={formats.bold} shortcut="⌘B" onPress={() => toggleMark("bold")}><TypeBold {...icon} /></ToolButton>
-              <ToolButton label="Italic" pressed={formats.italic} shortcut="⌘I" onPress={() => toggleMark("italic")}><TypeItalic {...icon} /></ToolButton>
-              <ToolButton label="Strikethrough" pressed={formats.strike} shortcut="⌘⇧X" onPress={() => toggleMark("strike")}><Strikethrough {...icon} /></ToolButton>
-              <ToolButton label="Inline code" pressed={formats.code} shortcut="⌘E" onPress={() => toggleMark("code")}><Code {...icon} /></ToolButton>
-              <ToolButton label={formats.link ? "Edit link" : "Link"} pressed={!!formats.link} shortcut="⌘K" onPress={openLink}><Link {...icon} /></ToolButton>
+              <ToolButton label="Bold" pressed={formats.bold} shortcut="⌘B" onPress={() => toggleMark("bold")}><TextBIcon {...icon} /></ToolButton>
+              <ToolButton label="Italic" pressed={formats.italic} shortcut="⌘I" onPress={() => toggleMark("italic")}><TextItalicIcon {...icon} /></ToolButton>
+              <ToolButton label="Strikethrough" pressed={formats.strike} shortcut="⌘⇧X" onPress={() => toggleMark("strike")}><TextStrikethroughIcon {...icon} /></ToolButton>
+              <ToolButton label="Inline code" pressed={formats.code} shortcut="⌘E" onPress={() => toggleMark("code")}><CodeIcon {...icon} /></ToolButton>
+              <ToolButton label={formats.link ? "Edit link" : "Link"} pressed={!!formats.link} shortcut="⌘K" onPress={openLink}><LinkIcon {...icon} /></ToolButton>
               <span className={styles.blockTools}>
               <span className={styles.divider} aria-hidden="true" />
-              <ToolButton label="Heading 1" pressed={formats.block === "h1"} onPress={() => run(() => applyBlock("h1"))}><Heading1 {...icon} /></ToolButton>
-              <ToolButton label="Heading 2" pressed={formats.block === "h2"} onPress={() => run(() => applyBlock("h2"))}><Heading2 {...icon} /></ToolButton>
-              <ToolButton label="Quote" pressed={formats.block === "blockquote"} onPress={() => run(() => applyBlock("blockquote"))}><Chat {...icon} /></ToolButton>
+              <ToolButton label="Heading 1" pressed={formats.block === "h1"} onPress={() => run(() => applyBlock("h1"))}><TextHOneIcon {...icon} /></ToolButton>
+              <ToolButton label="Heading 2" pressed={formats.block === "h2"} onPress={() => run(() => applyBlock("h2"))}><TextHTwoIcon {...icon} /></ToolButton>
+              <ToolButton label="Quote" pressed={formats.block === "blockquote"} onPress={() => run(() => applyBlock("blockquote"))}><ChatTeardropIcon {...icon} /></ToolButton>
               </span>
             </div>
           </Face> : <Face key="link" direction={direction} reduced={reduced} onSize={onFaceSize}>
             <form className={styles.linkRow} onSubmit={event => { event.preventDefault(); applyLink(); }}>
-              <button type="button" className={styles.tool} aria-label="Back to formatting" onClick={() => closeLink()}><ArrowLeft {...icon} /></button>
+              <button type="button" className={styles.tool} aria-label="Back to formatting" onClick={() => closeLink()}><ArrowLeftIcon {...icon} /></button>
               <input
                 ref={linkInputRef}
                 className={styles.linkInput}
@@ -1589,8 +1589,8 @@ export const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorPro
                 autoComplete="off"
                 spellCheck={false}
               />
-              {formats.link && <button type="button" className={styles.tool} aria-label="Remove link" onClick={() => applyLink(true)}><Unlink {...icon} /></button>}
-              <button type="submit" className={styles.apply} aria-label="Apply link" data-ready={!!linkDraft.trim() || undefined}><Check size={16} strokeWidth={2} aria-hidden="true" /></button>
+              {formats.link && <button type="button" className={styles.tool} aria-label="Remove link" onClick={() => applyLink(true)}><LinkBreakIcon {...icon} /></button>}
+              <button type="submit" className={styles.apply} aria-label="Apply link" data-ready={!!linkDraft.trim() || undefined}><CheckIcon size={16} aria-hidden="true" /></button>
             </form>
           </Face>}
         </AnimatePresence>

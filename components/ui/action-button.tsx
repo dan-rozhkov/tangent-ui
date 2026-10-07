@@ -5,7 +5,7 @@ import type { ButtonHTMLAttributes, RefObject } from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { TargetAndTransition, Variants } from "motion/react"
-import { ArrowRight } from "@mynaui/icons-react"
+import { ArrowRightIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -110,7 +110,7 @@ function DrawnCheck({ reduced }: { reduced: boolean }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
+      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
     >
@@ -280,7 +280,7 @@ export function ActionButton({
               ) : state === "success" ? (
                 <DrawnCheck reduced={reduceMotion} />
               ) : (
-                <ArrowRight className="flex-none" width={17} height={17} />
+                <ArrowRightIcon className="flex-none" size={17} />
               )}
             </motion.span>
           </AnimatePresence>

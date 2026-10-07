@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search } from "@mynaui/icons-react"
+import { MagnifyingGlassIcon } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"
@@ -12,7 +12,7 @@ export default function Demo() {
   return (
     <div className="w-full max-w-sm">
       <EmptyState
-        icon={cleared ? undefined : <Search size={24} />}
+        icon={cleared ? undefined : <MagnifyingGlassIcon size={24} />}
         title={cleared ? "Nothing here yet" : "No matches"}
         description={cleared ? "Create a project to get started." : "Try a shorter search or clear the filters."}
         action={

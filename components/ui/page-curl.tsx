@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import type { CSSProperties, KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { AnimationPlaybackControls, Transition } from "motion/react"
-import { ArrowUpRight, ChevronLeft, ChevronRight } from "@mynaui/icons-react"
+import { ArrowUpRightIcon, CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react"
 
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
@@ -785,7 +785,7 @@ export function PageCurl({
           animate={hoverSide === side && !turning ? { opacity: 1, scale: 1, x: 0 } : { opacity: 0, scale: 0.92, x: side === "right" ? -4 : 4 }}
           transition={{ duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] }}
         >
-          {side === "right" ? <ChevronRight size={16} strokeWidth={1.75} /> : <ChevronLeft size={16} strokeWidth={1.75} />}
+          {side === "right" ? <CaretRightIcon size={16} /> : <CaretLeftIcon size={16} />}
         </motion.span>
       </div>
     ) : null
@@ -861,7 +861,7 @@ export function PageCurl({
                   transition={{ duration: motionTokens.duration.standard, ease: [...motionTokens.ease.standard] }}
                 >
                   {hint}
-                  <ArrowUpRight size={12} strokeWidth={1.75} />
+                  <ArrowUpRightIcon size={12} />
                 </motion.span>
               )}
             </AnimatePresence>
@@ -874,13 +874,13 @@ export function PageCurl({
       {controls && (
         <div className={cn("flex items-center gap-3", hint !== null && "mt-8")}>
           <button type="button" className={controlClass} aria-label="Previous page" disabled={shown === 0} onClick={() => turn(-1)}>
-            <ChevronLeft size={16} strokeWidth={1.75} aria-hidden="true" />
+            <CaretLeftIcon size={16} aria-hidden="true" />
           </button>
           <span aria-hidden="true" className="min-w-[148px] text-center text-sm text-foreground tabular-nums">
             {count} <span className="text-text-muted">{total} pages</span>
           </span>
           <button type="button" className={controlClass} aria-label="Next page" disabled={shown === last} onClick={() => turn(1)}>
-            <ChevronRight size={16} strokeWidth={1.75} aria-hidden="true" />
+            <CaretRightIcon size={16} aria-hidden="true" />
           </button>
         </div>
       )}

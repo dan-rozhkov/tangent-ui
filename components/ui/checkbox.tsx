@@ -101,7 +101,7 @@ export const Checkbox = forwardRef<HTMLButtonElement, CheckboxProps>(function Ch
                   : { d: motionTokens.spring.morph, pathLength: motionTokens.spring.snappy, opacity: fade }
               }
               stroke="currentColor"
-              strokeWidth={1.75}
+              strokeWidth={1.125}
               strokeLinecap="round"
               strokeLinejoin="round"
             />

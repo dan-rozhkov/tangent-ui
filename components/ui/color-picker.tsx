@@ -4,7 +4,7 @@ import { useEffect, useEffectEvent, useId, useLayoutEffect, useRef, useState, us
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react"
 import { AnimatePresence, Reorder, animate, motion, useMotionValue, useTransform } from "motion/react"
 import type { Transition } from "motion/react"
-import { Check, Droplet, Plus } from "@mynaui/icons-react"
+import { CheckIcon, DropIcon, PlusIcon } from "@phosphor-icons/react"
 
 import { TextMorph } from "@/components/ui/text-morph"
 import { motionTokens } from "@/lib/motion-tokens"
@@ -684,11 +684,11 @@ export function ColorPicker({
               <motion.span className="flex gap-0.5" style={{ opacity: contentOpacity }}>
                 {canPick && (
                   <button type="button" className={iconButtonClass} aria-label="Pick a color from the screen" onClick={pickFromScreen}>
-                    <Droplet size={18} strokeWidth={1.75} aria-hidden="true" />
+                    <DropIcon size={18} aria-hidden="true" />
                   </button>
                 )}
                 <button type="button" className={iconButtonClass} aria-label="Done" onClick={() => hide()}>
-                  <Check size={18} strokeWidth={1.75} aria-hidden="true" />
+                  <CheckIcon size={18} aria-hidden="true" />
                 </button>
               </motion.span>
             </div>
@@ -865,7 +865,7 @@ export function ColorPicker({
                   onClick={saveSwatch}
                   aria-label={`Save ${hex}`}
                 >
-                  <Plus size={16} strokeWidth={1.75} aria-hidden="true" />
+                  <PlusIcon size={16} aria-hidden="true" />
                 </button>
                 <Reorder.Group
                   as="div"

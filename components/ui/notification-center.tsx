@@ -13,7 +13,7 @@ import {
   type Transition,
   type Variants,
 } from "motion/react"
-import { Bell, Check, CheckCircle, DangerTriangle, Message, Record, X } from "@mynaui/icons-react"
+import { BellIcon, ChatCircleIcon, CheckCircleIcon, CheckIcon, RecordIcon, WarningIcon, XIcon } from "@phosphor-icons/react"
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
 
 import { Avatar } from "@/components/ui/avatar"
@@ -195,11 +195,11 @@ function NotificationVisual({ item }: { item: NotificationItem }) {
       aria-hidden="true"
     >
       {item.tone === "warning" ? (
-        <DangerTriangle size={18} strokeWidth={1.7} />
+        <WarningIcon size={18} />
       ) : item.tone === "success" ? (
-        <CheckCircle size={18} strokeWidth={1.7} />
+        <CheckCircleIcon size={18} />
       ) : (
-        <Message size={18} strokeWidth={1.7} />
+        <ChatCircleIcon size={18} />
       )}
     </span>
   )
@@ -291,7 +291,7 @@ export function NotificationCenter({
           animate={{ rotate: isOpen && !reduce ? -12 : 0 }}
           transition={reduce ? instant : motionTokens.spring.snappy}
         >
-          <Bell size={19} strokeWidth={1.75} aria-hidden="true" />
+          <BellIcon size={19} aria-hidden="true" />
         </motion.span>
         <AnimatePresence initial={false}>
           {unreadCount > 0 && (
@@ -340,7 +340,7 @@ export function NotificationCenter({
                 )}
                 aria-label="Close notifications"
               >
-                <X size={17} strokeWidth={1.75} aria-hidden="true" />
+                <XIcon size={17} aria-hidden="true" />
               </PopoverPrimitive.Close>
             </div>
 
@@ -390,7 +390,7 @@ export function NotificationCenter({
                     exit={reduce ? fadeOut : { opacity: 0, filter: `blur(${motionTokens.blur.subtle}px)`, transition: exitFast }}
                     transition={reduce ? instant : enter}
                   >
-                    <Check size={15} strokeWidth={1.75} aria-hidden="true" />
+                    <CheckIcon size={15} aria-hidden="true" />
                     <span>Mark all read</span>
                   </motion.button>
                 )}
@@ -524,9 +524,9 @@ export function NotificationCenter({
                                           transition={reduce ? instant : motionTokens.spring.snappy}
                                         >
                                           {item.read ? (
-                                            <Record size={14} strokeWidth={1.75} aria-hidden="true" />
+                                            <RecordIcon size={14} aria-hidden="true" />
                                           ) : (
-                                            <Check size={14} strokeWidth={1.75} aria-hidden="true" />
+                                            <CheckIcon size={14} aria-hidden="true" />
                                           )}
                                         </Swap>
                                       </AnimatePresence>
@@ -535,7 +535,7 @@ export function NotificationCenter({
                                   </MorphWidth>
                                 </button>
                                 <button type="button" onClick={() => dismiss(item)}>
-                                  <X size={14} strokeWidth={1.75} aria-hidden="true" />
+                                  <XIcon size={14} aria-hidden="true" />
                                   Dismiss
                                 </button>
                               </div>
@@ -569,7 +569,7 @@ export function NotificationCenter({
                       animate={{ y: 0 }}
                       transition={reduce ? instant : { ...enter, delay: motionTokens.duration.fast }}
                     >
-                      <CheckCircle className="mb-[13px] text-text-muted" size={24} strokeWidth={1.5} aria-hidden="true" />
+                      <CheckCircleIcon className="mb-[13px] text-text-muted" size={24} aria-hidden="true" />
                       <strong className="text-(length:--text-sm) font-medium">
                         <SwapText reduce={reduce}>{view === "unread" ? "Nothing unread" : "All clear"}</SwapText>
                       </strong>

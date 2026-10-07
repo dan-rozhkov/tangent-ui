@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { AnimatePresence, motion } from "motion/react"
 import type { Transition } from "motion/react"
-import { Search } from "@mynaui/icons-react"
+import { MagnifyingGlassIcon } from "@phosphor-icons/react"
 
 import { demos } from "@/components/demos"
 import { CommandPalette, type CommandItem } from "@/components/ui/command-palette"
@@ -88,7 +88,7 @@ export function ComponentSearch() {
         onClick={() => setOpen(true)}
         className="grid size-[38px] cursor-pointer place-items-center rounded-[12px] border border-border bg-surface text-text-secondary transition-[color,background-color] duration-160 ease-standard [-webkit-tap-highlight-color:transparent] pointer-fine:hover:bg-surface-muted pointer-fine:hover:text-foreground motion-reduce:transition-none"
       >
-        <Search className="size-[18px]" strokeWidth={1.75} aria-hidden="true" />
+        <MagnifyingGlassIcon className="size-[18px]" aria-hidden="true" />
       </button>
       <AnimatePresence>
         {open && (

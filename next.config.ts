@@ -8,6 +8,8 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
   devIndicators: false,
   turbopack: { root: import.meta.dirname },
+  // Phosphor is not on the default list; this keeps dev compiles to the icons actually imported.
+  experimental: { optimizePackageImports: ["@phosphor-icons/react"] },
 }
 
 export default nextConfig

@@ -1,17 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import { FileText, Folder } from "@mynaui/icons-react"
+import { FileTextIcon, FolderIcon } from "@phosphor-icons/react"
 
 import { ExpandingSearch, type ExpandingSearchItem } from "@/components/ui/expanding-search"
 
 const items: ExpandingSearchItem[] = [
-  { id: "p1", title: "Tangent website", group: "Projects", meta: "Updated today", icon: <Folder size={16} /> },
-  { id: "p2", title: "Mobile app", group: "Projects", meta: "Updated yesterday", icon: <Folder size={16} /> },
-  { id: "p3", title: "Design system", group: "Projects", meta: "Updated last week", icon: <Folder size={16} /> },
-  { id: "d1", title: "Motion tokens", group: "Docs", meta: "Springs, durations, blur", keywords: ["spring"], icon: <FileText size={16} /> },
-  { id: "d2", title: "Color tokens", group: "Docs", meta: "Light and dark palettes", icon: <FileText size={16} /> },
-  { id: "d3", title: "Release notes", group: "Docs", meta: "What changed this month", icon: <FileText size={16} /> },
+  { id: "p1", title: "Tangent website", group: "Projects", meta: "Updated today", icon: <FolderIcon size={16} /> },
+  { id: "p2", title: "Mobile app", group: "Projects", meta: "Updated yesterday", icon: <FolderIcon size={16} /> },
+  { id: "p3", title: "Design system", group: "Projects", meta: "Updated last week", icon: <FolderIcon size={16} /> },
+  { id: "d1", title: "Motion tokens", group: "Docs", meta: "Springs, durations, blur", keywords: ["spring"], icon: <FileTextIcon size={16} /> },
+  { id: "d2", title: "Color tokens", group: "Docs", meta: "Light and dark palettes", icon: <FileTextIcon size={16} /> },
+  { id: "d3", title: "Release notes", group: "Docs", meta: "What changed this month", icon: <FileTextIcon size={16} /> },
 ]
 
 export default function Demo() {

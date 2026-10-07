@@ -6,7 +6,7 @@ import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { cva } from "class-variance-authority"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { TargetAndTransition } from "motion/react"
-import { ChevronDown } from "@mynaui/icons-react"
+import { CaretDownIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -270,7 +270,7 @@ function SegmentContent({ item, size, reduced }: { item: ButtonGroupItem; size: 
             }
           >
             {item.icon ? (
-              <span className="inline-flex flex-none [&_svg]:size-4 [&_svg]:[stroke-width:1.75]">{item.icon}</span>
+              <span className="inline-flex flex-none [&_svg]:size-4">{item.icon}</span>
             ) : null}
             {item.content !== undefined ? (
               <span className="inline-flex items-center tabular-nums">{item.content}</span>
@@ -605,9 +605,8 @@ export function ButtonGroup({
           disabled={disabled}
         >
           <span className={cn(contentBase, contentPress.trigger)}>
-            <ChevronDown
+            <CaretDownIcon
               className="size-4 [transition:rotate_var(--duration-spring)_var(--ease-spring)] group-data-popup-open/seg:rotate-180 motion-reduce:transition-none"
-              strokeWidth={1.75}
               aria-hidden="true"
             />
           </span>
@@ -641,7 +640,7 @@ export function ButtonGroup({
                   {action.icon ? (
                     <span
                       className={cn(
-                        "inline-flex flex-none text-text-secondary [&_svg]:size-4 [&_svg]:[stroke-width:1.75]",
+                        "inline-flex flex-none text-text-secondary [&_svg]:size-4",
                         action.destructive && "text-danger",
                       )}
                       aria-hidden="true"

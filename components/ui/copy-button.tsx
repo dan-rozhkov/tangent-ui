@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva } from "class-variance-authority"
 import { AnimatePresence, motion, type TargetAndTransition, type Transition } from "motion/react"
-import { Copy, DangerCircle } from "@mynaui/icons-react"
+import { CopyIcon, WarningCircleIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { useCopyFeedback } from "@/lib/use-copy-feedback"
@@ -80,7 +80,7 @@ function DrawnCheck({ reduced }: { reduced: boolean }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.75}
+      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
     >
@@ -201,9 +201,9 @@ export function CopyButton({
               {state === "copied" ? (
                 <DrawnCheck reduced={reduced} />
               ) : state === "error" ? (
-                <DangerCircle size={16} strokeWidth={1.75} />
+                <WarningCircleIcon size={16} />
               ) : (
-                <Copy size={16} strokeWidth={1.75} />
+                <CopyIcon size={16} />
               )}
             </motion.span>
           </AnimatePresence>

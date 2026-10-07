@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { KeyboardEvent as ReactKeyboardEvent, CSSProperties, FocusEvent as ReactFocusEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useTransform } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { Calendar, ChevronDown, ChevronLeft, ChevronRight } from "@mynaui/icons-react"
+import { CalendarBlankIcon, CaretDownIcon, CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -920,7 +920,7 @@ export function DateRangePicker({
         onClick={openPanel}
       >
         <motion.span className="grid flex-none place-items-center text-text-secondary" initial={false} animate={quiet} transition={quietTransition}>
-          <Calendar size={16} strokeWidth={1.75} aria-hidden="true" />
+          <CalendarBlankIcon size={16} aria-hidden="true" />
         </motion.span>
         {open || !layoutId ? (
           <motion.span
@@ -946,7 +946,7 @@ export function DateRangePicker({
           </motion.span>
         )}
         <motion.span className="grid flex-none place-items-center text-text-muted" initial={false} animate={quiet} transition={quietTransition}>
-          <ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" />
+          <CaretDownIcon size={16} aria-hidden="true" />
         </motion.span>
       </button>
 
@@ -1034,7 +1034,7 @@ export function DateRangePicker({
                     onClick={() => goTo(addMonths(view, -1))}
                     disabled={Boolean(minDate && monthDiff(view, minDate) <= 0)}
                   >
-                    <ChevronLeft size={16} strokeWidth={1.75} aria-hidden="true" />
+                    <CaretLeftIcon size={16} aria-hidden="true" />
                   </button>
                   <button
                     type="button"
@@ -1044,7 +1044,7 @@ export function DateRangePicker({
                     onClick={() => goTo(addMonths(view, 1))}
                     disabled={Boolean(maxDate && monthDiff(addMonths(view, count - 1), maxDate) >= 0)}
                   >
-                    <ChevronRight size={16} strokeWidth={1.75} aria-hidden="true" />
+                    <CaretRightIcon size={16} aria-hidden="true" />
                   </button>
                   {/* Months slide horizontally inside a clipped window that keeps a little room for the blur. */}
                   <div className="relative overflow-clip [overflow-clip-margin:2px]">

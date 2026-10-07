@@ -3,7 +3,7 @@
 import { forwardRef, useId, useLayoutEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUpRight, Check } from "@mynaui/icons-react";
+import { ArrowUpRightIcon, CheckIcon } from "@phosphor-icons/react"
 import { Button } from "@/components/ui/button";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { motionTokens } from "@/lib/motion-tokens";
@@ -111,7 +111,7 @@ const toneVar = { success: "[--tone:var(--success)]", warning: "[--tone:var(--wa
 const messageTone = { error: "text-danger", success: "text-success", hint: "text-text-muted" } as const;
 
 function FooterLink({ link, onNavigate, className }: { link: SiteFooterLink; onNavigate?: (link: SiteFooterLink) => void; className?: string }) {
-  const content = <>{link.label}{link.external && <ArrowUpRight className={s.external} size={13} strokeWidth={2} aria-hidden="true" />}</>;
+  const content = <>{link.label}{link.external && <ArrowUpRightIcon className={s.external} size={13} aria-hidden="true" />}</>;
   const onClick = () => onNavigate?.(link);
   if (link.href) return <a className={className ?? s.link} href={link.href} onClick={onClick} {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>{content}</a>;
   return <button type="button" className={className ?? s.link} onClick={onClick}>{content}</button>;
@@ -174,7 +174,7 @@ function Newsletter({ title, description, placeholder = "you@example.com", onSub
         onBlur={() => { if (email) { setTouched(true); setError(validate(email)); } }}
       />
       <Button type="submit" size="sm" variant="primary" loading={state === "loading"} className={s.newsletterButton} aria-disabled={state === "done" || undefined}>
-        {state === "done" ? <><Check size={15} strokeWidth={2.25} aria-hidden="true" />Subscribed</> : "Subscribe"}
+        {state === "done" ? <><CheckIcon size={15} aria-hidden="true" />Subscribed</> : "Subscribe"}
       </Button>
     </div>
     <div className={s.messageSlot} id={`${id}-message`} aria-live="polite">

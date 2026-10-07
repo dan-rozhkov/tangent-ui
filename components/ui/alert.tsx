@@ -14,7 +14,7 @@ import {
   type TargetAndTransition,
   type Transition,
 } from "motion/react"
-import { Check, DangerTriangle, Info, X, XCircle } from "@mynaui/icons-react"
+import { CheckIcon, InfoIcon, WarningIcon, XCircleIcon, XIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -32,7 +32,7 @@ export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
 }
 type AlertBoxProps = Omit<AlertProps, "open"> & { reduce: boolean | null; animateIcon?: boolean }
 
-const icons = { info: Info, success: Check, warning: DangerTriangle, danger: XCircle }
+const icons = { info: InfoIcon, success: CheckIcon, warning: WarningIcon, danger: XCircleIcon }
 const toneIcon: Record<AlertTone, string> = {
   info: "text-accent",
   success: "text-success",
@@ -168,7 +168,7 @@ function AlertBox({ tone = "info", title, children, className, reduce, onDismiss
           aria-label={`Dismiss: ${title}`}
           onClick={onDismiss}
         >
-          <X width={16} height={16} strokeWidth={1.75} aria-hidden="true" />
+          <XIcon size={16} aria-hidden="true" />
         </button>
       )}
     </div>

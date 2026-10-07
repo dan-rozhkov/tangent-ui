@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useId, useImperativeHandle, useLayoutEffect, u
 import type { ChangeEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode, UIEvent } from "react";
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react";
 import type { Transition } from "motion/react";
-import { Hash } from "@mynaui/icons-react";
+import { HashIcon } from "@phosphor-icons/react"
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";
@@ -536,7 +536,7 @@ export const MentionInput = forwardRef<MentionInputHandle, MentionInputProps>(fu
                   // eslint-disable-next-line @next/next/no-img-element -- registry components stay framework agnostic
                   ? <img src={suggestion.item.avatar} alt="" width={28} height={28} loading="lazy" />
                   : initials(suggestion.item.name)}</span>
-                : <span className={styles.glyph} aria-hidden="true"><Hash size={16} strokeWidth={1.75} /></span>}
+                : <span className={styles.glyph} aria-hidden="true"><HashIcon size={16} /></span>}
               <span className={styles.optionText}>
                 <span className={styles.optionLabel}><Highlight text={suggestion.item.name} query={trigger?.query.trim() ?? ""} /></span>
                 {suggestion.kind === "person"

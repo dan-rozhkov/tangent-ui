@@ -5,7 +5,7 @@ import type { CSSProperties, KeyboardEvent, PointerEvent as ReactPointerEvent, R
 import { AnimatePresence, animate, motion, useMotionValue, useSpring, useTransform } from "motion/react"
 import type { MotionValue, TargetAndTransition, Transition } from "motion/react"
 
-import { ChevronLeft } from "@mynaui/icons-react"
+import { CaretLeftIcon } from "@phosphor-icons/react"
 
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
@@ -162,7 +162,7 @@ function HaloMark() {
 
 function Contactless() {
   return (
-    <svg viewBox="0 0 24 24" className="size-[6.5cqw] opacity-80" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+    <svg viewBox="0 0 24 24" className="size-[6.5cqw] opacity-80" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden="true">
       <path d="M8.5 8.5a5 5 0 0 1 0 7" />
       <path d="M12 6a8.5 8.5 0 0 1 0 12" />
       <path d="M15.5 3.5a12 12 0 0 1 0 17" />
@@ -643,7 +643,7 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
               }}
               {...swap}
             >
-              <ChevronLeft size={16} strokeWidth={1.75} aria-hidden="true" className="flex-none" />
+              <CaretLeftIcon size={16} aria-hidden="true" className="flex-none" />
               All cards
             </motion.button>
           )}

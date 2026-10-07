@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useMotionValueEvent } from "motion/react"
 import type { Variants } from "motion/react"
-import { ArrowLeft, ArrowRight, Calendar, Check, Minus, Plus, Undo } from "@mynaui/icons-react"
+import { ArrowUUpLeftIcon, ArrowLeftIcon, ArrowRightIcon, CalendarBlankIcon, CheckIcon, MinusIcon, PlusIcon } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
@@ -621,7 +621,7 @@ export function BookingPill({
         className="flex h-[52px] cursor-pointer items-center gap-2 rounded-pill border-0 bg-transparent px-5 text-base font-medium whitespace-nowrap text-foreground outline-none [-webkit-tap-highlight-color:transparent]"
         onClick={() => go("party")}
       >
-        <Calendar className="size-5" aria-hidden="true" />
+        <CalendarBlankIcon className="size-5" aria-hidden="true" />
         {label}
       </button>
     )
@@ -629,7 +629,7 @@ export function BookingPill({
     face = (
       <div className="flex items-center gap-1.5 p-2">
         <button type="button" className={quiet} aria-label="Back" onClick={back}>
-          <ArrowLeft />
+          <ArrowLeftIcon size={24} />
         </button>
         <div role="group" aria-label="Party size" className="flex h-9 w-[184px] items-center gap-0.5 px-0.5">
           <button
@@ -639,7 +639,7 @@ export function BookingPill({
             disabled={party <= minPartySize}
             onClick={() => setParty((n) => Math.max(minPartySize, n - 1))}
           >
-            <Minus />
+            <MinusIcon size={24} />
           </button>
           <output aria-live="polite" className="flex min-w-0 flex-1 justify-center gap-1 text-base whitespace-nowrap text-foreground">
             <RollingNumber value={party} reduced={reduced} />
@@ -653,11 +653,11 @@ export function BookingPill({
             disabled={party >= maxPartySize}
             onClick={() => setParty((n) => Math.min(maxPartySize, n + 1))}
           >
-            <Plus />
+            <PlusIcon size={24} />
           </button>
         </div>
         <button type="button" className={loud} aria-label="Next, choose a date" onClick={() => go("date")}>
-          <ArrowRight />
+          <ArrowRightIcon size={24} />
         </button>
       </div>
     )
@@ -666,7 +666,7 @@ export function BookingPill({
       <div className="grid gap-1 p-2">
         <div className="flex items-center gap-2">
           <button type="button" className={quiet} aria-label="Back to party size" onClick={back}>
-            <ArrowLeft />
+            <ArrowLeftIcon size={24} />
           </button>
           {/* The long date gives way to the short one when the title runs out of room. */}
           <div className="@container grid min-w-0 flex-1 text-center text-base font-medium whitespace-nowrap text-foreground">
@@ -681,7 +681,7 @@ export function BookingPill({
             </span>
           </div>
           <button type="button" className={loud} aria-label="Next, choose a time" onClick={() => go("time")}>
-            <ArrowRight />
+            <ArrowRightIcon size={24} />
           </button>
         </div>
         <DateStrip dates={dates} index={dateIndex} onIndexChange={setDateIndex} onCommit={() => go("time")} reduced={reduced} />
@@ -692,7 +692,7 @@ export function BookingPill({
       <div className="grid gap-3 px-2.5 pt-2 pb-2.5">
         <div className="flex items-center gap-2">
           <button type="button" className={quiet} aria-label="Back to dates" onClick={back}>
-            <ArrowLeft />
+            <ArrowLeftIcon size={24} />
           </button>
           <div className="min-w-0 flex-1 leading-tight">
             <p className="truncate text-base font-medium text-foreground">{shortDate}</p>
@@ -768,7 +768,7 @@ export function BookingPill({
     face = (
       <div className="flex h-14 items-center gap-3 pr-2.5 pl-3">
         <span className="grid size-8 flex-none place-items-center rounded-pill bg-success text-background [&_svg]:size-[18px]">
-          <Check aria-hidden="true" />
+          <CheckIcon size={24} aria-hidden="true" />
         </span>
         <div className="min-w-0 flex-1 leading-tight whitespace-nowrap">
           <p className="truncate text-sm font-medium text-foreground">Table for {party} booked</p>
@@ -781,7 +781,7 @@ export function BookingPill({
           data-autofocus
           onClick={() => go("start")}
         >
-          <Undo />
+          <ArrowUUpLeftIcon size={24} />
         </button>
       </div>
     )

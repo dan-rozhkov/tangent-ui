@@ -1,27 +1,27 @@
 "use client"
 
 import { useState } from "react"
-import { Circle, Clipboard, Diamond, Hand, Message, MousePointer, Square, Triangle, TypeText } from "@mynaui/icons-react"
+import { ChatCircleIcon, CircleIcon, ClipboardIcon, CursorIcon, DiamondIcon, HandIcon, SquareIcon, TextTIcon, TriangleIcon } from "@phosphor-icons/react"
 
 import { Dock, type DockItem } from "@/components/ui/dock"
 
 const initialItems: DockItem[] = [
-  { id: "move", label: "Move", icon: <MousePointer />, shortcut: "V" },
-  { id: "hand", label: "Hand", icon: <Hand />, shortcut: "H" },
+  { id: "move", label: "Move", icon: <CursorIcon size={24} />, shortcut: "V" },
+  { id: "hand", label: "Hand", icon: <HandIcon size={24} />, shortcut: "H" },
   {
     id: "shapes",
     label: "Shapes",
-    icon: <Square />,
+    icon: <SquareIcon size={24} />,
     items: [
-      { id: "rect", label: "Rectangle", icon: <Square />, shortcut: "R" },
-      { id: "ellipse", label: "Ellipse", icon: <Circle />, shortcut: "O" },
-      { id: "triangle", label: "Triangle", icon: <Triangle />, shortcut: "Y" },
-      { id: "diamond", label: "Diamond", icon: <Diamond />, shortcut: "D" },
+      { id: "rect", label: "Rectangle", icon: <SquareIcon size={24} />, shortcut: "R" },
+      { id: "ellipse", label: "Ellipse", icon: <CircleIcon size={24} />, shortcut: "O" },
+      { id: "triangle", label: "Triangle", icon: <TriangleIcon size={24} />, shortcut: "Y" },
+      { id: "diamond", label: "Diamond", icon: <DiamondIcon size={24} />, shortcut: "D" },
     ],
   },
-  { id: "text", label: "Text", icon: <TypeText />, shortcut: "T" },
-  { id: "sticky", label: "Sticky note", icon: <Clipboard />, shortcut: "S" },
-  { id: "comment", label: "Comment", icon: <Message />, shortcut: "C", badge: 3 },
+  { id: "text", label: "Text", icon: <TextTIcon size={24} />, shortcut: "T" },
+  { id: "sticky", label: "Sticky note", icon: <ClipboardIcon size={24} />, shortcut: "S" },
+  { id: "comment", label: "Comment", icon: <ChatCircleIcon size={24} />, shortcut: "C", badge: 3 },
 ]
 
 export default function Demo() {

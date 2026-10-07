@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useImperativeHandle, useLayoutEffect, us
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode, Ref } from "react"
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue } from "motion/react"
 import type { AnimationPlaybackControls, Transition, Variants } from "motion/react"
-import { DangerCircle } from "@mynaui/icons-react"
+import { WarningCircleIcon } from "@phosphor-icons/react"
 import { SpinnerArc } from "@/components/ui/icons"
 
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
@@ -242,7 +242,7 @@ function Check({ reduced }: { reduced: boolean }) {
       <motion.path
         className="stroke-background"
         d="M5.6 9.3 7.8 11.4 12.4 6.7"
-        strokeWidth="1.9"
+        strokeWidth="1.125"
         strokeLinecap="round"
         strokeLinejoin="round"
         initial={reduced ? false : { pathLength: 0 }}
@@ -486,7 +486,6 @@ export function ConfirmMorph({
             <SpinnerArc
               className="animate-spin [animation-duration:.7s] motion-reduce:[animation-duration:1.6s]"
               size={16}
-              strokeWidth={1.75}
               aria-hidden="true"
             />
             <span>{working === "undo" ? undoingLabel : pendingLabel}</span>
@@ -510,7 +509,7 @@ export function ConfirmMorph({
         return (
           <>
             <span className={cn(statusClass, "[&>svg]:text-danger")} data-tone="danger">
-              <DangerCircle size={16} strokeWidth={1.75} aria-hidden="true" />
+              <WarningCircleIcon size={16} aria-hidden="true" />
               <span className="leading-[1.3]">{errorLabel}</span>
             </span>
             <button type="button" className={secondaryClass(true)} data-autofocus onClick={() => void perform(working)}>

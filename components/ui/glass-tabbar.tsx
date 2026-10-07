@@ -29,7 +29,7 @@ export interface GlassTabBarItem {
   value: string
   /** Visible label and accessible name. The action shows only its icon and uses the label as its name. */
   label: string
-  /** Icon at 22px; Myna icons are sized automatically. */
+  /** Icon at 22px; Phosphor icons are sized automatically. */
   icon: ReactNode
   /** Count shown as an accent badge on the icon. 0 or empty hides it. */
   badge?: number | string
@@ -267,12 +267,12 @@ function Dispersed({
 
 /* ---------- small parts ---------- */
 
-/** Icons take the size and stroke of their slot. */
+/** Icons take the size of their slot. */
 function Icon({ children }: { children: ReactNode }) {
   return (
     <span
       aria-hidden="true"
-      className="grid size-[22px] place-items-center [&_svg]:size-[22px] [&_svg]:shrink-0 [&_svg]:stroke-[1.75]"
+      className="grid size-[22px] place-items-center [&_svg]:size-[22px] [&_svg]:shrink-0"
     >
       {children}
     </span>

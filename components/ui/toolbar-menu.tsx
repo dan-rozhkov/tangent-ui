@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { KeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, LayoutGroup, animate, motion, useIsPresent, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { ArrowLeft, ChevronRight, ChevronsUpDown } from "@mynaui/icons-react"
+import { ArrowLeftIcon, CaretRightIcon, CaretUpDownIcon } from "@phosphor-icons/react"
 
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
@@ -407,7 +407,7 @@ export function ToolbarMenu({ items, value: valueProp, defaultValue, onValueChan
                     )}
                     onClick={() => open([], 0)}
                   >
-                    <ChevronsUpDown className="size-[18px]" aria-hidden="true" />
+                    <CaretUpDownIcon className="size-[18px]" aria-hidden="true" />
                   </button>
                 </div>
               </LayoutGroup>
@@ -445,10 +445,10 @@ export function ToolbarMenu({ items, value: valueProp, defaultValue, onValueChan
                           />
                         )}
                         <span className={cn(iconClass, isCurrent ? "text-foreground" : "text-text-secondary")} aria-hidden="true">
-                          {row ? row.icon : <ArrowLeft />}
+                          {row ? row.icon : <ArrowLeftIcon size={24} />}
                         </span>
                         <span className="min-w-0 flex-1 truncate">{row ? row.label : "Back"}</span>
-                        {row?.items && <ChevronRight className="size-4 flex-none text-text-muted" aria-hidden="true" />}
+                        {row?.items && <CaretRightIcon className="size-4 flex-none text-text-muted" aria-hidden="true" />}
                       </button>
                     )
                   })}

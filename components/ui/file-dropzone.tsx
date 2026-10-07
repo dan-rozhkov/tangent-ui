@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react"
 import type { DragEvent, KeyboardEvent, ReactNode } from "react"
-import { Archive, ArrowUp, DangerCircle, File, FileText, Film, Image as ImageIcon, Refresh, X } from "@mynaui/icons-react"
+import { ArchiveIcon, ArrowsClockwiseIcon, ArrowUpIcon, FileIcon, FileTextIcon, FilmStripIcon, ImageIcon, WarningCircleIcon, XIcon } from "@phosphor-icons/react"
 import {
   AnimatePresence,
   animate,
@@ -139,13 +139,13 @@ export function formatFileSize(bytes: number) {
 }
 
 function TypeIcon({ name }: { name: string }) {
-  const props = { size: 20, strokeWidth: 1.75, "aria-hidden": true } as const
+  const props = { size: 20, "aria-hidden": true } as const
   const extension = name.toLowerCase().split(".").pop() ?? ""
   if (["png", "jpg", "jpeg", "gif", "webp", "svg", "avif", "heic"].includes(extension)) return <ImageIcon {...props} />
-  if (["mov", "mp4", "webm", "m4v", "avi"].includes(extension)) return <Film {...props} />
-  if (["zip", "gz", "tar", "rar", "7z"].includes(extension)) return <Archive {...props} />
-  if (["pdf", "md", "txt", "doc", "docx", "rtf"].includes(extension)) return <FileText {...props} />
-  return <File {...props} />
+  if (["mov", "mp4", "webm", "m4v", "avi"].includes(extension)) return <FilmStripIcon {...props} />
+  if (["zip", "gz", "tar", "rar", "7z"].includes(extension)) return <ArchiveIcon {...props} />
+  if (["pdf", "md", "txt", "doc", "docx", "rtf"].includes(extension)) return <FileTextIcon {...props} />
+  return <FileIcon {...props} />
 }
 
 /** Outgoing copies are hidden from assistive tech while they leave, so only the current text is read. */
@@ -243,7 +243,7 @@ function ErrorRow({ text }: { text: string }) {
         animate={{ y: 0, filter: "blur(0px)" }}
         transition={{ duration: reduced ? 0 : motionTokens.duration.standard, ease: [...motionTokens.ease.enter] }}
       >
-        <DangerCircle className="mt-[3px] flex-none" size={14} strokeWidth={2.25} aria-hidden="true" />
+        <WarningCircleIcon className="mt-[3px] flex-none" size={14} aria-hidden="true" />
         <span className="relative min-w-0 flex-1">
           <MotionText text={text} />
         </span>
@@ -262,7 +262,7 @@ function DrawnCheck({ reduce }: { reduce: boolean }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2.25}
+      strokeWidth={2.15}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -437,7 +437,7 @@ function FileRow({ item, reduce, delay, fresh, canRetry, onRemove, onRetry, remo
                         </>
                       ) : (
                         <>
-                          <DangerCircle className="flex-none" size={14} strokeWidth={2.25} aria-hidden="true" />
+                          <WarningCircleIcon className="flex-none" size={14} aria-hidden="true" />
                           <span className="min-w-0 overflow-hidden text-ellipsis" title={item.error}>
                             <span className="sr-only">Failed: </span>
                             {item.error || "Upload failed"}
@@ -523,7 +523,7 @@ function FileRow({ item, reduce, delay, fresh, canRetry, onRemove, onRetry, remo
                     aria-label={`Retry ${item.name}`}
                     title="Retry"
                   >
-                    <Refresh size={14} strokeWidth={2} aria-hidden="true" />
+                    <ArrowsClockwiseIcon size={14} aria-hidden="true" />
                     <span className="@max-[440px]/dropzone-list:hidden">Retry</span>
                   </button>
                 </motion.span>
@@ -542,7 +542,7 @@ function FileRow({ item, reduce, delay, fresh, canRetry, onRemove, onRetry, remo
             aria-label={`Remove ${item.name}`}
             title="Remove"
           >
-            <X size={16} strokeWidth={1.75} aria-hidden="true" />
+            <XIcon size={16} aria-hidden="true" />
           </button>
         </span>
       </motion.div>
@@ -1016,7 +1016,7 @@ export function FileDropzone({
                   <Sheet kind="back" dragging={dragging} />
                   <Sheet kind="side" dragging={dragging} />
                   <Sheet kind="front" dragging={dragging}>
-                    <ArrowUp size={14} strokeWidth={2} />
+                    <ArrowUpIcon size={14} />
                   </Sheet>
                 </span>
               </motion.span>

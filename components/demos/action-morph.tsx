@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { CalendarPlus, CheckSquare, Clipboard } from "@mynaui/icons-react"
+import { CalendarPlusIcon, CheckSquareIcon, ClipboardIcon } from "@phosphor-icons/react"
 
 import { ActionMorph, type ActionMorphSubmission } from "@/components/ui/action-morph"
 
@@ -36,7 +36,7 @@ export default function Demo() {
             id: "task",
             label: "New task",
             description: "Add to your list",
-            icon: <CheckSquare strokeWidth={1.75} />,
+            icon: <CheckSquareIcon size={24} />,
             shortcut: "t",
             composer: {
               title: "New task",
@@ -50,7 +50,7 @@ export default function Demo() {
             id: "note",
             label: "New note",
             description: "Jot something down",
-            icon: <Clipboard strokeWidth={1.75} />,
+            icon: <ClipboardIcon size={24} />,
             shortcut: "n",
             composer: { title: "New note", placeholder: "Write a note", multiline: true, submitLabel: "Save", successLabel: "Note saved" },
           },
@@ -58,7 +58,7 @@ export default function Demo() {
             id: "event",
             label: "New event",
             description: "Block time on your calendar",
-            icon: <CalendarPlus strokeWidth={1.75} />,
+            icon: <CalendarPlusIcon size={24} />,
             shortcut: "e",
             composer: {
               title: "New event",

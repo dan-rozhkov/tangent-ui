@@ -5,7 +5,7 @@ import type { ReactNode } from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { AnimatePresence, motion } from "motion/react"
 import type { Transition } from "motion/react"
-import { X } from "@mynaui/icons-react"
+import { XIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -136,7 +136,7 @@ export function DialogContent({ title, description, children, className, ...prop
           ) : null}
         </div>
         <DialogPrimitive.Close className={closeClass} aria-label="Close dialog">
-          <X size={16} strokeWidth={1.75} aria-hidden="true" />
+          <XIcon size={16} aria-hidden="true" />
         </DialogPrimitive.Close>
       </div>
       <div className="p-6 text-sm leading-body">{children}</div>

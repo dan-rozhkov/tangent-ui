@@ -8,7 +8,7 @@ argument-hint: <что нужно сделать>
 
 ## Контекст репозитория
 
-- `arc-ui/` — один git-репозиторий (Tangent UI: галерея анимированных React-компонентов). Next.js с изменённым API: перед кодом читай `AGENTS.md` и нужный гайд в `node_modules/next/dist/docs/`. Стек: Tailwind v4, Motion (`motion/react`), Base UI, иконки `@mynaui/icons-react`.
+- `arc-ui/` — один git-репозиторий (Tangent UI: галерея анимированных React-компонентов). Next.js с изменённым API: перед кодом читай `AGENTS.md` и нужный гайд в `node_modules/next/dist/docs/`. Стек: Tailwind v4, Motion (`motion/react`), Base UI, иконки `@phosphor-icons/react` (импорт `XxxIcon`, вес regular, без `strokeWidth`).
 - Компонент живёт в `components/ui/<name>.tsx`, его демо — в `components/demos/<name>.tsx`. После добавления демо нужно запустить `npm run gen:demos` (перегенерирует `components/demos/index.ts`) и добавить запись в `lib/catalog.ts`.
 - Конвенции, которые должны соблюдать субагенты:
   - морф-техника как в `components/ui/action-morph.tsx` и `components/ui/toolbar-menu.tsx`;

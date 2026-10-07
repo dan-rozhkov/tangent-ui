@@ -4,7 +4,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { MouseEvent, ReactNode } from "react";
 import { AnimatePresence, LayoutGroup, animate, motion, useMotionValue } from "motion/react";
-import { ArrowLeft, ChevronLeft, ChevronRight } from "@mynaui/icons-react";
+import { ArrowLeftIcon, CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react"
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { blogCategories, blogPosts } from "@/components/ui/blog-grid-data";
@@ -243,7 +243,7 @@ export function BlogGrid({
       <div className={s.inner}>
         <AnimatePresence mode="popLayout" initial={false}>
           {reading ? <motion.article key="reader" className={s.reader} exit={{ opacity: 0, transition: { duration: motionTokens.duration.exit, ease: standard } }} aria-labelledby={`${uid}-reader-title`}>
-            <motion.button type="button" className={s.back} onClick={close} autoFocus {...enterFade(true)}><ArrowLeft size={16} aria-hidden="true" />All posts</motion.button>
+            <motion.button type="button" className={s.back} onClick={close} autoFocus {...enterFade(true)}><ArrowLeftIcon size={16} aria-hidden="true" />All posts</motion.button>
             <motion.header className={s.readerHead} {...enterFade(true)}>
               <Meta post={reading} />
               <h2 id={`${uid}-reader-title`} className={s.readerTitle}>{reading.title}</h2>
@@ -287,14 +287,14 @@ export function BlogGrid({
 
             <AnimatePresence initial={back}>
             {pageCount > 1 && <motion.nav key="pagination" className={s.pagination} aria-label="Pagination" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, transition: { duration: motionTokens.duration.exit, ease: standard } }} transition={{ duration: motionTokens.duration.standard, ease: standard }}>
-              <button type="button" className={cn(s.pageButton, s.pageStep)} onClick={() => setPage(safePage - 1)} disabled={safePage === 1} aria-label="Previous page"><ChevronLeft size={16} aria-hidden="true" /><span>Previous</span></button>
+              <button type="button" className={cn(s.pageButton, s.pageStep)} onClick={() => setPage(safePage - 1)} disabled={safePage === 1} aria-label="Previous page"><CaretLeftIcon size={16} aria-hidden="true" /><span>Previous</span></button>
               <div className={s.pageNumbers}>
                 {Array.from({ length: pageCount }, (_, index) => index + 1).map(number => <button key={number} type="button" className={cn(s.pageButton, s.pageNumber, number === safePage && "text-foreground")} aria-current={number === safePage ? "page" : undefined} aria-label={`Page ${number}`} onClick={() => setPage(number)}>
                   {number === safePage && <motion.span layoutId={`${uid}-page`} className={s.pageHighlight} transition={reduced ? { duration: 0 } : morph} />}
                   <span>{number}</span>
                 </button>)}
               </div>
-              <button type="button" className={cn(s.pageButton, s.pageStep)} onClick={() => setPage(safePage + 1)} disabled={safePage === pageCount} aria-label="Next page"><span>Next</span><ChevronRight size={16} aria-hidden="true" /></button>
+              <button type="button" className={cn(s.pageButton, s.pageStep)} onClick={() => setPage(safePage + 1)} disabled={safePage === pageCount} aria-label="Next page"><span>Next</span><CaretRightIcon size={16} aria-hidden="true" /></button>
             </motion.nav>}
             </AnimatePresence>
             </AutoHeight>

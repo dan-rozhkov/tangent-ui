@@ -7,7 +7,7 @@ import type { CSSProperties, ClipboardEvent, FormEvent, KeyboardEvent, PointerEv
 import { createPortal } from "react-dom"
 import { AnimatePresence, animate, motion } from "motion/react"
 import type { AnimationPlaybackControls, Transition } from "motion/react"
-import { ArrowUp, Check, ChevronUp, Globe, Link as LinkIcon, X } from "@mynaui/icons-react"
+import { ArrowUpIcon, CaretUpIcon, CheckIcon, GlobeIcon, LinkIcon, XIcon } from "@phosphor-icons/react"
 
 import { motionTokens as presets } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
@@ -225,7 +225,7 @@ function ChipFace({ link, still, onActivate }: { link: Link; still: boolean; onA
               exit={{ opacity: 0, transition: { duration: duration.instant } }}
               transition={loading && !still ? { duration: 1.2, ease: "easeInOut", repeat: Infinity } : { duration: duration.fast }}
             >
-              {ready ? <LinkIcon className="size-3.5" /> : <Globe className="size-3.5" />}
+              {ready ? <LinkIcon className="size-3.5" /> : <GlobeIcon className="size-3.5" />}
             </motion.span>
           )}
         </AnimatePresence>
@@ -293,10 +293,10 @@ function PreviewCard({
           )}
           <span className="min-w-0 flex-1 truncate text-xs leading-[1.4] text-text-secondary">{preview.site}</span>
           <button type="button" aria-label={`Collapse preview of ${preview.title}`} onClick={onCollapse} className={iconButton}>
-            <ChevronUp className="size-4" aria-hidden="true" />
+            <CaretUpIcon className="size-4" aria-hidden="true" />
           </button>
           <button type="button" aria-label={`Remove link to ${preview.title}`} onClick={onRemove} className={iconButton}>
-            <X className="size-4" aria-hidden="true" />
+            <XIcon className="size-4" aria-hidden="true" />
           </button>
         </div>
         <div ref={bind("body")} className="grid gap-0.5 px-1.5 pt-0.5 opacity-0">
@@ -1138,9 +1138,9 @@ export function LinkUnfurl({
                 {pending ? (
                   <span className="size-3.5 animate-spin rounded-full border-[1.5px] border-current border-r-transparent [animation-duration:.7s]" />
                 ) : sent ? (
-                  <Check className="size-4" aria-hidden="true" />
+                  <CheckIcon className="size-4" aria-hidden="true" />
                 ) : (
-                  <ArrowUp className="size-4" aria-hidden="true" />
+                  <ArrowUpIcon className="size-4" aria-hidden="true" />
                 )}
               </motion.span>
             </AnimatePresence>

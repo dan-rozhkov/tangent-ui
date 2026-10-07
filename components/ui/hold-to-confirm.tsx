@@ -9,7 +9,7 @@ import type {
 } from "react"
 import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue, TargetAndTransition } from "motion/react"
-import { Trash } from "@mynaui/icons-react"
+import { TrashIcon } from "@phosphor-icons/react"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -113,7 +113,7 @@ function DrawnCheck({ reduced }: { reduced: boolean }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2}
+      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -220,7 +220,7 @@ export function HoldToConfirm({
   confirmedLabel = "Done",
   onConfirm,
   duration = 1200,
-  icon = <Trash strokeWidth={1.75} />,
+  icon = <TrashIcon size={24} />,
   tone = "accent",
   confirmed,
   onHoldChange,

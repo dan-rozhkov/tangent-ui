@@ -5,7 +5,7 @@ import type { CSSProperties, FocusEvent, KeyboardEvent, MouseEvent, PointerEvent
 import { createPortal } from "react-dom"
 import { AnimatePresence, motion } from "motion/react"
 import type { PanInfo, Transition, Variants } from "motion/react"
-import { ChevronDown, Logout, Monitor, Moon, Sun } from "@mynaui/icons-react"
+import { CaretDownIcon, MonitorIcon, MoonIcon, SignOutIcon, SunIcon } from "@phosphor-icons/react"
 import { SpinnerArc } from "@/components/ui/icons"
 
 import { motionTokens } from "@/lib/motion-tokens"
@@ -23,9 +23,9 @@ export const userStatuses: { value: UserStatus; label: string }[] = [
 ]
 
 const themes: { value: ThemePreference; label: string; icon: ReactNode }[] = [
-  { value: "light", label: "Light", icon: <Sun size={16} strokeWidth={1.75} aria-hidden="true" /> },
-  { value: "dark", label: "Dark", icon: <Moon size={16} strokeWidth={1.75} aria-hidden="true" /> },
-  { value: "system", label: "System", icon: <Monitor size={16} strokeWidth={1.75} aria-hidden="true" /> },
+  { value: "light", label: "Light", icon: <SunIcon size={16} aria-hidden="true" /> },
+  { value: "dark", label: "Dark", icon: <MoonIcon size={16} aria-hidden="true" /> },
+  { value: "system", label: "System", icon: <MonitorIcon size={16} aria-hidden="true" /> },
 ]
 
 export interface UserMenuUser {
@@ -719,7 +719,7 @@ export function UserMenu({
             {showTheme && (
               <Segmented
                 label="Theme"
-                icon={<Sun size={16} strokeWidth={1.75} />}
+                icon={<SunIcon size={16} />}
                 value={theme}
                 onChange={changeTheme}
                 options={themes}
@@ -748,10 +748,9 @@ export function UserMenu({
               <SpinnerArc
                 className="animate-spin [animation-duration:.8s] motion-reduce:[animation-duration:2.4s]"
                 size={16}
-                strokeWidth={1.75}
               />
             ) : (
-              <Logout size={16} strokeWidth={1.75} />
+              <SignOutIcon size={16} />
             )}
           </span>
           <span className="relative inline-flex min-w-0 flex-1">
@@ -872,14 +871,13 @@ export function UserMenu({
         {showName && (
           <>
             <span className="max-w-44 truncate leading-none font-medium max-sm:hidden">{user.name}</span>
-            <ChevronDown
+            <CaretDownIcon
               className={cn(
                 "-ml-0.5 flex-none text-text-muted max-sm:hidden",
                 "[transition:transform_var(--duration-spring)_var(--ease-spring),color_var(--duration-fast)_var(--ease-standard)] motion-reduce:transition-none",
                 "group-hover/trigger:text-foreground group-data-[state=open]/trigger:[transform:rotate(180deg)] group-data-[state=open]/trigger:text-foreground",
               )}
               size={16}
-              strokeWidth={1.75}
               aria-hidden="true"
             />
           </>

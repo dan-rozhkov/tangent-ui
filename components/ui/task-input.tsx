@@ -5,7 +5,7 @@ import type { CSSProperties, KeyboardEvent, ReactNode } from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { AnimatePresence, animate, motion } from "motion/react"
 import type { Transition } from "motion/react"
-import { Calendar, Check, ChevronDown } from "@mynaui/icons-react"
+import { CalendarBlankIcon, CaretDownIcon, CheckIcon } from "@phosphor-icons/react"
 
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
@@ -420,7 +420,7 @@ export function TaskInput({ lists, placeholder = "Write a new task", onSubmit, d
                 aria-label={`Due date: ${dateLabel ?? "none"}`}
                 aria-haspopup="menu"
               >
-                <Calendar className="size-[18px] flex-none" strokeWidth={1.8} aria-hidden="true" />
+                <CalendarBlankIcon className="size-[18px] flex-none" aria-hidden="true" />
                 {dateLabel && (
                   <FadeLabel id={dateLabel} reduced={reduced} blur={blur.soft} className="pl-1.5">
                     {dateLabel}
@@ -442,7 +442,7 @@ export function TaskInput({ lists, placeholder = "Write a new task", onSubmit, d
                     <span className="text-xs text-text-muted tabular-nums">
                       {option.date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
                     </span>
-                    {dateId === option.id && <Check className="size-4 text-text-secondary" aria-hidden="true" />}
+                    {dateId === option.id && <CheckIcon className="size-4 text-text-secondary" aria-hidden="true" />}
                   </MenuPrimitive.Item>
                 ))}
                 {date && (
@@ -478,9 +478,8 @@ export function TaskInput({ lists, placeholder = "Write a new task", onSubmit, d
                 <FadeLabel id={list?.id ?? "none"} reduced={reduced} blur={blur.soft}>
                   {list?.label ?? "No list"}
                 </FadeLabel>
-                <ChevronDown
+                <CaretDownIcon
                   className="size-4 flex-none text-text-muted [transition:rotate_var(--duration-spring)_var(--ease-spring)] group-data-popup-open/trigger:rotate-180 motion-reduce:transition-none"
-                  strokeWidth={1.8}
                   aria-hidden="true"
                 />
               </MenuPrimitive.Trigger>
@@ -495,7 +494,7 @@ export function TaskInput({ lists, placeholder = "Write a new task", onSubmit, d
                       <Dot color={item.color} />
                       <span className="flex-1">{item.label}</span>
                       <MenuPrimitive.RadioItemIndicator keepMounted={false}>
-                        <Check className="size-4 text-text-secondary" aria-hidden="true" />
+                        <CheckIcon className="size-4 text-text-secondary" aria-hidden="true" />
                       </MenuPrimitive.RadioItemIndicator>
                     </MenuPrimitive.RadioItem>
                   ))}

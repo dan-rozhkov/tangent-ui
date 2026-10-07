@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore }
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion } from "motion/react"
 import type { Transition } from "motion/react"
-import { Check, Download, Play, Redo, Square, Trash, Undo, X } from "@mynaui/icons-react"
+import { ArrowUUpRightIcon, ArrowUUpLeftIcon, CheckIcon, DownloadSimpleIcon, PlayIcon, SquareIcon, TrashIcon, XIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -628,10 +628,9 @@ export function SignaturePad({
         onKeyDown={onKeyDown}
       >
         <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-          <X
+          <XIcon
             className="absolute top-[72%] left-[7%] translate-y-[calc(-100%_-_6px)] text-text-muted"
             size={14}
-            strokeWidth={1.75}
           />
           <span className="absolute top-[72%] right-[7%] left-[7%] border-t-[1.5px] border-dashed border-border-strong" />
           {signer && (
@@ -740,10 +739,10 @@ export function SignaturePad({
         </div>
         <div className="flex items-center gap-0.5">
           <IconButton label="Undo" onClick={undo} disabled={!history.past.length || wiping}>
-            <Undo size={18} strokeWidth={1.75} aria-hidden="true" />
+            <ArrowUUpLeftIcon size={18} aria-hidden="true" />
           </IconButton>
           <IconButton label="Redo" onClick={redo} disabled={!history.future.length || wiping}>
-            <Redo size={18} strokeWidth={1.75} aria-hidden="true" />
+            <ArrowUUpRightIcon size={18} aria-hidden="true" />
           </IconButton>
           <IconButton
             label={replaying ? "Stop replay" : "Replay signature"}
@@ -761,15 +760,15 @@ export function SignaturePad({
                 transition={t}
               >
                 {replaying ? (
-                  <Square size={15} strokeWidth={1.75} aria-hidden="true" />
+                  <SquareIcon size={15} aria-hidden="true" />
                 ) : (
-                  <Play size={17} strokeWidth={1.75} aria-hidden="true" />
+                  <PlayIcon size={17} aria-hidden="true" />
                 )}
               </motion.span>
             </AnimatePresence>
           </IconButton>
           <IconButton label="Clear signature" onClick={clear} disabled={empty || wiping}>
-            <Trash size={18} strokeWidth={1.75} aria-hidden="true" />
+            <TrashIcon size={18} aria-hidden="true" />
           </IconButton>
         </div>
       </div>
@@ -801,12 +800,12 @@ export function SignaturePad({
               >
                 {saved === kind ? (
                   <>
-                    <Check size={15} strokeWidth={1.75} aria-hidden="true" />
+                    <CheckIcon size={15} aria-hidden="true" />
                     Saved
                   </>
                 ) : (
                   <>
-                    <Download size={15} strokeWidth={1.75} aria-hidden="true" />
+                    <DownloadSimpleIcon size={15} aria-hidden="true" />
                     {kind.toUpperCase()}
                   </>
                 )}

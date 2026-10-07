@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
-import { Moon, Sun } from "@mynaui/icons-react"
+import { MoonIcon, SunIcon } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
@@ -75,7 +75,7 @@ function useSettled() {
 function ThemeIcon({ theme, reduced, settled }: { theme: Theme; reduced: boolean; settled: boolean }) {
   const motionTokens = useMotionTokens()
   const { iconSpring, iconExit, blur } = useMemo(() => createMotion(motionTokens), [motionTokens])
-  const Icon = theme === "light" ? Sun : Moon
+  const Icon = theme === "light" ? SunIcon : MoonIcon
   const angle = theme === "light" ? 30 : -30
   return (
     <AnimatePresence initial={false} mode="popLayout">
@@ -103,7 +103,7 @@ function ThemeIcon({ theme, reduced, settled }: { theme: Theme; reduced: boolean
         transition={reduced ? { duration: motionTokens.duration.instant } : iconSpring}
         aria-hidden="true"
       >
-        <Icon size={16} strokeWidth={1.75} />
+        <Icon size={16} />
       </motion.span>
     </AnimatePresence>
   )

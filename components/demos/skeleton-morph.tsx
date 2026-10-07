@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Refresh } from "@mynaui/icons-react"
+import { ArrowsClockwiseIcon } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import { MorphBlock, SkeletonMorph } from "@/components/ui/skeleton-morph"
@@ -100,7 +100,7 @@ export default function Demo() {
           setRound(value => value + 1)
         }}
       >
-        <Refresh size={16} strokeWidth={1.75} aria-hidden="true" />
+        <ArrowsClockwiseIcon size={16} aria-hidden="true" />
         Reload
       </Button>
     </div>

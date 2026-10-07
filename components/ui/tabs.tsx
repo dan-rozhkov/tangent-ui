@@ -3,7 +3,7 @@
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
 import { createContext, useCallback, useContext, useId, useLayoutEffect, useRef, useState } from "react"
 import type { ComponentPropsWithoutRef, RefObject } from "react"
-import { ChevronLeft, ChevronRight } from "@mynaui/icons-react"
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react"
 import { AnimatePresence, LayoutGroup, animate, motion } from "motion/react"
 import type { AnimationPlaybackControls, Variants } from "motion/react"
 
@@ -161,7 +161,7 @@ export function TabsList({ className, loop, loopFocus, activateOnFocus, ...props
           disabled={!edges.left}
           onClick={() => scrollTabs(-1)}
         >
-          <ChevronLeft width={17} height={17} aria-hidden="true" />
+          <CaretLeftIcon size={17} aria-hidden="true" />
         </button>
       )}
       <motion.div
@@ -196,7 +196,7 @@ export function TabsList({ className, loop, loopFocus, activateOnFocus, ...props
           disabled={!edges.right}
           onClick={() => scrollTabs(1)}
         >
-          <ChevronRight width={17} height={17} aria-hidden="true" />
+          <CaretRightIcon size={17} aria-hidden="true" />
         </button>
       )}
     </div>

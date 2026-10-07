@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { animate, AnimatePresence, motion } from "motion/react";
-import { Check } from "@mynaui/icons-react";
+import { CheckIcon } from "@phosphor-icons/react"
 import { Button } from "@/components/ui/button";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { Switch } from "@/components/ui/switch";
@@ -37,7 +37,7 @@ const s = {
 };
 
 function Value({ text }: { text: string }) {
-  if (text === "Included") return <span className={s.included}><Check className="text-success" size={16} strokeWidth={1.75} aria-hidden="true" />Included</span>;
+  if (text === "Included") return <span className={s.included}><CheckIcon className="text-success" size={16} aria-hidden="true" />Included</span>;
   return <span className={text === "Not included" ? s.unavailable : undefined}>{text}</span>;
 }
 

@@ -5,7 +5,7 @@ import type { ButtonHTMLAttributes, ReactNode, Ref, PointerEvent as ReactPointer
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { AnimatePresence, animate, motion, useMotionValue, usePresence, useTransform } from "motion/react"
 import type { MotionValue } from "motion/react"
-import { ChevronLeft, X } from "@mynaui/icons-react"
+import { CaretLeftIcon, XIcon } from "@phosphor-icons/react"
 
 import { buttonVariants } from "@/components/ui/button"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
@@ -679,7 +679,7 @@ function SheetPanel({ id, title, description, children, footer, dismissible = tr
                     aria-label={`Back to ${parentLabel}`}
                     onClick={context.pop}
                   >
-                    <ChevronLeft size={20} strokeWidth={1.75} aria-hidden="true" className="flex-none" />
+                    <CaretLeftIcon size={20} aria-hidden="true" className="flex-none" />
                     <span className="truncate">{parentLabel}</span>
                   </button>
                 ) : null}
@@ -689,7 +689,7 @@ function SheetPanel({ id, title, description, children, footer, dismissible = tr
               </DialogPrimitive.Title>
               <div className="flex justify-end">
                 <DialogPrimitive.Close className={cn(headerButton, "grid w-9 place-items-center")} aria-label={many ? "Close all" : "Close"}>
-                  <X size={18} strokeWidth={1.75} aria-hidden="true" />
+                  <XIcon size={18} aria-hidden="true" />
                 </DialogPrimitive.Close>
               </div>
             </div>

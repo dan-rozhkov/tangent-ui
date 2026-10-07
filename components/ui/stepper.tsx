@@ -133,7 +133,7 @@ function Glyph({ kind, number, delay, reduced }: { kind: GlyphKind; number: numb
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2.5}
+      strokeWidth={2.15}
       strokeLinecap="round"
       strokeLinejoin="round"
       initial={glyphFrom}

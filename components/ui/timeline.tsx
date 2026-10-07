@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useId, useMemo, useR
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { Transition } from "motion/react";
-import { ChevronDown } from "@mynaui/icons-react";
+import { CaretDownIcon } from "@phosphor-icons/react"
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";
@@ -79,7 +79,7 @@ const dayClass =
   "sticky top-0 z-2 flex items-baseline justify-between gap-3 bg-[var(--timeline-surface,var(--surface))] py-2 pr-3 pl-0 text-sm leading-body font-medium text-foreground";
 /* A person's portrait sits on a hairline ring; a system event is a quiet node with its icon. */
 const markerClass =
-  "absolute top-(--marker-top) left-0 z-1 grid size-(--marker) place-items-center rounded-pill text-text-secondary after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:border after:border-[color-mix(in_oklab,var(--foreground)_10%,transparent)] after:content-[''] data-[tone]:bg-surface data-[tone=danger]:bg-[color-mix(in_oklab,var(--danger)_12%,var(--surface))] data-[tone=danger]:text-danger data-[tone=success]:bg-[color-mix(in_oklab,var(--success)_12%,var(--surface))] data-[tone=success]:text-success [&_img]:block [&_img]:size-full [&_img]:rounded-[inherit] [&_img]:object-cover [&_svg]:size-3.5 [&_svg]:stroke-2";
+  "absolute top-(--marker-top) left-0 z-1 grid size-(--marker) place-items-center rounded-pill text-text-secondary after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:border after:border-[color-mix(in_oklab,var(--foreground)_10%,transparent)] after:content-[''] data-[tone]:bg-surface data-[tone=danger]:bg-[color-mix(in_oklab,var(--danger)_12%,var(--surface))] data-[tone=danger]:text-danger data-[tone=success]:bg-[color-mix(in_oklab,var(--success)_12%,var(--surface))] data-[tone=success]:text-success [&_img]:block [&_img]:size-full [&_img]:rounded-[inherit] [&_img]:object-cover [&_svg]:size-3.5";
 /* The line runs from just under this marker to just above the next one and draws downward from its top. */
 const segmentClass =
   "absolute top-[calc(var(--marker-top)_+_var(--marker)_+_var(--line-gap))] bottom-[calc(var(--line-gap)_-_var(--marker-top))] left-[calc(var(--marker)_/_2_-_.5px)] w-px origin-[50%_0] bg-border-strong";
@@ -184,7 +184,7 @@ function TimelineRow({ row, last, expanded, onToggle, timeLabel, timeFull }: { r
           {row.meta && <span className="text-xs leading-body text-text-muted">{row.meta}</span>}
         </span>
         <time className="flex min-w-11 justify-end text-xs leading-5 whitespace-nowrap text-text-muted tabular-nums" dateTime={new Date(row.time).toISOString()} title={timeFull}><RiseText text={timeLabel} reduced={reduced} /><span className="absolute size-px overflow-hidden whitespace-nowrap [clip-path:inset(50%)]">{timeFull}</span></time>
-        {row.detail && <motion.span className="grid h-5 place-items-center text-text-muted" aria-hidden="true" initial={false} animate={{ rotate: expanded ? 180 : 0 }} transition={reduced ? { duration: 0 } : motionTokens.spring.snappy}><ChevronDown size={16} strokeWidth={1.75} /></motion.span>}
+        {row.detail && <motion.span className="grid h-5 place-items-center text-text-muted" aria-hidden="true" initial={false} animate={{ rotate: expanded ? 180 : 0 }} transition={reduced ? { duration: 0 } : motionTokens.spring.snappy}><CaretDownIcon size={16} /></motion.span>}
       </Trigger>
       <AnimatePresence initial={false}>
         {expanded && row.detail && <motion.div key="detail" id={detailId} className="overflow-clip [overflow-clip-margin:4px]"

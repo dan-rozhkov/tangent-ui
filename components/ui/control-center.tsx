@@ -6,7 +6,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { KeyboardEvent, PointerEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue, Transition } from "motion/react"
-import { Bell, BellOff, ChevronRight, Headphones, type Icon as IconComponent, Presentation, TypeText, VolumeHigh, VolumeLow, VolumeX, X } from "@mynaui/icons-react"
+import { BellIcon, BellSlashIcon, CaretRightIcon, HeadphonesIcon, type Icon as IconComponent, PresentationIcon, SpeakerHighIcon, SpeakerLowIcon, SpeakerXIcon, TextTIcon, XIcon } from "@phosphor-icons/react"
 
 import { Switch } from "@/components/ui/switch"
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
@@ -271,7 +271,7 @@ function Tile({
               wide ? "top-1/2 right-3.5 -translate-y-1/2" : "top-2 right-2"
             )}
           >
-            <ChevronRight className="size-4" aria-hidden="true" />
+            <CaretRightIcon className="size-4" aria-hidden="true" />
           </button>
         )}
       </motion.div>
@@ -664,7 +664,7 @@ function DetailHead({ titleId, title, icon: Icon, onClose }: { titleId: string; 
         onClick={onClose}
         className="grid size-8 flex-none cursor-pointer place-items-center rounded-full bg-surface-raised text-foreground shadow-resting outline-none [-webkit-tap-highlight-color:transparent] focus-visible:bg-foreground/[0.06]"
       >
-        <X className="size-4" aria-hidden="true" />
+        <XIcon className="size-4" aria-hidden="true" />
       </button>
     </div>
   )
@@ -1141,7 +1141,7 @@ export function ControlCenter({
     focus: {
       label: mode?.label ?? "Focus",
       status: focus ? `Until ${formatTime(new Date(focus.endsAt))}` : "Off",
-      icon: mode?.icon ?? Headphones,
+      icon: mode?.icon ?? HeadphonesIcon,
       iconKey: mode?.id ?? "off",
       on: !!focus,
       wide: true,
@@ -1151,7 +1151,7 @@ export function ControlCenter({
     notifications: {
       label: "Notifications",
       status: notificationStatus,
-      icon: notifications ? Bell : BellOff,
+      icon: notifications ? BellIcon : BellSlashIcon,
       iconKey: notifications ? "on" : "off",
       on: notifications,
       detail: "notifications",
@@ -1160,7 +1160,7 @@ export function ControlCenter({
     presenting: {
       label: "Presenting",
       status: presenting ? "Previews hidden" : "Off",
-      icon: Presentation,
+      icon: PresentationIcon,
       iconKey: "presenting",
       on: presenting,
     },
@@ -1225,7 +1225,7 @@ export function ControlCenter({
               max={100}
               step={1}
               defaultValue={initialVolume}
-              icon={value => (value === 0 ? <VolumeX /> : value < 34 ? <VolumeLow /> : <VolumeHigh />)}
+              icon={value => (value === 0 ? <SpeakerXIcon size={24} /> : value < 34 ? <SpeakerLowIcon size={24} /> : <SpeakerHighIcon size={24} />)}
               onChange={value => {
                 levels.current.volume = value
                 emit()
@@ -1238,7 +1238,7 @@ export function ControlCenter({
               max={130}
               step={5}
               defaultValue={initialTextSize}
-              icon={() => <TypeText />}
+              icon={() => <TextTIcon size={24} />}
               preview={value => (
                 <span className="grid h-[18px] w-[26px] flex-none place-items-center overflow-visible" aria-hidden="true">
                   <span className="leading-none font-medium" style={{ fontSize: `${(15 * value) / 100}px` }}>

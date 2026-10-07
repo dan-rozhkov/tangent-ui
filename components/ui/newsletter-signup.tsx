@@ -5,7 +5,7 @@ import type { FormEvent, ReactNode } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, useAnimate } from "motion/react";
 import type { Variants } from "motion/react";
-import { ArrowRight } from "@mynaui/icons-react";
+import { ArrowRightIcon } from "@phosphor-icons/react"
 import AnimatedCounter from "@/components/ui/animated-counter";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { Switch } from "@/components/ui/switch";
@@ -252,10 +252,10 @@ export const NewsletterSignup = forwardRef<HTMLElement, NewsletterSignupProps>(f
   const messageId = `${id}-message`;
   const labelKey = done ? "done" : sending ? "sending" : problem?.kind === "failed" ? "retry" : "idle";
   const labels: Record<string, ReactNode> = {
-    idle: <>{buttonLabel}<ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" /></>,
-    retry: <>Try again<ArrowRight size={16} strokeWidth={1.75} aria-hidden="true" /></>,
+    idle: <>{buttonLabel}<ArrowRightIcon size={16} aria-hidden="true" /></>,
+    retry: <>Try again<ArrowRightIcon size={16} aria-hidden="true" /></>,
     sending: <><span className="size-3.5 animate-[spin_700ms_linear_infinite] rounded-full border-2 border-[color-mix(in_oklab,currentColor_30%,transparent)] border-t-current motion-reduce:[animation-duration:1.6s]" aria-hidden="true" />Subscribing</>,
-    done: <><span className="inline-flex size-4 [&_svg]:size-4" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><motion.path d="M5 12.5l4.5 4.5L19 7.5" initial={reduced ? false : { pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: reduced ? 0 : .34, ease: enter, delay: .12 }} /></svg></span>Subscribed</>,
+    done: <><span className="inline-flex size-4 [&_svg]:size-4" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><motion.path d="M5 12.5l4.5 4.5L19 7.5" initial={reduced ? false : { pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: reduced ? 0 : .34, ease: enter, delay: .12 }} /></svg></span>Subscribed</>,
   };
 
   /** Two lines are reserved so the note, an error, and the confirmation never move what sits below. */

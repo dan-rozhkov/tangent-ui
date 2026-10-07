@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
-import { ChevronDown, Clock3 } from "@mynaui/icons-react"
+import { CaretDownIcon, ClockIcon } from "@phosphor-icons/react"
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react"
 import type { KeyboardEvent } from "react"
 
@@ -182,7 +182,7 @@ export function TimePicker({
           onClick={() => (open ? setOpen(false) : openMenu())}
           onKeyDown={onKeyDown}
         >
-          <Clock3 size={16} aria-hidden="true" />
+          <ClockIcon size={16} aria-hidden="true" />
           <span id={valueId} className="sr-only">
             {selected ? display(selected) : placeholder}
           </span>
@@ -204,7 +204,7 @@ export function TimePicker({
               </motion.span>
             </AnimatePresence>
           </span>
-          <ChevronDown
+          <CaretDownIcon
             className="flex-none text-text-muted [transition:transform_var(--duration-spring)_var(--ease-spring)] group-aria-expanded/trigger:[transform:rotate(180deg)] motion-reduce:transition-none"
             size={16}
             aria-hidden="true"

@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Bookmark, Compass, Home, Search, User } from "@mynaui/icons-react"
+import { BookmarkSimpleIcon, CompassIcon, HouseIcon, MagnifyingGlassIcon, UserIcon } from "@phosphor-icons/react"
 
 import { GlassTabBar } from "@/components/ui/glass-tabbar"
 import { photos } from "@/lib/media"
@@ -53,12 +53,12 @@ export default function Demo() {
         }}
         scrollRef={scrollRef}
         items={[
-          { value: "home", label: "Home", icon: <Home /> },
-          { value: "explore", label: "Explore", icon: <Compass /> },
-          { value: "saved", label: "Saved", icon: <Bookmark />, badge: 3 },
-          { value: "profile", label: "Profile", icon: <User /> },
+          { value: "home", label: "Home", icon: <HouseIcon size={24} /> },
+          { value: "explore", label: "Explore", icon: <CompassIcon size={24} /> },
+          { value: "saved", label: "Saved", icon: <BookmarkSimpleIcon size={24} />, badge: 3 },
+          { value: "profile", label: "Profile", icon: <UserIcon size={24} /> },
         ]}
-        action={{ value: "search", label: "Search", icon: <Search /> }}
+        action={{ value: "search", label: "Search", icon: <MagnifyingGlassIcon size={24} /> }}
       />
     </div>
   )

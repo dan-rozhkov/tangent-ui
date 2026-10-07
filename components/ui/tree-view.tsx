@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
-import { ChevronRight, File, Folder, FolderOne } from "@mynaui/icons-react";
+import { CaretRightIcon, FileIcon, FolderIcon, FolderOpenIcon } from "@phosphor-icons/react"
 import { AnimatePresence, motion, useIsPresent } from "motion/react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
@@ -56,7 +56,7 @@ function fileTone(label: string) {
 }
 
 /** Same markup with or without reduced motion, so the server render always hydrates cleanly; only the transition changes. */
-function FolderIcon({ open, reduced }: { open: boolean; reduced: boolean }) {
+function TreeFolder({ open, reduced }: { open: boolean; reduced: boolean }) {
   return <AnimatePresence initial={false} mode="popLayout">
     <motion.span
       key={open ? "open" : "closed"}
@@ -65,7 +65,7 @@ function FolderIcon({ open, reduced }: { open: boolean; reduced: boolean }) {
       animate={{ opacity: 1, scale: 1, filter: blur(0) }}
       exit={reduced ? { opacity: 0, transition: still } : { opacity: 0, scale: .6, filter: blur(motionTokens.blur.subtle), transition: fadeOut }}
       transition={reduced ? still : { ...motionTokens.spring.snappy, opacity: fadeIn, filter: fadeIn }}
-    >{open ? <FolderOne size={16} strokeWidth={1.7} /> : <Folder size={16} strokeWidth={1.7} />}</motion.span>
+    >{open ? <FolderOpenIcon size={16} /> : <FolderIcon size={16} />}</motion.span>
   </AnimatePresence>;
 }
 
@@ -190,14 +190,14 @@ export function TreeView({ nodes, defaultExpandedIds = [], expandedIds, onExpand
               initial={false}
               animate={{ rotate: isExpanded ? 90 : 0 }}
               transition={reduced ? still : motionTokens.spring.snappy}
-            >{hasChildren ? <ChevronRight size={14} strokeWidth={1.9} /> : null}</motion.span>
+            >{hasChildren ? <CaretRightIcon size={14} /> : null}</motion.span>
             <span className={cn(
                 "relative z-1 grid size-4 flex-[0_0_16px] place-items-center text-text-muted transition-[color] duration-160 ease-standard motion-reduce:transition-none",
                 hasChildren
                   ? "text-text-secondary group-aria-expanded/item:text-foreground group-aria-selected/item:text-foreground"
                   : fileTone(item.node.label),
               )} aria-hidden="true">
-              {item.node.icon ?? (hasChildren ? <FolderIcon open={isExpanded} reduced={reduced} /> : <File size={16} strokeWidth={1.7} />)}
+              {item.node.icon ?? (hasChildren ? <TreeFolder open={isExpanded} reduced={reduced} /> : <FileIcon size={16} />)}
             </span>
             <span className="relative z-1 min-w-0 truncate leading-[1.45]">{item.node.label}</span>
           </button>

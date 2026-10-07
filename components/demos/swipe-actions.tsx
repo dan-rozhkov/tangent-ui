@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Archive, Clock3, MailOpen, Undo } from "@mynaui/icons-react"
+import { ArchiveIcon, ArrowUUpLeftIcon, ClockIcon, EnvelopeOpenIcon } from "@phosphor-icons/react"
 
 import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -66,17 +66,17 @@ export default function Demo() {
               leading={[
                 {
                   label: isUnread ? "Read" : "Unread",
-                  icon: <MailOpen size={18} strokeWidth={1.75} />,
+                  icon: <EnvelopeOpenIcon size={18} />,
                   tone: "accent",
                   keepRow: true,
                   onSelect: () => toggleUnread(message.id),
                 },
               ]}
               trailing={[
-                { label: "Snooze", icon: <Clock3 size={18} strokeWidth={1.75} />, onSelect: () => remove(message.id) },
+                { label: "Snooze", icon: <ClockIcon size={18} />, onSelect: () => remove(message.id) },
                 {
                   label: "Archive",
-                  icon: <Archive size={18} strokeWidth={1.75} />,
+                  icon: <ArchiveIcon size={18} />,
                   tone: "danger",
                   onSelect: () => remove(message.id),
                 },
@@ -102,7 +102,7 @@ export default function Demo() {
       </SwipeActions>
       {messages.length < inbox.length && (
         <Button variant="ghost" size="sm" className="justify-self-center" onClick={() => setMessages(inbox)}>
-          <Undo size={16} strokeWidth={1.75} aria-hidden="true" />
+          <ArrowUUpLeftIcon size={16} aria-hidden="true" />
           Restore messages
         </Button>
       )}

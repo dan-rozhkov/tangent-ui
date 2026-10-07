@@ -4,7 +4,7 @@ import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "re
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { Transition, ValueAnimationTransition, Variants } from "motion/react"
-import { Command, Search, X } from "@mynaui/icons-react"
+import { CommandIcon, MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -206,7 +206,7 @@ export function CommandPalette({
     >
       <div className="relative flex min-h-[54px] items-center gap-2.5 border-b border-border-subtle px-3.5 py-2 transition-[background] duration-160 ease-standard focus-within:bg-surface-muted motion-reduce:transition-none max-[480px]:gap-2 max-[480px]:px-[11px]">
         <span className="grid size-[22px] flex-none place-items-center text-text-muted">
-          <Search width={18} height={18} strokeWidth={1.75} aria-hidden="true" />
+          <MagnifyingGlassIcon size={18} aria-hidden="true" />
         </span>
         <label className="sr-only" htmlFor={inputId}>
           {label}
@@ -252,7 +252,7 @@ export function CommandPalette({
                 reduced ? { duration: 0 } : { default: motionTokens.spring.snappy, opacity: { duration: motionTokens.duration.instant } }
               }
             >
-              <X width={15} height={15} aria-hidden="true" />
+              <XIcon size={15} aria-hidden="true" />
             </motion.button>
           ) : null}
         </AnimatePresence>
@@ -358,7 +358,7 @@ export function CommandPalette({
                                 )}
                                 aria-hidden="true"
                               >
-                                {item.icon ?? <Command width={16} height={16} />}
+                                {item.icon ?? <CommandIcon size={16} />}
                               </span>
                               <span className="flex min-w-0 flex-1 items-baseline gap-2">
                                 <strong className="block max-w-full flex-none truncate text-(length:--text-sm) font-medium">{item.label}</strong>
@@ -389,7 +389,7 @@ export function CommandPalette({
                 transition={enter}
               >
                 <span className="mb-[5px] grid size-8 place-items-center text-text-muted">
-                  <Search width={20} height={20} aria-hidden="true" />
+                  <MagnifyingGlassIcon size={20} aria-hidden="true" />
                 </span>
                 <strong className="text-(length:--text-sm) font-medium">No matching actions</strong>
                 <small className="text-(length:--text-xs) text-text-muted">Try a different word or clear the search.</small>

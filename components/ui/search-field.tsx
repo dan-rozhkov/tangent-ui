@@ -3,7 +3,7 @@
 import { forwardRef, useId, useRef } from "react"
 import type { InputHTMLAttributes } from "react"
 import { AnimatePresence, motion } from "motion/react"
-import { Search, X } from "@mynaui/icons-react"
+import { MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -48,9 +48,9 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(functi
         data-filled={value ? "true" : undefined}
       >
         {/* The glass wakes up with the field: muted at rest, full contrast while searching. */}
-        <Search
-          width={18}
-          height={18}
+        <MagnifyingGlassIcon
+          size={18}
+         
           aria-hidden="true"
           className={cn(
             "flex-none text-text-muted transition-colors duration-160 ease-standard motion-reduce:transition-none",
@@ -115,7 +115,7 @@ export const SearchField = forwardRef<HTMLInputElement, SearchFieldProps>(functi
                       }
                 }
               >
-                <X width={16} height={16} aria-hidden="true" />
+                <XIcon size={16} aria-hidden="true" />
               </motion.button>
             ) : null}
           </AnimatePresence>

@@ -10,7 +10,7 @@ import {
   type Transition,
   type Variants,
 } from "motion/react"
-import { Check, Key } from "@mynaui/icons-react"
+import { CheckIcon, KeyIcon } from "@phosphor-icons/react"
 
 import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -493,7 +493,7 @@ export function SignIn({ demoCode = "123456", onSignIn }: SignInProps) {
                       loading={busy === "passkey"}
                       onClick={() => signInWith("passkey")}
                     >
-                      <Key size={16} strokeWidth={1.75} aria-hidden="true" />
+                      <KeyIcon size={16} aria-hidden="true" />
                       Sign in with a passkey
                     </Button>
                     <div className="grid grid-cols-3 gap-2" role="group" aria-label="Single sign-on">
@@ -658,7 +658,7 @@ export function SignIn({ demoCode = "123456", onSignIn }: SignInProps) {
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ ...motionTokens.spring.snappy, delay: 0.78 }}
                     >
-                      <Check size={14} strokeWidth={2.25} />
+                      <CheckIcon size={14} />
                     </motion.span>
                   </div>
                   <motion.div className={styles.heading} {...rise(0)}>

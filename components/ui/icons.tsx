@@ -1,6 +1,6 @@
 import type { SVGProps } from "react"
 
-/* Icons Myna does not ship, drawn on its 24px grid: stroke 1.5, round caps and joins, currentColor. */
+/* Icons Phosphor does not ship, drawn on a 24px grid: stroke 1.5 matches Phosphor regular; round caps and joins, currentColor. */
 type IconProps = Omit<SVGProps<SVGSVGElement>, "ref"> & { size?: number | string }
 
 function Base({ size = 24, strokeWidth = 1.5, children, ...props }: IconProps) {
@@ -32,13 +32,6 @@ export function SpinnerArc(props: IconProps) {
   )
 }
 
-export function Strikethrough(props: IconProps) {
-  return (
-    <Base {...props}>
-      <path d="M17 7c0-1.7-2.2-3-5-3s-5 1.3-5 3c0 1.3.9 2.2 2.2 2.9M7 17c0 1.7 2.2 3 5 3s5-1.3 5-3c0-1.4-.9-2.3-2.2-3M4 12h16" />
-    </Base>
-  )
-}
 
 export function SmilePlus(props: IconProps) {
   return (

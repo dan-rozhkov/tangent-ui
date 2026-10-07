@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { CSSProperties, FocusEvent as ReactFocusEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { Check, ChevronDown, Search, X } from "@mynaui/icons-react"
+import { CaretDownIcon, CheckIcon, MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react"
 
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
@@ -651,7 +651,7 @@ export function MorphSelect({
                   showSearch ? { duration: 0.18, ease: enter, delay: reduced ? 0 : 0.04 } : { duration: 0.1, ease: standard }
                 }
               >
-                <Search className="flex-none text-text-muted" size={16} strokeWidth={1.75} aria-hidden="true" />
+                <MagnifyingGlassIcon className="flex-none text-text-muted" size={16} aria-hidden="true" />
                 <input
                   ref={inputRef}
                   className="h-full min-w-0 flex-1 border-0 bg-transparent p-0 text-sm leading-body tracking-body text-foreground outline-none placeholder:text-text-muted"
@@ -690,7 +690,7 @@ export function MorphSelect({
                       exit={{ opacity: 0, scale: 0.6, transition: { duration: 0.1 } }}
                       transition={reduced ? { duration: 0 } : GLIDE}
                     >
-                      <X size={14} strokeWidth={1.75} aria-hidden="true" />
+                      <XIcon size={14} aria-hidden="true" />
                     </motion.button>
                   )}
                 </AnimatePresence>
@@ -715,7 +715,7 @@ export function MorphSelect({
               animate={{ rotate: open ? 180 : 0 }}
               transition={reduced ? { duration: 0 } : GLIDE}
             >
-              <ChevronDown size={16} strokeWidth={1.75} />
+              <CaretDownIcon size={16} />
             </motion.span>
           </div>
 
@@ -804,7 +804,7 @@ export function MorphSelect({
                           data-on={isSelected || undefined}
                           aria-hidden="true"
                         >
-                          <Check size={16} strokeWidth={1.75} />
+                          <CheckIcon size={16} />
                         </span>
                       </div>
                     )

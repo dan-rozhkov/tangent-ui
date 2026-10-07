@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Check, Copy, Download, FileText, Link, Trash } from "@mynaui/icons-react"
+import { CheckIcon, CopyIcon, DownloadSimpleIcon, FileTextIcon, LinkIcon, TrashIcon } from "@phosphor-icons/react"
 
 import { SplitButton } from "@/components/ui/split-button"
 
@@ -30,13 +30,13 @@ export default function Demo() {
       <SplitButton
         variant="secondary"
         label={copied ? "Copied" : "Copy page"}
-        icon={copied ? <Check size={14} /> : <Copy size={14} />}
+        icon={copied ? <CheckIcon size={14} /> : <CopyIcon size={14} />}
         onClick={copy}
         actions={[
-          { label: "Copy link", icon: <Link size={15} />, onSelect: copy },
-          { label: "View as Markdown", icon: <FileText size={15} /> },
-          { label: "Download PDF", icon: <Download size={15} />, disabled: true },
-          { label: "Delete page", icon: <Trash size={15} />, destructive: true },
+          { label: "Copy link", icon: <LinkIcon size={15} />, onSelect: copy },
+          { label: "View as Markdown", icon: <FileTextIcon size={15} /> },
+          { label: "Download PDF", icon: <DownloadSimpleIcon size={15} />, disabled: true },
+          { label: "Delete page", icon: <TrashIcon size={15} />, destructive: true },
         ]}
       />
       <SplitButton label="Merge" disabled actions={[{ label: "Squash and merge" }]} />

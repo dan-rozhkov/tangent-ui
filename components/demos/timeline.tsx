@@ -1,6 +1,6 @@
 "use client"
 
-import { DangerTriangle, GitMerge, Rocket } from "@mynaui/icons-react"
+import { GitMergeIcon, RocketIcon, WarningIcon } from "@phosphor-icons/react"
 
 import { Timeline, type TimelineEvent } from "@/components/ui/timeline"
 import { avatar } from "@/lib/media"
@@ -17,7 +17,7 @@ const events: TimelineEvent[] = [
     at: minutes(41),
     title: "Production deploy finished",
     meta: "Build 1,204 in 3m 12s",
-    icon: <Rocket />,
+    icon: <RocketIcon size={24} />,
     tone: "success",
     detail: <p className="m-0">All 214 checks passed. The release is live in three regions.</p>,
   },
@@ -27,13 +27,13 @@ const events: TimelineEvent[] = [
     at: hours(9),
     title: "Staging deploy failed",
     meta: "Build 1,203",
-    icon: <DangerTriangle />,
+    icon: <WarningIcon size={24} />,
     tone: "danger",
     detail: <pre className="m-0 overflow-x-auto font-mono text-xs">{"Step 4/6: migrate\nerror: column \"currency\" already exists\nBuild step exited with code 1"}</pre>,
   },
-  { id: "branch", at: hours(26), actor: "Jasmine Brooks", title: "opened Pricing page refresh", meta: "Pull request #476", icon: <GitMerge />, avatar: avatar("jasmine-brooks") },
+  { id: "branch", at: hours(26), actor: "Jasmine Brooks", title: "opened Pricing page refresh", meta: "Pull request #476", icon: <GitMergeIcon size={24} />, avatar: avatar("jasmine-brooks") },
   { id: "tag", at: hours(30), actor: "Olivia Bennett", title: "tagged release v2.8.0", avatar: avatar("olivia-bennett") },
-  { id: "old", at: hours(75), title: "Nightly backup completed", meta: "4.2 GB", icon: <Rocket />, tone: "neutral" },
+  { id: "old", at: hours(75), title: "Nightly backup completed", meta: "4.2 GB", icon: <RocketIcon size={24} />, tone: "neutral" },
 ]
 
 export default function Demo() {

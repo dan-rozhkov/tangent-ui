@@ -21,7 +21,7 @@ import type {
 } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { Transition } from "motion/react"
-import { ArrowDown, ArrowUp, FileText, Paperclip, Refresh, X } from "@mynaui/icons-react"
+import { ArrowDownIcon, ArrowsClockwiseIcon, ArrowUpIcon, FileTextIcon, PaperclipIcon, XIcon } from "@phosphor-icons/react"
 import { SmilePlus } from "@/components/ui/icons"
 
 import { motionTokens } from "@/lib/motion-tokens"
@@ -517,7 +517,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
                       <img className="block size-14 rounded-xl object-cover" src={entry.url} alt="" />
                     ) : (
                       <span className="box-border grid h-14 w-[168px] grid-cols-[auto_minmax(0,1fr)] content-center gap-x-2 rounded-xl border border-border bg-surface px-3 [&>svg]:row-span-2 [&>svg]:self-center [&>svg]:text-text-secondary">
-                        <FileText size={16} strokeWidth={1.75} aria-hidden="true" />
+                        <FileTextIcon size={16} aria-hidden="true" />
                         <span className="truncate text-(length:--text-xs) font-medium">{entry.file.name}</span>
                         <span className="text-(length:--text-xs) text-text-muted tabular-nums">
                           {formatBytes(entry.file.size)}
@@ -530,7 +530,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
                       aria-label={t.removeFile(entry.file.name)}
                       onClick={() => remove(entry.id)}
                     >
-                      <X size={12} strokeWidth={2.25} />
+                      <XIcon size={12} />
                     </button>
                   </motion.li>
                 ))}
@@ -554,7 +554,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
               disabled={disabled}
               onClick={() => pickerRef.current?.click()}
             >
-              <Paperclip size={18} strokeWidth={1.75} />
+              <PaperclipIcon size={18} />
             </button>
             <input
               ref={pickerRef}
@@ -622,7 +622,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
                 }
                 transition={reduced ? { duration: duration.fast } : spring.snappy}
               >
-                <ArrowUp size={16} strokeWidth={2.25} />
+                <ArrowUpIcon size={16} />
               </motion.span>
             </AnimatePresence>
           </button>
@@ -1016,7 +1016,7 @@ export const ChatThread = forwardRef<ChatThreadHandle, ChatThreadProps>(function
                                   target="_blank"
                                   rel="noreferrer"
                                 >
-                                  <FileText size={18} strokeWidth={1.75} aria-hidden="true" />
+                                  <FileTextIcon size={18} aria-hidden="true" />
                                   <span className="grid min-w-0">
                                     <span className="truncate font-medium">{file.name}</span>
                                     {file.size !== undefined && (
@@ -1116,7 +1116,7 @@ export const ChatThread = forwardRef<ChatThreadHandle, ChatThreadProps>(function
                                           )}
                                           onClick={() => onRetry(message.id)}
                                         >
-                                          <Refresh size={12} strokeWidth={2} aria-hidden="true" />
+                                          <ArrowsClockwiseIcon size={12} aria-hidden="true" />
                                           {t.retry}
                                         </button>
                                       )}
@@ -1216,7 +1216,7 @@ export const ChatThread = forwardRef<ChatThreadHandle, ChatThreadProps>(function
                 layout={reduced ? false : "position"}
                 transition={spring.morph}
               >
-                <ArrowDown size={14} strokeWidth={2} aria-hidden="true" />
+                <ArrowDownIcon size={14} aria-hidden="true" />
               </motion.span>
               <AnimatePresence initial={false} mode="popLayout">
                 <motion.span
@@ -1342,7 +1342,7 @@ function ReactionPicker({
         aria-controls={open ? id : undefined}
         onClick={toggle}
       >
-        <SmilePlus size={16} strokeWidth={1.75} />
+        <SmilePlus size={16} />
       </button>
       <AnimatePresence>
         {open && (

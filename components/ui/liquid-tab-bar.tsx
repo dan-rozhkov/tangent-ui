@@ -1,7 +1,7 @@
 "use client"
 
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react"
-import type { KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
+import { cloneElement, isValidElement, useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react"
+import type { KeyboardEvent, PointerEvent as ReactPointerEvent, ReactElement, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue, useSpring, useTransform } from "motion/react"
 import type { Variants } from "motion/react"
 
@@ -9,6 +9,10 @@ import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
+
+/** The active tab shows its icon solid: Phosphor icons (forwardRef objects) take `weight="fill"`; drawn stroke icons fill through CSS. */
+const solid = (icon: ReactNode) =>
+  isValidElement(icon) && typeof icon.type === "object" ? cloneElement(icon as ReactElement<{ weight?: string }>, { weight: "fill" }) : icon
 
 export interface LiquidTab {
   value: string
@@ -343,7 +347,7 @@ export function LiquidTabBar({ tabs, value, onValueChange, labels = "active", la
       const content = (
         <>
           <span className="relative flex h-10 w-10 flex-none items-center pl-3 [&_svg]:size-5">
-            {inverted ? (tab.activeIcon ?? <span className="grid place-items-center [&_svg]:fill-current">{tab.icon}</span>) : tab.icon}
+            {inverted ? (tab.activeIcon ?? <span className="grid place-items-center [&_svg]:fill-current">{solid(tab.icon)}</span>) : tab.icon}
             {badge}
           </span>
           {/* Measured: the outgoing label is gone by ~210ms; the incoming one starts ~60ms later and lands by ~280ms. No blur. */}

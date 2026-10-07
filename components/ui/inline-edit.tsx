@@ -10,7 +10,7 @@ import type {
 } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { TargetAndTransition, Variants } from "motion/react"
-import { Check, DangerCircle, Pencil, X } from "@mynaui/icons-react"
+import { CheckIcon, PencilSimpleIcon, WarningCircleIcon, XIcon } from "@phosphor-icons/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -104,7 +104,7 @@ function DrawnCheck({ reduced }: { reduced: boolean }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={2.25}
+      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -438,7 +438,7 @@ export function InlineEdit({
         tone: "error" as const,
         node: (
           <>
-            <DangerCircle className="mt-0.5 flex-none text-danger" size={14} strokeWidth={2} aria-hidden="true" />
+            <WarningCircleIcon className="mt-0.5 flex-none text-danger" size={14} aria-hidden="true" />
             <span>{error}</span>
           </>
         ),
@@ -449,7 +449,7 @@ export function InlineEdit({
           tone: "failed" as const,
           node: (
             <>
-              <DangerCircle className="mt-0.5 flex-none text-danger" size={14} strokeWidth={2} aria-hidden="true" />
+              <WarningCircleIcon className="mt-0.5 flex-none text-danger" size={14} aria-hidden="true" />
               <span>
                 {`Couldn’t save “${failed}”, so the last saved ${noun} is back.`}{" "}
                 <button
@@ -635,7 +635,7 @@ export function InlineEdit({
                         onPointerDown={event => event.preventDefault()}
                         onClick={() => submit("button")}
                       >
-                        <Check size={15} strokeWidth={2} aria-hidden="true" />
+                        <CheckIcon size={15} aria-hidden="true" />
                       </button>
                       <button
                         type="button"
@@ -647,7 +647,7 @@ export function InlineEdit({
                         onPointerDown={event => event.preventDefault()}
                         onClick={cancel}
                       >
-                        <X size={15} strokeWidth={2} aria-hidden="true" />
+                        <XIcon size={15} aria-hidden="true" />
                       </button>
                     </span>
                   ) : slot === "saving" ? (
@@ -661,13 +661,12 @@ export function InlineEdit({
                       <DrawnCheck reduced={reduced} />
                     </span>
                   ) : slot === "failed" ? (
-                    <DangerCircle className="ml-px text-danger" size={16} strokeWidth={1.75} aria-hidden="true" />
+                    <WarningCircleIcon className="ml-px text-danger" size={16} aria-hidden="true" />
                   ) : (
-                    <Pencil
+                    <PencilSimpleIcon
                       data-pencil=""
                       className="ml-0.5 cursor-pointer text-text-muted motion-reduce:transition-none pointer-fine:opacity-0 pointer-fine:[transition:opacity_var(--duration-fast)_var(--ease-standard)] pointer-fine:hover:opacity-100"
                       size={14}
-                      strokeWidth={1.75}
                       aria-hidden="true"
                       onClick={() => startEdit(shown.length)}
                     />

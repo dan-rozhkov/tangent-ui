@@ -19,7 +19,7 @@ import {
   usePresence,
   useTransform,
 } from "motion/react"
-import { X } from "@mynaui/icons-react"
+import { XIcon } from "@phosphor-icons/react"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -627,7 +627,7 @@ function Sheet({
               ) : null}
             </div>
             <DialogPrimitive.Close className={closeClass} aria-label={closeLabel}>
-              <X size={16} strokeWidth={1.75} aria-hidden="true" />
+              <XIcon size={16} aria-hidden="true" />
             </DialogPrimitive.Close>
           </div>
         </div>

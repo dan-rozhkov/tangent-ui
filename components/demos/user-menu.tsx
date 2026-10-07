@@ -1,6 +1,6 @@
 "use client"
 
-import { Cog, CreditCard, User } from "@mynaui/icons-react"
+import { CreditCardIcon, GearIcon, UserIcon } from "@phosphor-icons/react"
 
 import { UserMenu } from "@/components/ui/user-menu"
 
@@ -13,9 +13,9 @@ export default function Demo() {
         user={{ name: "Maya Fischer", email: "maya@example.com", plan: "Pro" }}
         showName
         items={[
-          { label: "Profile", icon: <User size={16} /> },
-          { label: "Settings", icon: <Cog size={16} />, keys: ["⌘", ","] },
-          { label: "Billing", icon: <CreditCard size={16} /> },
+          { label: "Profile", icon: <UserIcon size={16} /> },
+          { label: "Settings", icon: <GearIcon size={16} />, keys: ["⌘", ","] },
+          { label: "Billing", icon: <CreditCardIcon size={16} /> },
         ]}
         onSignOut={() => wait(1200)}
       />
@@ -23,7 +23,7 @@ export default function Demo() {
         user={{ name: "Jonas Weber", email: "jonas@example.com" }}
         defaultStatus="busy"
         onStatusChange={() => {}}
-        items={[{ label: "Profile", icon: <User size={16} /> }]}
+        items={[{ label: "Profile", icon: <UserIcon size={16} /> }]}
         signOutKeys={["⇧", "⌘", "Q"]}
       />
     </div>

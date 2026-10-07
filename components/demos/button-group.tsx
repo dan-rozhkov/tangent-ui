@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { AlignLeft, AlignRight, Archive, Check, Copy, InboxUp, Link, Minus, Pin, Plus, TextAlignCenter, Trash } from "@mynaui/icons-react"
+import { AlignCenterHorizontalIcon, AlignLeftIcon, AlignRightIcon, ArchiveIcon, CheckIcon, CopyIcon, LinkIcon, MinusIcon, PlusIcon, PushPinIcon, TrashIcon, TrayArrowUpIcon } from "@phosphor-icons/react"
 
 import { ButtonGroup } from "@/components/ui/button-group"
 
@@ -32,29 +32,29 @@ export default function Demo() {
             id: "share",
             label: copied ? "Copied" : "Share",
             reserve: ["Share", "Copied"],
-            icon: copied ? <Check /> : <Link />,
+            icon: copied ? <CheckIcon size={24} /> : <LinkIcon size={24} />,
             onSelect: flashCopied,
           },
           {
             id: "duplicate",
             label: duplicated ? "Duplicated" : "Duplicate",
             reserve: ["Duplicate", "Duplicated"],
-            icon: duplicated ? <Check /> : <Copy />,
+            icon: duplicated ? <CheckIcon size={24} /> : <CopyIcon size={24} />,
             onSelect: flashDuplicated,
           },
           {
             id: "archive",
             label: archived ? "Restore" : "Archive",
             reserve: ["Archive", "Restore"],
-            icon: archived ? <InboxUp /> : <Archive />,
+            icon: archived ? <TrayArrowUpIcon size={24} /> : <ArchiveIcon size={24} />,
             onSelect: () => setArchived(value => !value),
           },
         ]}
         menu={{
           label: "More actions",
           items: [
-            { id: "pin", label: "Pin to sidebar", icon: <Pin /> },
-            { id: "delete", label: "Delete", icon: <Trash />, destructive: true },
+            { id: "pin", label: "Pin to sidebar", icon: <PushPinIcon size={24} /> },
+            { id: "delete", label: "Delete", icon: <TrashIcon size={24} />, destructive: true },
           ],
         }}
       />
@@ -64,18 +64,18 @@ export default function Demo() {
           variant="solid"
           size="sm"
           items={[
-            { id: "out", label: "Zoom out", icon: <Minus />, iconOnly: true, disabled: zoom <= 50, onSelect: () => setZoom(value => Math.max(50, value - 25)) },
+            { id: "out", label: "Zoom out", icon: <MinusIcon size={24} />, iconOnly: true, disabled: zoom <= 50, onSelect: () => setZoom(value => Math.max(50, value - 25)) },
             { id: "value", label: `Zoom ${zoom}%`, content: `${zoom}%`, onSelect: () => setZoom(100) },
-            { id: "in", label: "Zoom in", icon: <Plus />, iconOnly: true, disabled: zoom >= 200, onSelect: () => setZoom(value => Math.min(200, value + 25)) },
+            { id: "in", label: "Zoom in", icon: <PlusIcon size={24} />, iconOnly: true, disabled: zoom >= 200, onSelect: () => setZoom(value => Math.min(200, value + 25)) },
           ]}
         />
         <ButtonGroup
           label="Text alignment"
           size="sm"
           items={[
-            { id: "left", label: "Align left", icon: <AlignLeft />, iconOnly: true },
-            { id: "center", label: "Align center", icon: <TextAlignCenter />, iconOnly: true },
-            { id: "right", label: "Align right", icon: <AlignRight />, iconOnly: true },
+            { id: "left", label: "Align left", icon: <AlignLeftIcon size={24} />, iconOnly: true },
+            { id: "center", label: "Align center", icon: <AlignCenterHorizontalIcon size={24} />, iconOnly: true },
+            { id: "right", label: "Align right", icon: <AlignRightIcon size={24} />, iconOnly: true },
           ]}
         />
         <ButtonGroup

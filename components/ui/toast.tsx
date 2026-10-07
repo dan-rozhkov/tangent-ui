@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, type AnimationPlaybackControls, type HTMLMotionProps, type MotionProps, type PanInfo, type TargetAndTransition, type Transition, type Variants } from "motion/react";
-import { X } from "@mynaui/icons-react";
+import { XIcon } from "@phosphor-icons/react"
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";
@@ -132,7 +132,7 @@ export default function Toast({ title, description, open = true, onOpenChange, d
         onDragEnd={handleDragEnd}
       >
         <span className="grid size-[1.875rem] flex-none place-items-center rounded-pill border border-[color-mix(in_oklab,var(--success)_24%,var(--border))] bg-[color-mix(in_oklab,var(--success)_10%,var(--surface))] text-success" aria-hidden="true">
-          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.25} strokeLinecap="round" strokeLinejoin="round">
+          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
             <motion.path d="M4 12.5l5 5L20 6.5" initial={reduce ? false : { pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: motionTokens.duration.standard, ease: [...motionTokens.ease.enter], delay: .12 }} />
           </svg>
         </span>
@@ -154,7 +154,7 @@ export default function Toast({ title, description, open = true, onOpenChange, d
           aria-label="Dismiss notification"
           onClick={() => dismiss(0)}
         >
-          <X width={16} height={16} strokeWidth={2} aria-hidden="true" />
+          <XIcon size={16} aria-hidden="true" />
         </button>
       </motion.div>}
     </AnimatePresence>

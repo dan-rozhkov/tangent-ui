@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { Check, Minus } from "@mynaui/icons-react";
+import { CheckIcon, MinusIcon } from "@phosphor-icons/react"
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { comparisonColumns, comparisonSections } from "@/components/ui/comparison-table-data";
@@ -124,7 +124,7 @@ function Mark({ value, own, index, reduced }: { value: ComparisonValue | undefin
     <span className={s.srOnly}>Partial</span>
     {note && <span className={s.note}>{note}</span>}
   </span>;
-  return <span className={s.markWrap}><Minus className={s.cross} size={18} strokeWidth={1.75} aria-hidden="true" /><span className={s.srOnly}>Not included</span></span>;
+  return <span className={s.markWrap}><MinusIcon className={s.cross} size={18} aria-hidden="true" /><span className={s.srOnly}>Not included</span></span>;
 }
 
 export function ComparisonTable({
@@ -236,7 +236,7 @@ export function ComparisonTable({
               <div role="cell" className={s.legend}>
                 <span><svg className={s.checkLegend} width="16" height="16" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="10" /><path d="M6.6 11.3l3 3 5.9-6.4" /></svg>Included</span>
                 <span><svg className={s.partial} width="16" height="16" viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="9.25" /><path d="M11 1.75a9.25 9.25 0 0 1 0 18.5z" /></svg>Partial</span>
-                <span><Minus className={s.cross} size={14} strokeWidth={1.75} aria-hidden="true" />Not included</span>
+                <span><MinusIcon className={s.cross} size={14} aria-hidden="true" />Not included</span>
               </div>
               {visible.map(column => <div key={column.id} role="cell" className={cn(s.footCell, column === own && s.footCellOwn)} data-own={column === own || undefined}>
                 {column === own && cta && (cta.href && !cta.onClick
@@ -244,7 +244,7 @@ export function ComparisonTable({
                   : <motion.button type="button" layout={!reduced} className={s.cta} style={{ borderRadius: 9999 }} data-done={ctaDone || undefined} whileTap={reduced ? undefined : { scale: .97 }} transition={morph} onClick={() => { cta.onClick?.(); if (cta.doneLabel) setCtaDone(true); }}>
                     <AnimatePresence mode="popLayout" initial={false}>
                       <motion.span key={ctaDone ? "done" : "idle"} layout={reduced ? false : "position"} className={s.ctaLabel} initial={reduced ? { opacity: 0 } : { opacity: 0, y: 8, filter: "blur(2px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={reduced ? { opacity: 0 } : { opacity: 0, y: -8, filter: "blur(2px)" }} transition={{ duration: motionTokens.duration.standard, ease: [...motionTokens.ease.standard] }}>
-                        {ctaDone ? <><Check size={14} strokeWidth={2} aria-hidden="true" />{cta.doneLabel}</> : cta.label}
+                        {ctaDone ? <><CheckIcon size={14} aria-hidden="true" />{cta.doneLabel}</> : cta.label}
                       </motion.span>
                     </AnimatePresence>
                   </motion.button>)}

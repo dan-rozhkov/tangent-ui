@@ -1,22 +1,22 @@
 "use client"
 
 import { useState } from "react"
-import { Bell, Cog, FilePlus, FolderPlus, Keyboard, LayoutDashboard, Moon, UserPlus, Users } from "@mynaui/icons-react"
+import { BellIcon, FilePlusIcon, FolderPlusIcon, GearIcon, KeyboardIcon, MoonIcon, SquaresFourIcon, UserPlusIcon, UsersIcon } from "@phosphor-icons/react"
 
 import { CommandPalette, type CommandItem } from "@/components/ui/command-palette"
 
-const icon = { width: 16, height: 16, strokeWidth: 1.75 } as const
+const icon = { size: 16 } as const
 
 const items: CommandItem[] = [
-  { id: "new-project", label: "New project", description: "Start from a blank board", group: "Create", shortcut: "N", icon: <FolderPlus {...icon} /> },
-  { id: "new-doc", label: "New document", description: "Write a brief or spec", group: "Create", shortcut: "D", icon: <FilePlus {...icon} /> },
-  { id: "invite", label: "Invite teammate", description: "Send an invite by email", group: "Team", keywords: ["member", "add"], icon: <UserPlus {...icon} /> },
-  { id: "members", label: "Manage members", description: "Roles and access", group: "Team", keywords: ["people"], icon: <Users {...icon} /> },
-  { id: "dashboard", label: "Go to dashboard", group: "Navigate", shortcut: "G", icon: <LayoutDashboard {...icon} /> },
-  { id: "notifications", label: "Open notifications", group: "Navigate", icon: <Bell {...icon} /> },
-  { id: "settings", label: "Open settings", description: "Workspace preferences", group: "Navigate", shortcut: ",", icon: <Cog {...icon} /> },
-  { id: "theme", label: "Toggle theme", description: "Switch light and dark", keywords: ["dark", "light", "appearance"], icon: <Moon {...icon} /> },
-  { id: "shortcuts", label: "Keyboard shortcuts", description: "See every shortcut", keywords: ["keys", "help"], icon: <Keyboard {...icon} /> },
+  { id: "new-project", label: "New project", description: "Start from a blank board", group: "Create", shortcut: "N", icon: <FolderPlusIcon {...icon} /> },
+  { id: "new-doc", label: "New document", description: "Write a brief or spec", group: "Create", shortcut: "D", icon: <FilePlusIcon {...icon} /> },
+  { id: "invite", label: "Invite teammate", description: "Send an invite by email", group: "Team", keywords: ["member", "add"], icon: <UserPlusIcon {...icon} /> },
+  { id: "members", label: "Manage members", description: "Roles and access", group: "Team", keywords: ["people"], icon: <UsersIcon {...icon} /> },
+  { id: "dashboard", label: "Go to dashboard", group: "Navigate", shortcut: "G", icon: <SquaresFourIcon {...icon} /> },
+  { id: "notifications", label: "Open notifications", group: "Navigate", icon: <BellIcon {...icon} /> },
+  { id: "settings", label: "Open settings", description: "Workspace preferences", group: "Navigate", shortcut: ",", icon: <GearIcon {...icon} /> },
+  { id: "theme", label: "Toggle theme", description: "Switch light and dark", keywords: ["dark", "light", "appearance"], icon: <MoonIcon {...icon} /> },
+  { id: "shortcuts", label: "Keyboard shortcuts", description: "See every shortcut", keywords: ["keys", "help"], icon: <KeyboardIcon {...icon} /> },
 ]
 
 export default function Demo() {

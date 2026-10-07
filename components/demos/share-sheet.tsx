@@ -1,6 +1,6 @@
 "use client"
 
-import { Building, FileText, Globe, Lock, Mail, Message, Send } from "@mynaui/icons-react"
+import { BuildingsIcon, ChatCircleIcon, EnvelopeIcon, FileTextIcon, GlobeIcon, LockIcon, PaperPlaneTiltIcon } from "@phosphor-icons/react"
 
 import { ShareSheet } from "@/components/ui/share-sheet"
 import { people as media } from "@/lib/media"
@@ -14,7 +14,7 @@ export default function Demo() {
     <div className="relative h-[400px] w-full max-w-[680px] rounded-surface border border-border bg-surface">
       <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
         <span className="inline-flex min-w-0 items-center gap-2 text-sm font-medium">
-          <FileText className="size-4 flex-none text-text-muted" aria-hidden="true" />
+          <FileTextIcon className="size-4 flex-none text-text-muted" aria-hidden="true" />
           <span className="truncate">Q3 launch plan</span>
         </span>
         <ShareSheet
@@ -22,15 +22,15 @@ export default function Demo() {
           link="https://example.com/d/q3-launch-plan"
           people={people}
           access={[
-            { value: "invited", label: "Only invited people", description: "Only people you add can open", icon: <Lock size={16} /> },
-            { value: "org", label: "Anyone at Northwind", description: "Can view and comment", icon: <Building size={16} /> },
-            { value: "public", label: "Anyone with the link", description: "Can view", icon: <Globe size={16} /> },
+            { value: "invited", label: "Only invited people", description: "Only people you add can open", icon: <LockIcon size={16} /> },
+            { value: "org", label: "Anyone at Northwind", description: "Can view and comment", icon: <BuildingsIcon size={16} /> },
+            { value: "public", label: "Anyone with the link", description: "Can view", icon: <GlobeIcon size={16} /> },
           ]}
           defaultAccess="org"
           channels={[
-            { id: "slack", label: "Slack", doneLabel: "Posted", icon: <Message size={16} /> },
-            { id: "email", label: "Email", doneLabel: "Sent", icon: <Mail size={16} /> },
-            { id: "telegram", label: "Message", doneLabel: "Sent", icon: <Send size={16} /> },
+            { id: "slack", label: "Slack", doneLabel: "Posted", icon: <ChatCircleIcon size={16} /> },
+            { id: "email", label: "Email", doneLabel: "Sent", icon: <EnvelopeIcon size={16} /> },
+            { id: "telegram", label: "Message", doneLabel: "Sent", icon: <PaperPlaneTiltIcon size={16} /> },
           ]}
           onSend={() => wait(900)}
           onChannel={() => wait(800)}

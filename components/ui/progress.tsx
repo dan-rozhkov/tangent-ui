@@ -12,7 +12,7 @@ import {
   type TargetAndTransition,
   type Transition,
 } from "motion/react"
-import { Check } from "@mynaui/icons-react"
+import { CheckIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -98,7 +98,7 @@ export function Progress({ value = 0, max = 100, label, showValue = false, class
                     exit={reduce ? fadeOut : { ...iconIn, transition: exitFast }}
                     transition={reduce ? enter : { ...motionTokens.spring.snappy, delay: 0.24 }}
                   >
-                    <Check size={14} strokeWidth={1.75} aria-hidden="true" />
+                    <CheckIcon size={14} aria-hidden="true" />
                   </motion.span>
                 )}
               </AnimatePresence>

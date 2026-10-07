@@ -6,7 +6,7 @@ import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { cva } from "class-variance-authority"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { TargetAndTransition } from "motion/react"
-import { ChevronDown } from "@mynaui/icons-react"
+import { CaretDownIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -290,10 +290,9 @@ export function SplitButton({ label, actions, onClick, disabled, icon, variant =
           aria-label={`${label} more actions`}
           disabled={disabled}
         >
-          <ChevronDown
+          <CaretDownIcon
             className="[transition:rotate_var(--duration-spring)_var(--ease-spring)] group-data-popup-open/trigger:rotate-180 motion-reduce:transition-none"
             size={16}
-            strokeWidth={1.75}
             aria-hidden="true"
           />
         </MenuPrimitive.Trigger>

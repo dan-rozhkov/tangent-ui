@@ -173,7 +173,7 @@ function EyeMorph({ slashed, reduced }: { slashed: boolean; reduced: boolean }) 
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.75}
+      strokeWidth={1.5}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -219,7 +219,7 @@ function RuleMark({ met, delay, reduced }: { met: boolean; delay: number; reduce
         viewBox="0 0 16 16"
         fill="none"
         stroke="currentColor"
-        strokeWidth={1.75}
+        strokeWidth={1}
         strokeLinecap="round"
         strokeLinejoin="round"
       >

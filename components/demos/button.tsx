@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Copy } from "@mynaui/icons-react"
+import { CheckIcon, CopyIcon } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 
@@ -25,7 +25,7 @@ export default function Demo() {
           Save changes
         </Button>
         <Button variant="secondary" onClick={() => { setCopied(true); setTimeout(() => setCopied(false), 1400) }}>
-          {copied ? <><Check className="size-4" />Copied to clipboard</> : <><Copy className="size-4" />Copy</>}
+          {copied ? <><CheckIcon className="size-4" />Copied to clipboard</> : <><CopyIcon className="size-4" />Copy</>}
         </Button>
       </div>
     </div>

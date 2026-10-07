@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState, u
 import type { HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
-import { Search, Undo, X } from "@mynaui/icons-react"
+import { ArrowUUpLeftIcon, MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -675,7 +675,7 @@ export function ShortcutRecorder({
                 exit={{ opacity: 0, scale: 0.6, transition: { duration: 0.1 } }}
                 transition={reduced ? { duration: 0 } : motionTokens.spring.snappy}
               >
-                <Undo size={16} strokeWidth={1.75} aria-hidden="true" />
+                <ArrowUUpLeftIcon size={16} aria-hidden="true" />
               </motion.button>
             )}
             {canClear && (
@@ -693,7 +693,7 @@ export function ShortcutRecorder({
                 exit={{ opacity: 0, scale: 0.6, transition: { duration: 0.1 } }}
                 transition={reduced ? { duration: 0 } : motionTokens.spring.snappy}
               >
-                <X size={16} strokeWidth={1.75} aria-hidden="true" />
+                <XIcon size={16} aria-hidden="true" />
               </motion.button>
             )}
           </AnimatePresence>
@@ -863,7 +863,7 @@ export function ShortcutList({
     <section className={cn("@container grid min-w-0 gap-3 font-sans tracking-body", className)} aria-label={label}>
       {searchable && (
         <div className="box-border flex h-control-sm items-center gap-2 rounded-control border border-border bg-surface pr-1.5 pl-3 [transition:border-color_var(--duration-fast)_var(--ease-standard)] focus-within:border-foreground">
-          <Search className="flex-none text-text-muted" size={16} strokeWidth={1.75} aria-hidden="true" />
+          <MagnifyingGlassIcon className="flex-none text-text-muted" size={16} aria-hidden="true" />
           <input
             ref={searchRef}
             className="h-full min-w-0 flex-1 appearance-none border-0 bg-transparent p-0 text-(length:--text-sm) text-foreground placeholder:text-text-muted [&::-webkit-search-cancel-button]:hidden"
@@ -900,7 +900,7 @@ export function ShortcutList({
                 exit={{ opacity: 0, scale: 0.6, transition: { duration: 0.1 } }}
                 transition={reduced ? { duration: 0 } : motionTokens.spring.snappy}
               >
-                <X size={14} strokeWidth={1.75} aria-hidden="true" />
+                <XIcon size={14} aria-hidden="true" />
               </motion.button>
             )}
           </AnimatePresence>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Image as ImageIcon, Link, Message, MousePointer, Play, Redo, SearchMinus, SearchPlus, Square, TypeText, Undo } from "@mynaui/icons-react"
+import { ArrowUUpRightIcon, ArrowUUpLeftIcon, ChatCircleIcon, CursorIcon, ImageIcon, LinkIcon, MagnifyingGlassMinusIcon, MagnifyingGlassPlusIcon, PlayIcon, SquareIcon, TextTIcon } from "@phosphor-icons/react"
 
 import { FloatingButtonGroup } from "@/components/ui/floating-button-group"
 
@@ -27,7 +27,7 @@ export default function Demo() {
           {
             id: "undo",
             label: "Undo",
-            icon: <Undo />,
+            icon: <ArrowUUpLeftIcon size={24} />,
             iconOnly: true,
             shortcut: "⌘Z",
             disabled: history.past === 0,
@@ -36,21 +36,21 @@ export default function Demo() {
           {
             id: "redo",
             label: "Redo",
-            icon: <Redo />,
+            icon: <ArrowUUpRightIcon size={24} />,
             iconOnly: true,
             shortcut: "⇧⌘Z",
             disabled: history.future === 0,
             onSelect: () => setHistory(h => ({ past: h.past + 1, future: h.future - 1 })),
           },
           { type: "separator" },
-          { id: "comment", label: "Comment", icon: <Message />, shortcut: "C" },
-          { id: "share", label: copied ? "Copied" : "Share", reserveLabels: ["Share", "Copied"], icon: <Link />, onSelect: copyLink },
+          { id: "comment", label: "Comment", icon: <ChatCircleIcon size={24} />, shortcut: "C" },
+          { id: "share", label: copied ? "Copied" : "Share", reserveLabels: ["Share", "Copied"], icon: <LinkIcon size={24} />, onSelect: copyLink },
           { type: "separator" },
           {
             id: "present",
             label: presenting ? "Stop" : "Present",
             reserveLabels: ["Present", "Stop"],
-            icon: <Play />,
+            icon: <PlayIcon size={24} />,
             pressed: presenting,
             onSelect: () => setPresenting(p => !p),
           },
@@ -63,13 +63,13 @@ export default function Demo() {
         size="sm"
         iconOnly
         items={[
-          { id: "select", label: "Select", icon: <MousePointer />, shortcut: "V" },
-          { id: "shape", label: "Shape", icon: <Square />, shortcut: "R" },
-          { id: "text", label: "Text", icon: <TypeText />, shortcut: "T" },
-          { id: "image", label: "Image", icon: <ImageIcon /> },
+          { id: "select", label: "Select", icon: <CursorIcon size={24} />, shortcut: "V" },
+          { id: "shape", label: "Shape", icon: <SquareIcon size={24} />, shortcut: "R" },
+          { id: "text", label: "Text", icon: <TextTIcon size={24} />, shortcut: "T" },
+          { id: "image", label: "Image", icon: <ImageIcon size={24} /> },
           { type: "separator" },
-          { id: "zoom-in", label: "Zoom in", icon: <SearchPlus />, shortcut: "⌘+" },
-          { id: "zoom-out", label: "Zoom out", icon: <SearchMinus />, shortcut: "⌘−" },
+          { id: "zoom-in", label: "Zoom in", icon: <MagnifyingGlassPlusIcon size={24} />, shortcut: "⌘+" },
+          { id: "zoom-out", label: "Zoom out", icon: <MagnifyingGlassMinusIcon size={24} />, shortcut: "⌘−" },
         ]}
       />
     </div>

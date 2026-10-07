@@ -4,7 +4,7 @@ import { Children, isValidElement, useEffect, useEffectEvent, useId, useLayoutEf
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode, Ref } from "react";
 import { AnimatePresence, animate, motion, motionValue, useMotionValue, useTransform } from "motion/react";
 import type { AnimationPlaybackControls, MotionValue, TargetAndTransition } from "motion/react";
-import { ChevronLeft, ChevronRight, PauseSolid, PlaySolid } from "@mynaui/icons-react";
+import { CaretLeftIcon, CaretRightIcon, PauseIcon, PlayIcon } from "@phosphor-icons/react"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";
@@ -317,7 +317,7 @@ export function Carousel({ label, children, index: controlledIndex, defaultIndex
       {canRotate && <button ref={playRef} type="button" className={controlClass} aria-label={playing ? "Pause slide rotation" : "Start slide rotation"} onClick={toggleRotation}>
         <span className="grid size-4 place-items-center"><AnimatePresence initial={false}>
           <motion.span key={playing ? "pause" : "play"} className="grid [grid-area:1/1] place-items-center" initial={reduced ? { opacity: 0 } : iconIn} animate={iconRest} exit={reduced ? { opacity: 0, transition: { duration: motionTokens.duration.instant } } : iconOut} transition={reduced ? { duration: motionTokens.duration.instant } : iconEnter}>
-            {playing ? <PauseSolid size={15} aria-hidden="true" /> : <PlaySolid size={15} aria-hidden="true" />}
+            {playing ? <PauseIcon weight="fill" size={11} aria-hidden="true" /> : <PlayIcon weight="fill" size={11} aria-hidden="true" />}
           </motion.span>
         </AnimatePresence></span>
       </button>}
@@ -326,8 +326,8 @@ export function Carousel({ label, children, index: controlledIndex, defaultIndex
           tabRef={node => { tabRefs.current[i] = node; }} onSelect={() => select(i)} />)}
       </div>
       <div className="ml-auto flex flex-none gap-2 @max-[340px]:gap-1">
-        <button type="button" className={controlClass} aria-label="Previous slide" aria-disabled={index === 0} onClick={() => { if (target.current > 0) select(target.current - 1); }}><ChevronLeft size={18} strokeWidth={1.75} aria-hidden="true" /></button>
-        <button type="button" className={controlClass} aria-label="Next slide" aria-disabled={index === last} onClick={() => { if (target.current < last) select(target.current + 1); }}><ChevronRight size={18} strokeWidth={1.75} aria-hidden="true" /></button>
+        <button type="button" className={controlClass} aria-label="Previous slide" aria-disabled={index === 0} onClick={() => { if (target.current > 0) select(target.current - 1); }}><CaretLeftIcon size={18} aria-hidden="true" /></button>
+        <button type="button" className={controlClass} aria-label="Next slide" aria-disabled={index === last} onClick={() => { if (target.current < last) select(target.current + 1); }}><CaretRightIcon size={18} aria-hidden="true" /></button>
       </div>
     </div>}
     <span className="sr-only" aria-live="polite" aria-atomic="true">{announcement}</span>

@@ -4,7 +4,7 @@ import { forwardRef, useEffect, useId, useLayoutEffect, useRef, useState } from 
 import type { FormEvent, KeyboardEvent, ReactNode } from "react";
 import { AnimatePresence, LayoutGroup, motion, useAnimate, useIsPresent } from "motion/react";
 import type { Variants } from "motion/react";
-import { Check, Clock3, Mail, Message, Telephone, Users } from "@mynaui/icons-react";
+import { ChatCircleIcon, CheckIcon, ClockIcon, EnvelopeIcon, PhoneIcon, UsersIcon } from "@phosphor-icons/react"
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/ui/copy-button";
@@ -213,7 +213,7 @@ function ContactForm({ topics, onSubmit, reduced }: { topics: string[]; onSubmit
     {phase === "sent"
       ? <div className="grid justify-items-center gap-3 px-2 py-10 text-center" aria-live="polite">
           <span className="mb-2 grid size-[52px] place-items-center rounded-full bg-[color-mix(in_oklab,var(--success)_13%,transparent)] text-success [&_svg]:size-[26px]" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <motion.path d="M5 12.5l4.5 4.5L19 7.5" initial={reduced ? false : { pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: reduced ? 0 : .42, ease: enter, delay: .16 }} />
             </svg>
           </span>
@@ -241,7 +241,7 @@ function ContactForm({ topics, onSubmit, reduced }: { topics: string[]; onSubmit
 
 const copyRow = "flex w-[min(100%,360px)] items-center justify-between gap-3 rounded-control border border-border py-1 pr-1 pl-4 text-(length:--text-sm) [&>span]:overflow-hidden [&>span]:text-ellipsis [&>span]:whitespace-nowrap";
 const hannah = person("hannah-walsh");
-const ICON = { size: 18, strokeWidth: 1.75, "aria-hidden": true } as const;
+const ICON = { size: 18, "aria-hidden": true } as const;
 
 /** A demo action that confirms in place: the label morphs, and the result stays visible below it. */
 function ConfirmAction({ idle, busy, done, note }: { idle: string; busy?: boolean; done: string; note?: ReactNode }) {
@@ -254,7 +254,7 @@ function ConfirmAction({ idle, busy, done, note }: { idle: string; busy?: boolea
       if (state !== "idle") { setState("idle"); return; }
       if (busy) { setState("busy"); timer.current = window.setTimeout(() => setState("done"), 800); } else setState("done");
     }}>
-      {state === "done" ? <><Check size={15} strokeWidth={2.25} aria-hidden="true" />{done}</> : idle}
+      {state === "done" ? <><CheckIcon size={15} aria-hidden="true" />{done}</> : idle}
     </Button>
     <div aria-live="polite">
       <AnimatePresence initial={false}>
@@ -266,7 +266,7 @@ function ConfirmAction({ idle, busy, done, note }: { idle: string; busy?: boolea
 
 export const contactExampleChannels: ContactChannel[] = [
   {
-    value: "chat", label: "Chat with support", meta: "Replies in about 4 minutes", icon: <Message {...ICON} />,
+    value: "chat", label: "Chat with support", meta: "Replies in about 4 minutes", icon: <ChatCircleIcon {...ICON} />,
     detail: <>
       <h3>Chat with support</h3>
       <p>Hannah and Jordan are online now. Chat is best for quick questions about installing, theming, or a component that misbehaves.</p>
@@ -274,7 +274,7 @@ export const contactExampleChannels: ContactChannel[] = [
     </>,
   },
   {
-    value: "email", label: "Email support", meta: "Replies within a business day", icon: <Mail {...ICON} />,
+    value: "email", label: "Email support", meta: "Replies within a business day", icon: <EnvelopeIcon {...ICON} />,
     detail: <>
       <h3>Email support</h3>
       <p>Send screenshots, links, or a reproduction. Every message gets a reply from a person within one business day.</p>
@@ -282,7 +282,7 @@ export const contactExampleChannels: ContactChannel[] = [
     </>,
   },
   {
-    value: "sales", label: "Talk to sales", meta: "Weekdays, 9am to 6pm PT", icon: <Telephone {...ICON} />,
+    value: "sales", label: "Talk to sales", meta: "Weekdays, 9am to 6pm PT", icon: <PhoneIcon {...ICON} />,
     detail: <>
       <h3>Talk to sales</h3>
       <p>Licensing for a larger team, invoicing, or a security review. Tyler will walk you through it on a 20 minute call.</p>
@@ -291,7 +291,7 @@ export const contactExampleChannels: ContactChannel[] = [
     </>,
   },
   {
-    value: "community", label: "Ask the community", meta: "4,200 members", icon: <Users {...ICON} />,
+    value: "community", label: "Ask the community", meta: "4,200 members", icon: <UsersIcon {...ICON} />,
     detail: <>
       <h3>Ask the community</h3>
       <p>Designers and engineers who ship with Tangent answer questions about components, theming, and motion, usually within the hour.</p>
@@ -337,7 +337,7 @@ function Offices({ offices }: { offices: ContactOffice[] }) {
       return <li key={office.city} className="grid content-start gap-3 rounded-panel border border-border bg-surface p-6">
         <div className="flex items-baseline justify-between gap-3 [&_h3]:m-0 [&_h3]:text-(length:--text-lg) [&_h3]:font-medium [&_h3]:leading-body">
           <h3>{office.city}</h3>
-          <span className="inline-flex flex-none items-baseline gap-1.5 text-(length:--text-sm) text-text-secondary [&_svg]:self-center"><Clock3 size={14} strokeWidth={1.75} aria-hidden="true" /><span className="tabular-nums">{time}</span></span>
+          <span className="inline-flex flex-none items-baseline gap-1.5 text-(length:--text-sm) text-text-secondary [&_svg]:self-center"><ClockIcon size={14} aria-hidden="true" /><span className="tabular-nums">{time}</span></span>
         </div>
         <span className="group/status inline-flex items-center gap-2 text-(length:--text-sm) text-text-secondary" data-open={open === null ? undefined : open ? "" : undefined} data-closed={open === false ? "" : undefined}>
           <span className="size-[7px] rounded-full bg-border-strong transition-[background-color] duration-240 ease-standard motion-reduce:transition-none group-data-[open]/status:bg-success group-data-[open]/status:shadow-[0_0_0_3px_color-mix(in_oklab,var(--success)_18%,transparent)]" aria-hidden="true" />{open === null ? "Checking hours" : open ? `Open until ${hourLabel((office.hours ?? [9, 18])[1])}` : "Closed now"}
@@ -424,8 +424,8 @@ export const ContactSection = forwardRef<HTMLElement, ContactSectionProps>(funct
         <h2 id={`${id}-title`} className="m-0 font-display text-[length:clamp(1.75rem,1rem+3cqi,var(--text-4xl))] font-medium tracking-display leading-display text-balance">{title ?? copy.title}</h2>
         <p className="m-0 text-(length:--text-base) leading-normal text-text-secondary text-pretty">{description ?? copy.description}</p>
         {variant === "form" && <ul className="m-0 mt-4 grid list-none gap-2 p-0 [&_li]:flex [&_li]:min-h-8 [&_li]:items-center [&_li]:gap-2 [&_li]:text-(length:--text-sm) [&_li]:text-text-secondary [&_svg]:flex-none">
-          <li><Clock3 size={16} strokeWidth={1.75} aria-hidden="true" />Replies within one business day</li>
-          <li><Mail size={16} strokeWidth={1.75} aria-hidden="true" /><span>hello@example.com</span><CopyButton value="hello@example.com" label="Copy email" iconOnly variant="plain" /></li>
+          <li><ClockIcon size={16} aria-hidden="true" />Replies within one business day</li>
+          <li><EnvelopeIcon size={16} aria-hidden="true" /><span>hello@example.com</span><CopyButton value="hello@example.com" label="Copy email" iconOnly variant="plain" /></li>
         </ul>}
       </div>
       {variant === "form" && <ContactForm topics={topics} onSubmit={onSubmit} reduced={reduced} />}

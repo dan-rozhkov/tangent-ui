@@ -21,7 +21,7 @@ import {
   type Transition,
   type Variants,
 } from "motion/react"
-import { Check, FaceId, Mail } from "@mynaui/icons-react"
+import { CheckIcon, EnvelopeIcon, ScanSmileyIcon } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -206,7 +206,7 @@ function PasskeyPulse({ reduce }: { reduce: boolean }) {
             transition={{ duration: 1.2, ease: [...motionTokens.ease.standard], delay: index * 0.6 }}
           />
         ))}
-      <FaceId size={16} strokeWidth={1.75} aria-hidden="true" />
+      <ScanSmileyIcon size={16} aria-hidden="true" />
     </span>
   )
 }
@@ -532,12 +532,12 @@ export function LoginCentered({
       </>
     ) : passkey === "verified" ? (
       <>
-        <Check size={16} strokeWidth={2} aria-hidden="true" />
+        <CheckIcon size={16} aria-hidden="true" />
         Passkey verified
       </>
     ) : (
       <>
-        <FaceId size={16} strokeWidth={1.75} aria-hidden="true" />
+        <ScanSmileyIcon size={16} aria-hidden="true" />
         Sign in with passkey
       </>
     )
@@ -651,7 +651,7 @@ export function LoginCentered({
                           "Cancel"
                         ) : (
                           <>
-                            <Mail size={16} strokeWidth={1.75} aria-hidden="true" />
+                            <EnvelopeIcon size={16} aria-hidden="true" />
                             Use email instead
                           </>
                         )}
@@ -726,7 +726,7 @@ export function LoginCentered({
                     </form>
                     {!signingUp && (
                       <button type="button" className={styles.textButton} onClick={switchToPasskey}>
-                        <FaceId size={14} strokeWidth={1.75} aria-hidden="true" />
+                        <ScanSmileyIcon size={14} aria-hidden="true" />
                         Use a passkey instead
                       </button>
                     )}
@@ -765,7 +765,7 @@ export function LoginCentered({
                       <Button type="submit" className={styles.wide} loading={busy === "code"} aria-disabled={verified || undefined}>
                         {verified ? (
                           <>
-                            <Check size={16} strokeWidth={2} aria-hidden="true" />
+                            <CheckIcon size={16} aria-hidden="true" />
                             Verified
                           </>
                         ) : signingUp ? (

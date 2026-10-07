@@ -1,12 +1,12 @@
 "use client"
 
-import { Plane, ShoppingBag, Train } from "@mynaui/icons-react"
+import { AirplaneIcon, ShoppingBagIcon, TrainIcon } from "@phosphor-icons/react"
 
 import { WalletStack } from "@/components/ui/wallet-stack"
 import type { WalletCard } from "@/components/ui/wallet-stack"
 import { avatar, photo } from "@/lib/media"
 
-const icon = (Icon: typeof Plane) => <Icon size={14} strokeWidth={1.75} />
+const icon = (Icon: typeof AirplaneIcon) => <Icon size={14} />
 
 // Fictional issuers and numbers only; just the last four digits are ever shown.
 const cards: WalletCard[] = [
@@ -21,7 +21,7 @@ const cards: WalletCard[] = [
     balance: 3248.6,
     balanceLabel: "Available",
     transactions: [
-      { id: "t1", merchant: "Linen & Co", detail: "Home · Today", amount: -84.12, icon: icon(ShoppingBag) },
+      { id: "t1", merchant: "Linen & Co", detail: "Home · Today", amount: -84.12, icon: icon(ShoppingBagIcon) },
       { id: "t2", merchant: "Emma Collins", detail: "Dinner split · Yesterday", amount: 36.5, avatar: avatar("emma-collins") },
       { id: "t3", merchant: "Blue Bottle", detail: "Coffee · Mon", amount: -6.5 },
     ],
@@ -38,8 +38,8 @@ const cards: WalletCard[] = [
     balance: 812.4,
     balanceLabel: "Spent this month",
     transactions: [
-      { id: "t1", merchant: "Alpine Air", detail: "Flight · Sat", amount: -412, icon: icon(Plane) },
-      { id: "t2", merchant: "Rail Pass", detail: "Transit · Fri", amount: -64.9, icon: icon(Train) },
+      { id: "t1", merchant: "Alpine Air", detail: "Flight · Sat", amount: -412, icon: icon(AirplaneIcon) },
+      { id: "t2", merchant: "Rail Pass", detail: "Transit · Fri", amount: -64.9, icon: icon(TrainIcon) },
       { id: "t3", merchant: "Refund", detail: "Seat upgrade · Thu", amount: 35.5 },
     ],
   },

@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode, RefObject } from "react";
-import { ArrowUp } from "@mynaui/icons-react";
+import { ArrowUpIcon } from "@phosphor-icons/react"
 import { AnimatePresence, animate, motion, useMotionValue, type Transition, type Variants } from "motion/react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
@@ -132,8 +132,8 @@ function SortGlyph({ active, descending, reduced }: { active: boolean; descendin
   }, [active, descending, reduced, rotate]);
   const transition: Transition = reduced ? instant : active ? { opacity: enter, filter: enter, scale: motionTokens.spring.snappy } : { duration: motionTokens.duration.instant, ease: [...motionTokens.ease.standard] };
   return <span className="relative grid size-4 flex-none place-items-center" aria-hidden="true">
-    <ArrowUp className={cn("absolute inset-0 grid place-items-center text-text-muted opacity-0 transition-[opacity] duration-160 ease-standard motion-reduce:transition-none!", !active && "group-focus-visible/sort:opacity-60 pointer-fine:group-hover/sort:opacity-60")} size={16} strokeWidth={1.75} />
-    <motion.span className="absolute inset-0 grid place-items-center text-foreground" style={{ rotate }} initial={false} animate={active ? { opacity: 1, scale: 1, filter: blur(0) } : { opacity: 0, scale: .6, filter: blur(motionTokens.blur.subtle) }} transition={transition}><ArrowUp size={16} strokeWidth={1.75} /></motion.span>
+    <ArrowUpIcon className={cn("absolute inset-0 grid place-items-center text-text-muted opacity-0 transition-[opacity] duration-160 ease-standard motion-reduce:transition-none!", !active && "group-focus-visible/sort:opacity-60 pointer-fine:group-hover/sort:opacity-60")} size={16} />
+    <motion.span className="absolute inset-0 grid place-items-center text-foreground" style={{ rotate }} initial={false} animate={active ? { opacity: 1, scale: 1, filter: blur(0) } : { opacity: 0, scale: .6, filter: blur(motionTokens.blur.subtle) }} transition={transition}><ArrowUpIcon size={16} /></motion.span>
   </span>;
 }
 
@@ -148,7 +148,7 @@ function SelectBox({ checked, mixed = false, label, nav, reduced, onToggle, inpu
     <span className="pointer-events-none relative block size-[18px] flex-none rounded-[5px] border border-border-strong bg-surface text-control-glyph [transition:border-color_var(--duration-fast)_var(--ease-standard),transform_var(--duration-spring)_var(--ease-spring)] peer-active:[transform:scale(.95)] peer-active:[transition:border-color_var(--duration-fast)_var(--ease-standard),transform_110ms_var(--ease-standard)] data-[on]:border-control-on pointer-fine:group-hover/hit:not-data-[on]:border-text-muted motion-reduce:transition-none! motion-reduce:peer-active:[transform:none]" data-on={on || undefined} aria-hidden="true">
       <motion.span className="absolute -inset-px rounded-[inherit] bg-control-on" initial={false} animate={{ opacity: on ? 1 : 0, scale: on ? 1 : .6 }} transition={reduced ? { duration: 0 } : { scale: motionTokens.spring.snappy, opacity }} />
       <svg className="absolute -inset-px size-[18px] overflow-visible" viewBox="0 0 18 18" fill="none" focusable="false">
-        <motion.path initial={false} animate={{ d: mixed ? dashPath : checkPath, pathLength: on ? 1 : 0, opacity: on ? 1 : 0 }} transition={reduced ? { duration: 0 } : { d: motionTokens.spring.morph, pathLength: motionTokens.spring.snappy, opacity }} stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" />
+        <motion.path initial={false} animate={{ d: mixed ? dashPath : checkPath, pathLength: on ? 1 : 0, opacity: on ? 1 : 0 }} transition={reduced ? { duration: 0 } : { d: motionTokens.spring.morph, pathLength: motionTokens.spring.snappy, opacity }} stroke="currentColor" strokeWidth={1.125} strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </span>
   </label>;

@@ -1,35 +1,35 @@
 "use client"
 
 import { useState } from "react"
-import { Book, Briefcase, Filter, Heart, Home, Logout, Paint, Search, Sparkles, User, UserCircle, UserPlus } from "@mynaui/icons-react"
+import { BookIcon, BriefcaseIcon, FunnelIcon, HeartIcon, HouseIcon, MagnifyingGlassIcon, PaintBrushIcon, SignOutIcon, SparkleIcon, UserCircleIcon, UserIcon, UserPlusIcon } from "@phosphor-icons/react"
 
 import { ToolbarMenu, type ToolbarMenuItem } from "@/components/ui/toolbar-menu"
 
 const items: ToolbarMenuItem[] = [
-  { id: "home", label: "Home", icon: <Home /> },
-  { id: "discover", label: "Discover", icon: <Search /> },
-  { id: "favorites", label: "Favorites", icon: <Heart /> },
+  { id: "home", label: "Home", icon: <HouseIcon size={24} /> },
+  { id: "discover", label: "Discover", icon: <MagnifyingGlassIcon size={24} /> },
+  { id: "favorites", label: "Favorites", icon: <HeartIcon size={24} /> },
   {
     id: "notebooks",
     label: "Notebooks",
-    icon: <Book />,
+    icon: <BookIcon size={24} />,
     items: [
-      { id: "personal", label: "Personal", icon: <User /> },
-      { id: "work", label: "Work", icon: <Briefcase /> },
-      { id: "ideas", label: "Ideas", icon: <Sparkles /> },
+      { id: "personal", label: "Personal", icon: <UserIcon size={24} /> },
+      { id: "work", label: "Work", icon: <BriefcaseIcon size={24} /> },
+      { id: "ideas", label: "Ideas", icon: <SparkleIcon size={24} /> },
     ],
   },
   {
     id: "settings",
     label: "Settings",
-    icon: <Filter />,
+    icon: <FunnelIcon size={24} />,
     inBar: false,
     items: [
-      { id: "profile", label: "Profile", icon: <UserCircle /> },
-      { id: "appearance", label: "Appearance", icon: <Paint /> },
-      { id: "upgrade", label: "Upgrade", icon: <Sparkles /> },
-      { id: "invite", label: "Invite a friend", icon: <UserPlus /> },
-      { id: "sign-out", label: "Sign out", icon: <Logout /> },
+      { id: "profile", label: "Profile", icon: <UserCircleIcon size={24} /> },
+      { id: "appearance", label: "Appearance", icon: <PaintBrushIcon size={24} /> },
+      { id: "upgrade", label: "Upgrade", icon: <SparkleIcon size={24} /> },
+      { id: "invite", label: "Invite a friend", icon: <UserPlusIcon size={24} /> },
+      { id: "sign-out", label: "Sign out", icon: <SignOutIcon size={24} /> },
     ],
   },
 ]

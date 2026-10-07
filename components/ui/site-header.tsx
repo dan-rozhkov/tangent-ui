@@ -5,7 +5,7 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, CSSProperties, HTMLAtt
 import Image from "next/image";
 import { AnimatePresence, LayoutGroup, motion, useIsPresent } from "motion/react";
 import type { Transition, Variants } from "motion/react";
-import { ArrowRight, BookOpen, ChatMessages, ChevronDown, Clock3, Compass, Layout, LayoutPanelLeft, Menu, Package, Swatches, X } from "@mynaui/icons-react";
+import { ArrowRightIcon, BookOpenIcon, CaretDownIcon, ChatsCircleIcon, ClockIcon, CompassIcon, LayoutIcon, ListIcon, PackageIcon, SidebarSimpleIcon, SwatchesIcon, XIcon } from "@phosphor-icons/react"
 import SegmentedControl from "@/components/ui/segmented-control";
 import { motionTokens } from "@/lib/motion-tokens";
 import { photo } from "@/lib/media";
@@ -112,27 +112,27 @@ export function TangentMark(props: { className?: string }) {
   </svg>;
 }
 
-const ICON = { size: 16, strokeWidth: 1.75, "aria-hidden": true } as const;
+const ICON = { size: 16, "aria-hidden": true } as const;
 const curvedFacade = photo("curved-facade");
 
 export const siteHeaderExampleItems: SiteHeaderItem[] = [
   {
     value: "product", label: "Product",
     links: [
-      { label: "Components", description: "140 interactive React components", icon: <Package {...ICON} /> },
-      { label: "Blocks", description: "Complete sections, ready to ship", icon: <LayoutPanelLeft {...ICON} /> },
-      { label: "Templates", description: "Starter sites with every page", icon: <Layout {...ICON} /> },
-      { label: "Themes", description: "Tune color, radius, and motion", icon: <Swatches {...ICON} /> },
+      { label: "Components", description: "140 interactive React components", icon: <PackageIcon {...ICON} /> },
+      { label: "Blocks", description: "Complete sections, ready to ship", icon: <SidebarSimpleIcon {...ICON} /> },
+      { label: "Templates", description: "Starter sites with every page", icon: <LayoutIcon {...ICON} /> },
+      { label: "Themes", description: "Tune color, radius, and motion", icon: <SwatchesIcon {...ICON} /> },
     ],
     feature: { title: "What's new in 2.4", description: "Site headers, footers, and hero sections.", image: { src: curvedFacade.src, alt: curvedFacade.alt } },
   },
   {
     value: "resources", label: "Resources",
     links: [
-      { label: "Documentation", description: "Install, theme, and compose", icon: <BookOpen {...ICON} /> },
-      { label: "Guides", description: "Patterns for real product work", icon: <Compass {...ICON} /> },
-      { label: "Changelog", description: "Every release, week by week", icon: <Clock3 {...ICON} /> },
-      { label: "Community", description: "Questions, answers, and showcases", icon: <ChatMessages {...ICON} /> },
+      { label: "Documentation", description: "Install, theme, and compose", icon: <BookOpenIcon {...ICON} /> },
+      { label: "Guides", description: "Patterns for real product work", icon: <CompassIcon {...ICON} /> },
+      { label: "Changelog", description: "Every release, week by week", icon: <ClockIcon {...ICON} /> },
+      { label: "Community", description: "Questions, answers, and showcases", icon: <ChatsCircleIcon {...ICON} /> },
     ],
   },
   { value: "pricing", label: "Pricing" },
@@ -456,7 +456,7 @@ export const SiteHeader = forwardRef<HTMLElement, SiteHeaderProps>(function Site
                       >
                         {decorations}
                         <span className={s.navLabel}>{item.label}</span>
-                        <ChevronDown className={s.chevron} size={14} strokeWidth={2} aria-hidden="true" />
+                        <CaretDownIcon className={s.chevron} size={14} aria-hidden="true" />
                       </button>
                     : <Destination
                         link={item}
@@ -478,7 +478,7 @@ export const SiteHeader = forwardRef<HTMLElement, SiteHeaderProps>(function Site
           <button ref={menuButtonRef} type="button" className={s.menuButton} aria-expanded={menuOpen} aria-controls={`${id}-sheet`} aria-label={menuOpen ? "Close menu" : "Open menu"} onClick={() => { if (menuOpen) closeMenu(); else setMenuOpen(true); }}>
             <AnimatePresence initial={false} mode="popLayout">
               <motion.span key={menuOpen ? "close" : "open"} className={s.menuIcon} initial={reduced ? { opacity: 0 } : { opacity: 0, rotate: menuOpen ? -45 : 45, scale: .8 }} animate={{ opacity: 1, rotate: 0, scale: 1 }} exit={reduced ? { opacity: 0 } : { opacity: 0, rotate: menuOpen ? 45 : -45, scale: .8 }} transition={reduced ? { duration: 0 } : { ...motionTokens.spring.snappy, opacity: { duration: motionTokens.duration.instant } }}>
-                {menuOpen ? <X size={20} strokeWidth={1.75} aria-hidden="true" /> : <Menu size={20} strokeWidth={1.75} aria-hidden="true" />}
+                {menuOpen ? <XIcon size={20} aria-hidden="true" /> : <ListIcon size={20} aria-hidden="true" />}
               </motion.span>
             </AnimatePresence>
           </button>
@@ -512,7 +512,7 @@ export const SiteHeader = forwardRef<HTMLElement, SiteHeaderProps>(function Site
                 </ul>
                 {openItem.feature && <Destination link={{ label: openItem.feature.title, href: openItem.feature.href }} className={s.feature} data-panel-link="" onChoose={() => choose({ label: openItem.feature!.title, href: openItem.feature!.href, section: openItem.value }, openItem.value)}>
                   {openItem.feature.image && <span className={s.featureImage}><Image className={s.featureImg} src={openItem.feature.image.src} alt={openItem.feature.image.alt} fill sizes="260px" /></span>}
-                  <span className={s.featureTitle}>{openItem.feature.title}<ArrowRight className={s.featureArrow} size={14} strokeWidth={2} aria-hidden="true" /></span>
+                  <span className={s.featureTitle}>{openItem.feature.title}<ArrowRightIcon className={s.featureArrow} size={14} aria-hidden="true" /></span>
                   {openItem.feature.description && <span className={s.featureText}>{openItem.feature.description}</span>}
                 </Destination>}
               </div>
@@ -544,7 +544,7 @@ export const SiteHeader = forwardRef<HTMLElement, SiteHeaderProps>(function Site
                 return <motion.li key={item.value} className={s.sheetItem} {...rowMotion}>
                   {group ? <>
                     <button type="button" className={s.sheetRow} data-current={isCurrent ? "" : undefined} aria-expanded={isExpanded} aria-controls={`${id}-group-${item.value}`} onClick={() => setExpanded(isExpanded ? null : item.value)}>
-                      <span>{item.label}</span><ChevronDown className={s.sheetChevron} size={18} strokeWidth={1.75} aria-hidden="true" />
+                      <span>{item.label}</span><CaretDownIcon className={s.sheetChevron} size={18} aria-hidden="true" />
                     </button>
                     <AnimatePresence initial={false}>
                       {isExpanded && <motion.div key="group" id={`${id}-group-${item.value}`} className={s.sheetGroup} initial={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }} animate={reduced ? { opacity: 1 } : { height: "auto", opacity: 1 }} exit={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }} transition={reduced ? { duration: 0 } : { height: motionTokens.spring.smooth, opacity: { duration: motionTokens.duration.fast } }}>

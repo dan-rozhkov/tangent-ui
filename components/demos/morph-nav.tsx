@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { BookOpen, Briefcase, Building, Calendar, ChartBar, FileText, GraduationCap, Map, Package, Support, Users } from "@mynaui/icons-react"
+import { BookOpenIcon, BriefcaseIcon, BuildingsIcon, CalendarBlankIcon, ChartBarIcon, FileTextIcon, GraduationCapIcon, LifebuoyIcon, MapTrifoldIcon, PackageIcon, UsersIcon } from "@phosphor-icons/react"
 
 import { MorphNav, type MorphNavItem } from "@/components/ui/morph-nav"
 
@@ -29,12 +29,12 @@ const items: MorphNavItem[] = [
     value: "product",
     label: "Product",
     links: [
-      { label: "Field reports", description: "Capture site visits with photos, notes, and sign-off", href: "#reports", icon: <FileText /> },
-      { label: "Scheduling", description: "Plan crews and visits around real availability", href: "#scheduling", icon: <Calendar /> },
-      { label: "Asset map", description: "Every site and asset on one live map", href: "#map", icon: <Map /> },
-      { label: "Insights", description: "Trends across jobs, crews, and regions", href: "#insights", icon: <ChartBar /> },
-      { label: "Integrations", description: "Sync with the tools your office already uses", href: "#integrations", icon: <Package /> },
-      { label: "Teams", description: "Roles, permissions, and shared workspaces", href: "#teams", icon: <Users /> },
+      { label: "Field reports", description: "Capture site visits with photos, notes, and sign-off", href: "#reports", icon: <FileTextIcon size={24} /> },
+      { label: "Scheduling", description: "Plan crews and visits around real availability", href: "#scheduling", icon: <CalendarBlankIcon size={24} /> },
+      { label: "Asset map", description: "Every site and asset on one live map", href: "#map", icon: <MapTrifoldIcon size={24} /> },
+      { label: "Insights", description: "Trends across jobs, crews, and regions", href: "#insights", icon: <ChartBarIcon size={24} /> },
+      { label: "Integrations", description: "Sync with the tools your office already uses", href: "#integrations", icon: <PackageIcon size={24} /> },
+      { label: "Teams", description: "Roles, permissions, and shared workspaces", href: "#teams", icon: <UsersIcon size={24} /> },
     ],
     feature: feature("What’s new", "Offline sync, faster photo uploads, and a new report builder", "#new"),
   },
@@ -42,10 +42,10 @@ const items: MorphNavItem[] = [
     value: "solutions",
     label: "Solutions",
     links: [
-      { label: "Utilities", description: "Inspections and outage response at scale", href: "#utilities", icon: <Building /> },
-      { label: "Construction", description: "Daily logs, punch lists, and handover", href: "#construction", icon: <Briefcase /> },
-      { label: "Facilities", description: "Planned maintenance across every building", href: "#facilities", icon: <Building /> },
-      { label: "Field services", description: "Dispatch, track, and invoice from one place", href: "#services", icon: <Calendar /> },
+      { label: "Utilities", description: "Inspections and outage response at scale", href: "#utilities", icon: <BuildingsIcon size={24} /> },
+      { label: "Construction", description: "Daily logs, punch lists, and handover", href: "#construction", icon: <BriefcaseIcon size={24} /> },
+      { label: "Facilities", description: "Planned maintenance across every building", href: "#facilities", icon: <BuildingsIcon size={24} /> },
+      { label: "Field services", description: "Dispatch, track, and invoice from one place", href: "#services", icon: <CalendarBlankIcon size={24} /> },
     ],
     feature: feature("Customer story", "How Northwind cut report turnaround from days to hours", "#story"),
   },
@@ -53,10 +53,10 @@ const items: MorphNavItem[] = [
     value: "resources",
     label: "Resources",
     links: [
-      { label: "Docs", description: "Set up, configure, and extend Fieldwork", href: "#docs", icon: <BookOpen /> },
-      { label: "Academy", description: "Short courses for admins and crews", href: "#academy", icon: <GraduationCap /> },
-      { label: "Blog", description: "Product news and field notes", href: "#blog", icon: <FileText /> },
-      { label: "Support", description: "Talk to a person, any time zone", href: "#support", icon: <Support /> },
+      { label: "Docs", description: "Set up, configure, and extend Fieldwork", href: "#docs", icon: <BookOpenIcon size={24} /> },
+      { label: "Academy", description: "Short courses for admins and crews", href: "#academy", icon: <GraduationCapIcon size={24} /> },
+      { label: "Blog", description: "Product news and field notes", href: "#blog", icon: <FileTextIcon size={24} /> },
+      { label: "Support", description: "Talk to a person, any time zone", href: "#support", icon: <LifebuoyIcon size={24} /> },
     ],
     feature: feature("Field guide", "A practical playbook for rolling out mobile reporting", "#guide"),
   },
@@ -64,13 +64,13 @@ const items: MorphNavItem[] = [
 ]
 
 const searchItems = [
-  { label: "Field reports", group: "Product", href: "#reports", description: "Capture site visits", icon: <FileText /> },
-  { label: "Scheduling", group: "Product", href: "#scheduling", description: "Plan crews and visits", icon: <Calendar /> },
-  { label: "Customers", group: "Company", href: "#customers", description: "Teams using Fieldwork", icon: <Building /> },
-  { label: "Docs", group: "Resources", href: "#docs", description: "Set up and configure", icon: <BookOpen />, keywords: "setup install" },
-  { label: "Support", group: "Resources", href: "#support", description: "Talk to a person", icon: <Support /> },
-  { label: "Careers", group: "Company", href: "#careers", description: "Open roles", icon: <Briefcase /> },
-  { label: "Academy", group: "Resources", href: "#academy", description: "Short courses", icon: <GraduationCap /> },
+  { label: "Field reports", group: "Product", href: "#reports", description: "Capture site visits", icon: <FileTextIcon size={24} /> },
+  { label: "Scheduling", group: "Product", href: "#scheduling", description: "Plan crews and visits", icon: <CalendarBlankIcon size={24} /> },
+  { label: "Customers", group: "Company", href: "#customers", description: "Teams using Fieldwork", icon: <BuildingsIcon size={24} /> },
+  { label: "Docs", group: "Resources", href: "#docs", description: "Set up and configure", icon: <BookOpenIcon size={24} />, keywords: "setup install" },
+  { label: "Support", group: "Resources", href: "#support", description: "Talk to a person", icon: <LifebuoyIcon size={24} /> },
+  { label: "Careers", group: "Company", href: "#careers", description: "Open roles", icon: <BriefcaseIcon size={24} /> },
+  { label: "Academy", group: "Resources", href: "#academy", description: "Short courses", icon: <GraduationCapIcon size={24} /> },
 ]
 
 export default function Demo() {

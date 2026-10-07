@@ -5,7 +5,7 @@ import type { KeyboardEvent, ReactNode, RefObject } from "react"
 import { flushSync } from "react-dom"
 import { AnimatePresence, animate, motion, useMotionValue, useMotionValueEvent } from "motion/react"
 import type { MotionValue } from "motion/react"
-import { Search, X } from "@mynaui/icons-react"
+import { MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -477,11 +477,10 @@ export function ExpandingSearch({
           onClick={expand}
         />
         {/* The glass sits at the leading edge, so it is centered in the circle and rides that edge to its place in the open field. */}
-        <Search
+        <MagnifyingGlassIcon
           className="pointer-events-none absolute top-[calc(50%-9px)] left-[calc(var(--control-height-md)_/_2_-_10px)]"
-          width={18}
-          height={18}
-          strokeWidth={1.75}
+          size={18}
+         
           aria-hidden="true"
         />
         {/* The placeholder waits for the shape to start moving, then fades in; on close it leaves first. */}
@@ -555,7 +554,7 @@ export function ExpandingSearch({
                     }
               }
             >
-              <X width={16} height={16} strokeWidth={1.75} aria-hidden="true" />
+              <XIcon size={16} aria-hidden="true" />
             </motion.button>
           )}
         </AnimatePresence>

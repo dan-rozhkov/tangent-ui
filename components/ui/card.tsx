@@ -5,7 +5,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from
 import type { CSSProperties, HTMLAttributes, ReactNode } from "react"
 import { AnimatePresence, LayoutGroup, motion } from "motion/react"
 import type { HTMLMotionProps, MotionProps, Transition, Variants } from "motion/react"
-import { X } from "@mynaui/icons-react"
+import { XIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -387,7 +387,7 @@ export function Card({
                     aria-label="Close quick look"
                     render={<motion.button type="button" whileTap={reduced ? undefined : { scale: 0.94 }} transition={spring.snappy} />}
                   >
-                    <X width={16} height={16} strokeWidth={1.75} aria-hidden="true" />
+                    <XIcon size={16} aria-hidden="true" />
                   </Dialog.Close>
                 </motion.span>
                 <div className="p-6 group-data-returning/panel:p-5">

@@ -34,9 +34,10 @@ function install() {
     return animation
   }
 
-  const onStart = (event: Event) => {
+  // A transition or keyframe event names its pseudo-element, if any; only then does the search need the subtree.
+  const onStart = (event: TransitionEvent | AnimationEvent) => {
     if (speed === 1 || !(event.target instanceof Element)) return
-    for (const animation of event.target.getAnimations({ subtree: true })) {
+    for (const animation of event.target.getAnimations({ subtree: Boolean(event.pseudoElement) })) {
       if (animation.playbackRate === 1) animation.playbackRate = speed
     }
   }

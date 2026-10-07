@@ -4,7 +4,7 @@ import { Fragment, useEffect, useId, useLayoutEffect, useMemo, useRef, useState 
 import type { KeyboardEvent, PointerEvent, Ref } from "react"
 import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "motion/react"
 import type { MotionValue, Variants } from "motion/react"
-import { Minus, Plus } from "@mynaui/icons-react"
+import { MinusIcon, PlusIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -422,7 +422,7 @@ function StepButton({
   onRelease: () => void
   onActivate: () => void
 }) {
-  const Icon = toward > 0 ? Plus : Minus
+  const Icon = toward > 0 ? PlusIcon : MinusIcon
   // A limit dims the button but keeps it focusable, so a press there strains the value instead of dropping focus.
   // Mouse presses keep focus where it was: an open draft commits with the step, and the stepper never steals the ring.
   return (
@@ -463,7 +463,7 @@ function StepButton({
       onContextMenu={event => event.preventDefault()}
     >
       <span ref={iconRef} className="grid place-items-center">
-        <Icon size={16} strokeWidth={1.75} aria-hidden="true" />
+        <Icon size={16} aria-hidden="true" />
       </span>
     </button>
   )

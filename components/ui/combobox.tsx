@@ -1,7 +1,7 @@
 "use client"
 
 import { animate, AnimatePresence, motion } from "motion/react"
-import { Check, ChevronDown, Search, X } from "@mynaui/icons-react"
+import { CaretDownIcon, CheckIcon, MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react"
 import { forwardRef, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from "react"
 import type { InputHTMLAttributes, KeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode } from "react"
 import { motionTokens } from "@/lib/motion-tokens"
@@ -220,7 +220,7 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
           className
         )}
       >
-        <Search className="flex-none text-text-muted" size={16} strokeWidth={1.75} aria-hidden="true" />
+        <MagnifyingGlassIcon className="flex-none text-text-muted" size={16} aria-hidden="true" />
         <input
           {...inputProps}
           ref={inputRef}
@@ -280,14 +280,13 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
                 transition: { duration: motionTokens.duration.instant, ease: [...motionTokens.ease.standard] },
               }}
             >
-              <X size={16} strokeWidth={1.75} aria-hidden="true" />
+              <XIcon size={16} aria-hidden="true" />
             </motion.button>
           )}
         </AnimatePresence>
-        <ChevronDown
+        <CaretDownIcon
           className="flex-none text-text-muted [transition:transform_var(--duration-spring)_var(--ease-spring)] group-data-[open=true]/control:[transform:rotate(180deg)] motion-reduce:transition-none"
           size={16}
-          strokeWidth={1.75}
           aria-hidden="true"
         />
       </div>
@@ -351,7 +350,7 @@ export const Combobox = forwardRef<HTMLInputElement, ComboboxProps>(function Com
                     >
                       <span className="min-w-0 truncate">{option.label}</span>
                       {option.value === selectedValue && (
-                        <Check className="flex-none text-foreground" size={16} strokeWidth={1.75} aria-hidden="true" />
+                        <CheckIcon className="flex-none text-foreground" size={16} aria-hidden="true" />
                       )}
                     </div>
                   ))

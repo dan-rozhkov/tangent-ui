@@ -4,7 +4,7 @@ import { forwardRef, useId, useMemo, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import type { Variants } from "motion/react";
-import { ArrowRight, Plus } from "@mynaui/icons-react";
+import { ArrowRightIcon, PlusIcon } from "@phosphor-icons/react"
 import { SearchField } from "@/components/ui/search-field";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { motionTokens } from "@/lib/motion-tokens";
@@ -126,7 +126,7 @@ function Question({ item, open, onToggle, query = "", reduced, baseId, layout }:
     <h3 className="m-0 font-[inherit]">
       <button type="button" id={`${safe}-q`} className="flex min-h-16 w-full cursor-pointer items-center justify-between gap-4 border-0 bg-transparent px-1 py-4 text-left font-[inherit] text-(length:--text-base) font-medium leading-body text-foreground [-webkit-tap-highlight-color:transparent] group/trigger" data-faq-trigger="" aria-expanded={open} aria-controls={`${safe}-a`} onClick={onToggle}>
         <span className="min-w-0"><Highlight text={item.question} query={query} /></span>
-        <Plus className="flex-none text-text-muted [transition:transform_var(--duration-spring)_var(--ease-spring),color_var(--duration-fast)_var(--ease-standard)] group-data-[open]/item:text-foreground group-data-[open]/item:[transform:rotate(45deg)] motion-reduce:transition-none pointer-fine:group-hover/trigger:text-foreground" size={18} strokeWidth={1.75} aria-hidden="true" />
+        <PlusIcon className="flex-none text-text-muted [transition:transform_var(--duration-spring)_var(--ease-spring),color_var(--duration-fast)_var(--ease-standard)] group-data-[open]/item:text-foreground group-data-[open]/item:[transform:rotate(45deg)] motion-reduce:transition-none pointer-fine:group-hover/trigger:text-foreground" size={18} aria-hidden="true" />
       </button>
     </h3>
     <AnimatePresence initial={false}>
@@ -145,7 +145,7 @@ function Question({ item, open, onToggle, query = "", reduced, baseId, layout }:
 const contactClass = "group/contact flex w-full cursor-pointer items-center justify-between gap-4 rounded-[20px] border border-border bg-surface px-5 py-4 text-left font-[inherit] text-foreground no-underline [-webkit-tap-highlight-color:transparent] transition-[transform,background-color] duration-160 ease-standard active:scale-[.99] motion-reduce:transition-none motion-reduce:active:transform-none pointer-fine:hover:bg-surface-muted";
 
 function Contact({ contact }: { contact: NonNullable<FaqSectionProps["contact"]> }) {
-  const inner = <><span className="grid min-w-0 gap-0.5 [&>span:first-child]:text-(length:--text-sm) [&>span:first-child]:font-medium [&>span:last-child:not(:first-child)]:text-(length:--text-sm) [&>span:last-child:not(:first-child)]:text-text-muted"><span>{contact.label}</span>{contact.description && <span>{contact.description}</span>}</span><ArrowRight className="flex-none text-text-muted transition-[transform] duration-160 ease-standard motion-reduce:transition-none group-hover/contact:translate-x-0.5 group-hover/contact:text-foreground" size={16} strokeWidth={1.75} aria-hidden="true" /></>;
+  const inner = <><span className="grid min-w-0 gap-0.5 [&>span:first-child]:text-(length:--text-sm) [&>span:first-child]:font-medium [&>span:last-child:not(:first-child)]:text-(length:--text-sm) [&>span:last-child:not(:first-child)]:text-text-muted"><span>{contact.label}</span>{contact.description && <span>{contact.description}</span>}</span><ArrowRightIcon className="flex-none text-text-muted transition-[transform] duration-160 ease-standard motion-reduce:transition-none group-hover/contact:translate-x-0.5 group-hover/contact:text-foreground" size={16} aria-hidden="true" /></>;
   return contact.href
     ? <a className={contactClass} href={contact.href} onClick={contact.onClick}>{inner}</a>
     : <button type="button" className={contactClass} onClick={contact.onClick}>{inner}</button>;

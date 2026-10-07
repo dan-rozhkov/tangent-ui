@@ -3,7 +3,7 @@
 import { forwardRef, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { AnimatePresence, animate, motion, useInView, useMotionValue } from "motion/react";
-import { ArrowRight, Check, X } from "@mynaui/icons-react";
+import { ArrowRightIcon, CheckIcon, XIcon } from "@phosphor-icons/react"
 import { Button } from "@/components/ui/button";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { motionTokens } from "@/lib/motion-tokens";
@@ -54,7 +54,7 @@ function Action({ action, variant, size = "lg", arrow }: { action: CtaAction; va
       size === "sm" ? "h-control-sm px-3.5" : "h-control-lg px-5",
       variant === "primary" ? "bg-foreground text-background" : "border-border bg-surface text-foreground",
     )} data-variant={variant} data-size={size} href={action.href}>
-      {action.label}{arrow && <ArrowRight className={arrowClass} size={16} strokeWidth={2} aria-hidden="true" />}
+      {action.label}{arrow && <ArrowRightIcon className={arrowClass} size={16} aria-hidden="true" />}
     </a>;
   }
   const simulated = !action.onClick;
@@ -66,8 +66,8 @@ function Action({ action, variant, size = "lg", arrow }: { action: CtaAction; va
     onClick={() => { if (action.onClick) action.onClick(); else setConfirmed(value => !value); }}
   >
     {confirmed
-      ? <><Check size={16} strokeWidth={2.25} aria-hidden="true" />{action.confirmedLabel ?? action.label}</>
-      : <>{action.label}{arrow && <ArrowRight className={arrowClass} size={16} strokeWidth={2} aria-hidden="true" />}</>}
+      ? <><CheckIcon size={16} aria-hidden="true" />{action.confirmedLabel ?? action.label}</>
+      : <>{action.label}{arrow && <ArrowRightIcon className={arrowClass} size={16} aria-hidden="true" />}</>}
   </Button>;
 }
 
@@ -101,7 +101,7 @@ function SetupVisual({ reduced }: { reduced: boolean }) {
       {ctaSetup.steps.map((label, index) => {
         const done = index < shown;
         return <li key={label} className="group/step flex min-h-11 items-center gap-3 rounded-[14px] px-2.5 text-(length:--text-sm) text-text-muted transition-[color,background-color] duration-240 ease-standard motion-reduce:transition-none data-[active]:bg-surface-muted data-[active]:text-foreground data-[done]:text-foreground" data-done={done ? "" : undefined} data-active={index === shown ? "" : undefined}>
-          <span className="relative grid size-5 flex-none place-items-center rounded-full border-[1.5px] border-dashed border-border-strong text-transparent transition-[border-color,background-color,color] duration-240 ease-standard group-data-[active]/step:border-solid group-data-[active]/step:border-text-muted group-data-[done]/step:border-solid group-data-[done]/step:border-success group-data-[done]/step:bg-success group-data-[done]/step:text-background motion-reduce:transition-none [&_svg]:opacity-0 [&_svg]:[transform:scale(.5)] [&_svg]:[transition:transform_var(--duration-spring)_var(--ease-spring),opacity_var(--duration-fast)_var(--ease-standard)] group-data-[done]/step:[&_svg]:opacity-100 group-data-[done]/step:[&_svg]:[transform:scale(1)] motion-reduce:[&_svg]:transition-none"><Check size={12} strokeWidth={2.75} /></span>
+          <span className="relative grid size-5 flex-none place-items-center rounded-full border-[1.5px] border-dashed border-border-strong text-transparent transition-[border-color,background-color,color] duration-240 ease-standard group-data-[active]/step:border-solid group-data-[active]/step:border-text-muted group-data-[done]/step:border-solid group-data-[done]/step:border-success group-data-[done]/step:bg-success group-data-[done]/step:text-background motion-reduce:transition-none [&_svg]:opacity-0 [&_svg]:[transform:scale(.5)] [&_svg]:[transition:transform_var(--duration-spring)_var(--ease-spring),opacity_var(--duration-fast)_var(--ease-standard)] group-data-[done]/step:[&_svg]:opacity-100 group-data-[done]/step:[&_svg]:[transform:scale(1)] motion-reduce:[&_svg]:transition-none"><CheckIcon size={12} /></span>
           <span className="min-w-0 truncate">{label}</span>
           {index === total - 1 && <span className="ml-auto flex pl-1.5 [&_img]:-ml-1.5 [&_img]:block [&_img]:size-[22px] [&_img]:rounded-full [&_img]:border-2 [&_img]:border-surface-raised [&_img]:object-cover [&_img]:opacity-0 [&_img]:[transform:translateX(-6px)_scale(.9)] [&_img]:[transition:opacity_var(--duration-standard)_var(--ease-standard),transform_var(--duration-spring)_var(--ease-spring)] group-data-[active]/step:[&_img]:opacity-100 group-data-[active]/step:[&_img]:[transform:none] group-data-[done]/step:[&_img]:opacity-100 group-data-[done]/step:[&_img]:[transform:none] motion-reduce:[&_img]:transition-none">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -164,7 +164,7 @@ export const CtaSection = forwardRef<HTMLElement, CtaSectionProps>(function CtaS
             <div className="flex flex-none items-center gap-1 @max-[560px]/cta:w-full @max-[560px]/cta:justify-between">
               <Action action={primary} variant="primary" size="sm" arrow />
               {onDismiss !== undefined && <button type="button" className="grid size-control-sm cursor-pointer place-items-center rounded-full border-0 bg-transparent text-text-muted [-webkit-tap-highlight-color:transparent] transition-[background-color,color,transform] duration-160 ease-standard active:scale-[.94] motion-reduce:transition-none motion-reduce:active:transform-none pointer-fine:hover:bg-surface-muted pointer-fine:hover:text-foreground" aria-label="Dismiss" onClick={() => setOpen(false)}>
-                <X size={16} strokeWidth={1.75} aria-hidden="true" />
+                <XIcon size={16} aria-hidden="true" />
               </button>}
             </div>
           </div></div>
@@ -181,7 +181,7 @@ export const CtaSection = forwardRef<HTMLElement, CtaSectionProps>(function CtaS
           <h2 id={`${id}-title`} className={titleClass}>{heading}</h2>
           <p className={descriptionClass}>{text}</p>
           {list.length > 0 && <ul className="m-0 mt-2 grid list-none gap-2 p-0 [&_li]:flex [&_li]:items-center [&_li]:gap-3 [&_li]:text-(length:--text-sm) [&_li]:text-text-secondary [&_svg]:flex-none [&_svg]:text-success">
-            {list.map(point => <li key={point}><Check size={16} strokeWidth={2} aria-hidden="true" />{point}</li>)}
+            {list.map(point => <li key={point}><CheckIcon size={16} aria-hidden="true" />{point}</li>)}
           </ul>}
           <div className={actionsClass}>
             <Action action={primary} variant="primary" arrow />

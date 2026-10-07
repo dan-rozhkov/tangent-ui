@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { FocusEvent, KeyboardEvent, MouseEvent, ReactNode, RefObject } from "react";
-import { Check, ChevronLeft, ChevronRight, Plus, X } from "@mynaui/icons-react";
+import { CaretLeftIcon, CaretRightIcon, CheckIcon, PlusIcon, XIcon } from "@phosphor-icons/react"
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useTransform, type HTMLMotionProps, type MotionValue, type Variants } from "motion/react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { useReducedMotion } from "@/lib/reduced-motion";
@@ -365,10 +365,10 @@ export function FilterMenu({ fields, onSelect, active = [], label = "Add filter"
 
   const current = (entry: FilterField) => active.find(filter => filter.id === entry.id)?.value;
   const fieldRows: Row[] = fields.map(entry => ({ key: entry.id, label: entry.label, icon: entry.icon, drill: true,
-    meta: <>{current(entry) ? <span className="truncate">{current(entry)}</span> : null}<ChevronRight size={15} strokeWidth={1.8} aria-hidden="true" /></> }));
+    meta: <>{current(entry) ? <span className="truncate">{current(entry)}</span> : null}<CaretRightIcon size={15} aria-hidden="true" /></> }));
   const valueRows: Row[] = field ? field.options.map(toOption).map(entry => {
     const text = optionText(entry), checked = current(field) === text;
-    return { key: entry.value, label: text, icon: entry.icon, checked, meta: entry.hint != null || checked ? <>{entry.hint != null ? <span className="min-w-[2ch] text-right">{entry.hint}</span> : null}<span className="inline-flex w-[15px] text-foreground opacity-0 data-[on]:opacity-100" data-on={checked || undefined}><Check size={15} strokeWidth={2} aria-hidden="true" /></span></> : null };
+    return { key: entry.value, label: text, icon: entry.icon, checked, meta: entry.hint != null || checked ? <>{entry.hint != null ? <span className="min-w-[2ch] text-right">{entry.hint}</span> : null}<span className="inline-flex w-[15px] text-foreground opacity-0 data-[on]:opacity-100" data-on={checked || undefined}><CheckIcon size={15} aria-hidden="true" /></span></> : null };
   }) : [];
   // Steps travel in the direction of the move: forward slides in from the end edge, back from the start edge.
   const step: Variants = {
@@ -384,7 +384,7 @@ export function FilterMenu({ fields, onSelect, active = [], label = "Add filter"
       onClick={event => { if (phaseRef.current !== "open") openMenu(event.detail === 0 ? "first" : "panel"); }}
       onKeyDown={event => { if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); openMenu(event.key === "ArrowDown" ? "first" : "last"); } }}>
       <motion.span className="inline-flex items-center gap-2 [&_svg]:flex-none" style={faceStyle}>
-        <Plus size={15} strokeWidth={1.8} aria-hidden="true" />{label}
+        <PlusIcon size={15} aria-hidden="true" />{label}
       </motion.span>
     </button>
     <motion.div className={surfaceClass} style={{ left, width, height }}>
@@ -395,7 +395,7 @@ export function FilterMenu({ fields, onSelect, active = [], label = "Add filter"
               {field ? <motion.button key="back" type="button" className={backClass} aria-label="Back to fields" onClick={event => goBack(event.detail === 0)}
                 initial={reduced ? { opacity: 0, width: 28, marginRight: 2 } : { opacity: 0, width: 0, marginRight: 0, scale: .6 }} animate={{ opacity: 1, width: 28, marginRight: 2, scale: 1 }}
                 exit={reduced ? { opacity: 0, transition: still } : { opacity: 0, width: 0, marginRight: 0, scale: .6, transition: { ...motionTokens.spring.snappy, opacity: leave } }}
-                transition={reduced ? fade : { ...motionTokens.spring.snappy, opacity: enter }}><ChevronLeft size={16} strokeWidth={1.8} aria-hidden="true" /></motion.button> : null}
+                transition={reduced ? fade : { ...motionTokens.spring.snappy, opacity: enter }}><CaretLeftIcon size={16} aria-hidden="true" /></motion.button> : null}
             </AnimatePresence>
             <span className="relative flex min-w-0 text-sm font-medium tracking-body whitespace-nowrap text-foreground" id={titleId}>
               <AnimatePresence mode="popLayout" initial={false}><motion.span key={field?.id ?? "fields"} className="block" {...textMotion(reduced)}>{field ? field.label : label}</motion.span></AnimatePresence>
@@ -460,7 +460,7 @@ export function FilterToolbar({ filters, onRemove, onClearAll, children, label =
     <motion.div className={frameClass} style={{ height: frameHeight }}>
       <div ref={list} className="relative flex min-h-control-sm min-w-0 flex-wrap items-center gap-2">
         <AnimatePresence initial={false}>
-          {filters.map((filter, index) => <motion.span className={slotClass} key={filter.id} {...slot(8)}><motion.span className={chipClass} {...chip}><span className="overflow-x-clip overflow-y-visible text-ellipsis whitespace-nowrap">{filter.label}{filter.value ? <span className="font-medium text-foreground"><span className="font-normal text-text-secondary"> · </span><MorphText text={filter.value} /></span> : null}</span><button type="button" data-chip-remove={filter.id} aria-label={`Remove ${filter.label}${filter.value ? `: ${filter.value}` : ""}`} onClick={event => { if (document.activeElement === event.currentTarget) pendingFocus.current = index; onRemove(filter.id); }}><X size={14} strokeWidth={1.8} aria-hidden="true" /></button></motion.span></motion.span>)}
+          {filters.map((filter, index) => <motion.span className={slotClass} key={filter.id} {...slot(8)}><motion.span className={chipClass} {...chip}><span className="overflow-x-clip overflow-y-visible text-ellipsis whitespace-nowrap">{filter.label}{filter.value ? <span className="font-medium text-foreground"><span className="font-normal text-text-secondary"> · </span><MorphText text={filter.value} /></span> : null}</span><button type="button" data-chip-remove={filter.id} aria-label={`Remove ${filter.label}${filter.value ? `: ${filter.value}` : ""}`} onClick={event => { if (document.activeElement === event.currentTarget) pendingFocus.current = index; onRemove(filter.id); }}><XIcon size={14} aria-hidden="true" /></button></motion.span></motion.span>)}
         </AnimatePresence>
         {/* The empty note sits over the leading edge instead of in the flow, so it fades in where the chips were rather than riding their collapsing slots across the row. */}
         <AnimatePresence initial={false}>

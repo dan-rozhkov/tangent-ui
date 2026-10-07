@@ -1,6 +1,6 @@
 "use client"
 
-import { MapPin } from "@mynaui/icons-react"
+import { MapPinIcon } from "@phosphor-icons/react"
 
 import { HoverCard, HoverCardProfile } from "@/components/ui/hover-card"
 
@@ -23,7 +23,7 @@ export default function Demo() {
             ]}
             meta={
               <>
-                <MapPin size={12} strokeWidth={1.75} aria-hidden="true" />
+                <MapPinIcon size={12} aria-hidden="true" />
                 Zurich, 14:20 local time
               </>
             }

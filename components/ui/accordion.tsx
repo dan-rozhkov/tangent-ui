@@ -3,7 +3,7 @@
 import { useState } from "react"
 import type { KeyboardEvent, ReactNode } from "react"
 import { Accordion as AccordionPrimitive } from "@base-ui/react/accordion"
-import { ChevronDown } from "@mynaui/icons-react"
+import { CaretDownIcon } from "@phosphor-icons/react"
 import { motion } from "motion/react"
 import type { TargetAndTransition, Variants } from "motion/react"
 
@@ -121,7 +121,7 @@ export function Accordion({ items, defaultOpen = 0, size = "md" }: AccordionProp
                   animate={{ rotate: open ? 180 : 0 }}
                   transition={reduced ? { duration: 0 } : motionTokens.spring.snappy}
                 >
-                  <ChevronDown width={17} height={17} aria-hidden="true" />
+                  <CaretDownIcon size={17} aria-hidden="true" />
                 </motion.span>
               </AccordionPrimitive.Trigger>
             </AccordionPrimitive.Header>

@@ -1,6 +1,6 @@
 "use client"
 
-import { Headphones, Moon, Users } from "@mynaui/icons-react"
+import { HeadphonesIcon, MoonIcon, UsersIcon } from "@phosphor-icons/react"
 
 import { ControlCenter } from "@/components/ui/control-center"
 import { person } from "@/lib/media"
@@ -15,9 +15,9 @@ export default function Demo() {
     <div className="flex min-h-[520px] w-[628px] max-w-full items-center justify-center rounded-[28px] border border-border bg-surface-muted p-6 max-sm:p-3">
       <ControlCenter
         focusModes={[
-          { id: "deep", label: "Deep work", icon: Headphones, description: "Only mentions from your team get through", defaultMinutes: 50 },
-          { id: "meetings", label: "Meetings", icon: Users, description: "Calls and calendar alerts only", defaultMinutes: 30 },
-          { id: "wind-down", label: "Wind down", icon: Moon, description: "Everything waits until tomorrow", defaultMinutes: 45 },
+          { id: "deep", label: "Deep work", icon: HeadphonesIcon, description: "Only mentions from your team get through", defaultMinutes: 50 },
+          { id: "meetings", label: "Meetings", icon: UsersIcon, description: "Calls and calendar alerts only", defaultMinutes: 30 },
+          { id: "wind-down", label: "Wind down", icon: MoonIcon, description: "Everything waits until tomorrow", defaultMinutes: 45 },
         ]}
         channels={[
           { id: "mentions", label: "Mentions", description: "When someone tags you", defaultOn: true },

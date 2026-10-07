@@ -24,7 +24,7 @@ import {
   type MotionValue,
   type Variants,
 } from "motion/react"
-import { DangerCircle, DangerTriangle } from "@mynaui/icons-react"
+import { WarningCircleIcon, WarningIcon } from "@phosphor-icons/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -399,7 +399,7 @@ function StatusBadge({
     observer.observe(node)
     return () => observer.disconnect()
   }, [reduced, width])
-  const Icon = status === "over" ? DangerTriangle : DangerCircle
+  const Icon = status === "over" ? WarningIcon : WarningCircleIcon
   return (
     <motion.span
       className={cn(
@@ -431,7 +431,7 @@ function StatusBadge({
               animate="shown"
               exit="gone"
             >
-              <Icon size={14} strokeWidth={2} aria-hidden="true" />
+              <Icon size={14} aria-hidden="true" />
             </motion.span>
           )}
         </AnimatePresence>
@@ -842,7 +842,7 @@ export function UsageMeter({
                         animate="shown"
                         exit="gone"
                       >
-                        <DangerTriangle size={12} strokeWidth={2} />
+                        <WarningIcon size={12} />
                       </motion.span>
                     ) : (
                       <motion.span

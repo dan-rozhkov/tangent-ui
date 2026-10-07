@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
-import { ChevronDown, X } from "@mynaui/icons-react"
+import { CaretDownIcon, XIcon } from "@phosphor-icons/react"
 import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -103,7 +103,7 @@ function CheckMark({ reduce }: { reduce: boolean | null }) {
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.75"
+      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -305,7 +305,7 @@ export function MultiSelect({
               )}
             </AnimatePresence>
           </span>
-          <ChevronDown
+          <CaretDownIcon
             className={cn(
               "flex-none text-text-muted [transition:transform_var(--duration-spring)_var(--ease-spring)] group-aria-expanded/trigger:[transform:rotate(180deg)] motion-reduce:transition-none",
               selected.length > 0 && "ml-[26px]"
@@ -341,7 +341,7 @@ export function MultiSelect({
               }}
               whileTap={{ scale: reduce ? 1 : 0.96, transition: { duration: motionTokens.duration.instant, ease: standard } }}
             >
-              <X size={14} aria-hidden="true" />
+              <XIcon size={14} aria-hidden="true" />
             </motion.button>
           )}
         </AnimatePresence>

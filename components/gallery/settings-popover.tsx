@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { FocusEvent, KeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { Filter } from "@mynaui/icons-react"
+import { SlidersHorizontalIcon } from "@phosphor-icons/react"
 
 import { useThemeTransition } from "@/components/demos/theme-switch"
 import { accents, motionSpeeds, setAccent, setMotionReduce, setMotionSpeed, useMotionSettings, type Accent } from "@/components/gallery/motion-settings"
@@ -317,7 +317,7 @@ export function SettingsPopover() {
                 onClick={openPanel}
                 className="grid size-[38px] cursor-pointer place-items-center text-text-secondary outline-none transition-[color,background-color] duration-160 ease-standard [-webkit-tap-highlight-color:transparent] pointer-fine:hover:bg-surface-muted pointer-fine:hover:text-foreground motion-reduce:transition-none"
               >
-                <Filter className="size-[18px]" strokeWidth={1.75} aria-hidden="true" />
+                <SlidersHorizontalIcon className="size-[18px]" aria-hidden="true" />
               </button>
             </FaceLayer>
           )}

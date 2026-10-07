@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { CSSProperties, FocusEvent, KeyboardEvent, MouseEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
 import { AnimatePresence, LayoutGroup, animate, motion, useIsPresent, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { ChevronDown, Search, X } from "@mynaui/icons-react"
+import { CaretDownIcon, MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react"
 
 import { motionTokens as defaultTokens } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
@@ -820,7 +820,7 @@ export function MorphNav({
                       >
                         {highlight}
                         {item.label}
-                        <ChevronDown
+                        <CaretDownIcon
                           className={cn("size-3.5 opacity-80 transition-transform duration-200 ease-standard motion-reduce:transition-none", open && "rotate-180")}
                           aria-hidden="true"
                         />
@@ -849,7 +849,7 @@ export function MorphNav({
               )}
               onClick={openSearch}
             >
-              <Search className="size-4" aria-hidden="true" />
+              <MagnifyingGlassIcon className="size-4" aria-hidden="true" />
             </button>
           )}
 
@@ -905,7 +905,7 @@ export function MorphNav({
           {searching && search && (
             <SearchFace key="search" reduced={reduced} onSize={onSearchSize}>
               <div className={cn("flex items-center gap-2.5 pr-2 pl-[18px]", compact ? "h-11" : "h-[54px]")}>
-                <Search className="size-[17px] flex-none text-text-muted" aria-hidden="true" />
+                <MagnifyingGlassIcon className="size-[17px] flex-none text-text-muted" aria-hidden="true" />
                 <input
                   data-search-input=""
                   role="combobox"
@@ -929,7 +929,7 @@ export function MorphNav({
                   className="grid size-[35px] flex-none cursor-pointer place-items-center rounded-full text-text-muted outline-none transition-[background-color,color] duration-160 ease-standard pointer-fine:hover:bg-foreground/[0.045] pointer-fine:hover:text-foreground"
                   onClick={() => closeAll("[data-search-trigger]")}
                 >
-                  <X className="size-4" aria-hidden="true" />
+                  <XIcon className="size-4" aria-hidden="true" />
                 </button>
               </div>
               <LayoutGroup id={`${uid}-results`}>

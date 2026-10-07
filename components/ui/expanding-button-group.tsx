@@ -107,7 +107,7 @@ function DrawnCheck({ reduced }: { reduced: boolean }) {
   const motionTokens = useMotionTokens()
   const { enter } = useMemo(() => motionFor(motionTokens), [motionTokens])
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
       <motion.path
         d="M4 12.5l5 5L20 6.5"
         initial={reduced ? false : { pathLength: 0, opacity: 0 }}
@@ -251,7 +251,7 @@ function Item({ item, size, expanded, done, busy, tabStop, reduced, onPointerDow
         <AnimatePresence initial={false}>
           <motion.span
             key={showDone ? "done" : "icon"}
-            className="grid size-full place-items-center [grid-area:1/1] [&_svg]:size-full [&_svg]:stroke-[1.75]"
+            className="grid size-full place-items-center [grid-area:1/1] [&_svg]:size-full"
             initial={reduced ? fadeIn : iconIn}
             animate={rest}
             exit={reduced ? fadeOut : iconOut}

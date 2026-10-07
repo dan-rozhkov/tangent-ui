@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { animate, motion, useMotionValue, useTransform } from "motion/react";
-import { ChevronLeft, ChevronRight } from "@mynaui/icons-react";
+import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react"
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";
@@ -277,8 +277,8 @@ export function ImageCompare({ before, after, position, defaultPosition = 50, on
           aria-valuemin={0} aria-valuemax={100} aria-valuenow={afterShare} aria-valuetext={`${afterShare}% after`}
           initial={false} animate={capsule} transition={reduced ? { duration: 0 } : spring.morph} onKeyDown={onKeyDown} onBlur={() => setQuiet(false)}>
           <motion.span className="flex items-center" style={{ rotate: theta }} aria-hidden="true">
-            <motion.span className="mx-[-2.5px] grid place-items-center" initial={false} animate={{ x: dragging ? -4 : 0 }} transition={reduced ? { duration: 0 } : spring.morph}><ChevronLeft size={16} strokeWidth={1.75} /></motion.span>
-            <motion.span className="mx-[-2.5px] grid place-items-center" initial={false} animate={{ x: dragging ? 4 : 0 }} transition={reduced ? { duration: 0 } : spring.morph}><ChevronRight size={16} strokeWidth={1.75} /></motion.span>
+            <motion.span className="mx-[-2.5px] grid place-items-center" initial={false} animate={{ x: dragging ? -4 : 0 }} transition={reduced ? { duration: 0 } : spring.morph}><CaretLeftIcon size={16} /></motion.span>
+            <motion.span className="mx-[-2.5px] grid place-items-center" initial={false} animate={{ x: dragging ? 4 : 0 }} transition={reduced ? { duration: 0 } : spring.morph}><CaretRightIcon size={16} /></motion.span>
           </motion.span>
         </motion.div>
       </motion.span>

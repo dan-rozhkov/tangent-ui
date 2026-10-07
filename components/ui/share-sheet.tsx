@@ -16,7 +16,7 @@ import {
   useTransform,
 } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { Check, ChevronDown, Copy, Link, Refresh, Share, X } from "@mynaui/icons-react"
+import { ArrowsClockwiseIcon, CaretDownIcon, CheckIcon, CopyIcon, LinkIcon, ShareNetworkIcon, XIcon } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import { motionTokens as defaults } from "@/lib/motion-tokens"
@@ -561,9 +561,9 @@ export function ShareSheet({
   }
 
   const copyLabels = [
-    { key: "idle", text: "Copy", icon: <Copy /> },
-    { key: "copied", text: "Copied", icon: <Check /> },
-    { key: "failed", text: "Retry", icon: <Refresh /> },
+    { key: "idle", text: "Copy", icon: <CopyIcon size={24} /> },
+    { key: "copied", text: "Copied", icon: <CheckIcon size={24} /> },
+    { key: "failed", text: "Retry", icon: <ArrowsClockwiseIcon size={24} /> },
   ] as const
   const panelBody = (
     <div ref={setLayer} className="relative flex flex-col gap-3 p-2">
@@ -577,14 +577,14 @@ export function ShareSheet({
           onClick={() => close(true)}
           className="grid size-8 flex-none cursor-pointer place-items-center rounded-full text-text-secondary outline-none transition-[background-color,color] duration-160 ease-standard pointer-fine:hover:bg-foreground/[0.065] pointer-fine:hover:text-foreground"
         >
-          <X className="size-4" aria-hidden="true" />
+          <XIcon className="size-4" aria-hidden="true" />
         </button>
       </div>
 
       {/* Link and access share one card; the access list opens inside it and the surface grows to fit. */}
       <div className="flex flex-col rounded-[20px] bg-surface-muted/70 ring-1 ring-border-subtle ring-inset">
         <div className="flex h-12 items-center gap-2.5 pr-1.5 pl-3.5">
-          <Link className="size-4 flex-none text-text-secondary" aria-hidden="true" />
+          <LinkIcon className="size-4 flex-none text-text-secondary" aria-hidden="true" />
           <span className="min-w-0 flex-1 truncate text-sm leading-body text-text-secondary" title={link}>
             {link.replace(/^https?:\/\//, "")}
           </span>
@@ -646,7 +646,7 @@ export function ShareSheet({
                 <span className="truncate text-sm leading-body font-medium text-foreground">{selectedAccess.label}</span>
                 <span className="truncate text-xs leading-body text-text-secondary">{selectedAccess.description}</span>
               </span>
-              <ChevronDown
+              <CaretDownIcon
                 className={cn(
                   "size-4 flex-none text-text-secondary transition-transform duration-200 ease-standard motion-reduce:transition-none",
                   listOpen && "rotate-180",
@@ -685,7 +685,7 @@ export function ShareSheet({
                         <span className="truncate text-sm leading-body font-medium text-foreground">{option.label}</span>
                         <span className="truncate text-xs leading-body text-text-secondary">{option.description}</span>
                       </span>
-                      {selected && <Check className="size-4 flex-none text-foreground" aria-hidden="true" />}
+                      {selected && <CheckIcon className="size-4 flex-none text-foreground" aria-hidden="true" />}
                     </motion.button>
                   )
                 })}
@@ -714,7 +714,7 @@ export function ShareSheet({
                 )}
               >
                 <span className="grid size-4 flex-none place-items-center [&_svg]:size-4" aria-hidden="true">
-                  {state === "pending" ? <Spinner /> : state === "done" ? <Check /> : channel.icon}
+                  {state === "pending" ? <Spinner /> : state === "done" ? <CheckIcon size={24} /> : channel.icon}
                 </span>
                 <AnimatePresence initial={false} mode="popLayout">
                   <motion.span
@@ -765,7 +765,7 @@ export function ShareSheet({
                     onClick={() => removePerson(person)}
                     className="grid size-6 flex-none cursor-pointer place-items-center rounded-full text-text-muted outline-none pointer-fine:hover:bg-foreground/[0.065] pointer-fine:hover:text-foreground"
                   >
-                    <X className="size-3.5" aria-hidden="true" />
+                    <XIcon className="size-3.5" aria-hidden="true" />
                   </button>
                 </motion.li>
               ))}
@@ -800,7 +800,7 @@ export function ShareSheet({
                     transition={reduced ? { duration: motionTokens.duration.fast } : motionTokens.spring.snappy}
                     aria-hidden="true"
                   >
-                    <Check className="size-2" strokeWidth={3.5} />
+                    <CheckIcon className="size-2" />
                   </motion.span>
                 </span>
                 <span className="w-full truncate px-1 text-center text-xs leading-body text-text-secondary">{person.name.split(" ")[0]}</span>
@@ -858,7 +858,7 @@ export function ShareSheet({
             <motion.path
               d="M5.5 12.5 10 17 18.5 7.5"
               stroke="currentColor"
-              strokeWidth="3"
+              strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
               initial={reduced ? false : { pathLength: 0 }}
@@ -895,7 +895,7 @@ export function ShareSheet({
     <div ref={rootRef} className={cn("relative inline-flex align-top", className)}>
       {/* The root reserves only the button's size; the panel floats over the page. */}
       <span className={cn(triggerClass, "invisible")} aria-hidden="true">
-        <Share className="size-4" />
+        <ShareNetworkIcon className="size-4" />
         {label}
       </span>
       <motion.div
@@ -924,7 +924,7 @@ export function ShareSheet({
                   "cursor-pointer touch-manipulation outline-none transition-opacity duration-160 ease-standard pointer-fine:hover:opacity-90 [-webkit-tap-highlight-color:transparent]",
                 )}
               >
-                <Share className="size-4" aria-hidden="true" />
+                <ShareNetworkIcon className="size-4" aria-hidden="true" />
                 {label}
               </button>
             </FaceLayer>

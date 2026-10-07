@@ -1,15 +1,15 @@
 "use client"
 
 import { useState } from "react"
-import { Flag, Record, Tag, User } from "@mynaui/icons-react"
+import { FlagIcon, RecordIcon, TagIcon, UserIcon } from "@phosphor-icons/react"
 
 import { FilterToolbar, type FilterChip, type FilterField } from "@/components/ui/filter-toolbar"
 
 const fields: FilterField[] = [
-  { id: "status", label: "Status", icon: <Record size={15} strokeWidth={1.8} />, options: [{ value: "Open", hint: 18 }, { value: "In review", hint: 7 }, { value: "Closed", hint: 41 }] },
-  { id: "owner", label: "Owner", icon: <User size={15} strokeWidth={1.8} />, options: ["Maya", "Leo", "Priya", "Tomas"] },
-  { id: "priority", label: "Priority", icon: <Flag size={15} strokeWidth={1.8} />, options: ["Urgent", "High", "Normal", "Low"] },
-  { id: "label", label: "Label", icon: <Tag size={15} strokeWidth={1.8} />, options: ["Bug", "Design", "Billing", "Onboarding"] },
+  { id: "status", label: "Status", icon: <RecordIcon size={15} />, options: [{ value: "Open", hint: 18 }, { value: "In review", hint: 7 }, { value: "Closed", hint: 41 }] },
+  { id: "owner", label: "Owner", icon: <UserIcon size={15} />, options: ["Maya", "Leo", "Priya", "Tomas"] },
+  { id: "priority", label: "Priority", icon: <FlagIcon size={15} />, options: ["Urgent", "High", "Normal", "Low"] },
+  { id: "label", label: "Label", icon: <TagIcon size={15} />, options: ["Bug", "Design", "Billing", "Onboarding"] },
 ]
 
 export default function Demo() {

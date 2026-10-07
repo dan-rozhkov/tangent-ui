@@ -4,7 +4,7 @@ import { forwardRef, useId, useState } from "react"
 import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
-import { Check, ChevronDown, ChevronUp } from "@mynaui/icons-react"
+import { CaretDownIcon, CaretUpIcon, CheckIcon } from "@phosphor-icons/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -154,27 +154,27 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
               "[transition:transform_var(--duration-spring)_var(--ease-spring),color_var(--duration-fast)_var(--ease-standard)] motion-reduce:transition-none",
             ].join(" ")}
           >
-            <ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" />
+            <CaretDownIcon size={16} aria-hidden="true" />
           </SelectPrimitive.Icon>
         </SelectPrimitive.Trigger>
         <SelectPrimitive.Portal>
           <SelectPrimitive.Positioner className="z-1000" alignItemWithTrigger={false} sideOffset={4} collisionPadding={12}>
             <SelectPrimitive.Popup className={popupClass}>
               <SelectPrimitive.ScrollUpArrow className={scrollClass}>
-                <ChevronUp size={16} strokeWidth={1.75} aria-hidden="true" />
+                <CaretUpIcon size={16} aria-hidden="true" />
               </SelectPrimitive.ScrollUpArrow>
               <SelectPrimitive.List className="min-h-0 overflow-y-auto py-0.5">
                 {options.map((option) => (
                   <SelectPrimitive.Item key={option.value} value={option.value} disabled={option.disabled} label={option.label} className={itemClass}>
                     <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>
                     <SelectPrimitive.ItemIndicator className={indicatorClass}>
-                      <Check size={16} strokeWidth={1.75} aria-hidden="true" />
+                      <CheckIcon size={16} aria-hidden="true" />
                     </SelectPrimitive.ItemIndicator>
                   </SelectPrimitive.Item>
                 ))}
               </SelectPrimitive.List>
               <SelectPrimitive.ScrollDownArrow className={scrollClass}>
-                <ChevronDown size={16} strokeWidth={1.75} aria-hidden="true" />
+                <CaretDownIcon size={16} aria-hidden="true" />
               </SelectPrimitive.ScrollDownArrow>
             </SelectPrimitive.Popup>
           </SelectPrimitive.Positioner>

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Archive, Copy, TypeBold, TypeItalic, TypeUnderline } from "@mynaui/icons-react"
+import { ArchiveIcon, CopyIcon, TextBIcon, TextItalicIcon, TextUnderlineIcon } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import { Tooltip } from "@/components/ui/tooltip"
@@ -15,24 +15,24 @@ export default function Demo() {
       <div className="flex gap-1">
         <Tooltip content="Bold">
           <Button variant="ghost" size="sm" aria-label="Bold">
-            <TypeBold size={16} strokeWidth={1.75} aria-hidden="true" />
+            <TextBIcon size={16} aria-hidden="true" />
           </Button>
         </Tooltip>
         <Tooltip content="Italic">
           <Button variant="ghost" size="sm" aria-label="Italic">
-            <TypeItalic size={16} strokeWidth={1.75} aria-hidden="true" />
+            <TextItalicIcon size={16} aria-hidden="true" />
           </Button>
         </Tooltip>
         <Tooltip content="Underline">
           <Button variant="ghost" size="sm" aria-label="Underline">
-            <TypeUnderline size={16} strokeWidth={1.75} aria-hidden="true" />
+            <TextUnderlineIcon size={16} aria-hidden="true" />
           </Button>
         </Tooltip>
       </div>
 
       <Tooltip content="Archive" side="bottom">
         <Button variant="secondary" size="sm" aria-label="Archive">
-          <Archive size={16} strokeWidth={1.75} aria-hidden="true" />
+          <ArchiveIcon size={16} aria-hidden="true" />
         </Button>
       </Tooltip>
 
@@ -47,7 +47,7 @@ export default function Demo() {
             window.setTimeout(() => setCopied(false), 1600)
           }}
         >
-          <Copy size={16} strokeWidth={1.75} aria-hidden="true" />
+          <CopyIcon size={16} aria-hidden="true" />
         </Button>
       </Tooltip>
     </div>

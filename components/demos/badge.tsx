@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, DangerTriangle, Info, X } from "@mynaui/icons-react"
+import { CheckIcon, InfoIcon, WarningIcon, XIcon } from "@phosphor-icons/react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,8 +10,8 @@ import { SpinnerArc } from "@/components/ui/icons"
 const deploy = [
   { tone: "neutral", label: "Draft", icon: undefined },
   { tone: "info", label: "Building", icon: <SpinnerArc size={12} className="animate-spin motion-reduce:animate-none" /> },
-  { tone: "success", label: "Live", icon: <Check size={12} /> },
-  { tone: "danger", label: "Failed", icon: <X size={12} /> },
+  { tone: "success", label: "Live", icon: <CheckIcon size={12} /> },
+  { tone: "danger", label: "Failed", icon: <XIcon size={12} /> },
 ] as const
 
 export default function Demo() {
@@ -22,9 +22,9 @@ export default function Demo() {
     <div className="flex flex-col items-center gap-6">
       <div className="flex flex-wrap items-center justify-center gap-2">
         <Badge>Neutral</Badge>
-        <Badge tone="success" icon={<Check size={12} />}>Success</Badge>
-        <Badge tone="info" icon={<Info size={12} />}>Info</Badge>
-        <Badge tone="warning" icon={<DangerTriangle size={12} />}>Warning</Badge>
+        <Badge tone="success" icon={<CheckIcon size={12} />}>Success</Badge>
+        <Badge tone="info" icon={<InfoIcon size={12} />}>Info</Badge>
+        <Badge tone="warning" icon={<WarningIcon size={12} />}>Warning</Badge>
         <Badge tone="danger">Danger</Badge>
       </div>
       <div className="flex flex-wrap items-center justify-center gap-2">

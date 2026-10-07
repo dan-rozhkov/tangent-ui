@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { KeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, LayoutGroup, animate, motion, useIsPresent, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { ChevronDown, X } from "@mynaui/icons-react"
+import { CaretDownIcon, XIcon } from "@phosphor-icons/react"
 
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
@@ -292,7 +292,7 @@ export function VoiceChat({
                       custom={0.14}
                     >
                       +{hidden}
-                      <ChevronDown className="size-4 text-text-muted" />
+                      <CaretDownIcon className="size-4 text-text-muted" />
                     </motion.span>
                   )}
                 </button>
@@ -325,7 +325,7 @@ export function VoiceChat({
                     )}
                     onClick={() => toggle(false, true)}
                   >
-                    <X className="size-3.5" aria-hidden="true" />
+                    <XIcon className="size-3.5" aria-hidden="true" />
                   </button>
                 </motion.div>
 

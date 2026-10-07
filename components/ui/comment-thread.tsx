@@ -15,7 +15,7 @@ import {
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { Check, ChevronRight, CornerDownRight, Undo, X } from "@mynaui/icons-react"
+import { ArrowUUpLeftIcon, ArrowElbowDownRightIcon, CaretRightIcon, CheckIcon, XIcon } from "@phosphor-icons/react"
 import { SmilePlus } from "@/components/ui/icons"
 
 import { motionTokens } from "@/lib/motion-tokens"
@@ -945,7 +945,7 @@ export const CommentThread = forwardRef<HTMLElement, CommentThreadProps>(functio
                                   aria-label={t.closeReactions}
                                   onClick={() => setUi(current => ({ ...current, picker: null }))}
                                 >
-                                  <X size={14} strokeWidth={1.75} aria-hidden="true" />
+                                  <XIcon size={14} aria-hidden="true" />
                                 </button>
                               </motion.div>
                             ) : (
@@ -963,7 +963,7 @@ export const CommentThread = forwardRef<HTMLElement, CommentThreadProps>(functio
                                   aria-label={t.addReaction}
                                   onClick={() => setUi(current => ({ ...current, picker: comment.id, confirming: null }))}
                                 >
-                                  <SmilePlus size={15} strokeWidth={1.75} aria-hidden="true" />
+                                  <SmilePlus size={15} aria-hidden="true" />
                                 </button>
                                 <button
                                   type="button"
@@ -1026,7 +1026,7 @@ export const CommentThread = forwardRef<HTMLElement, CommentThreadProps>(functio
                   transition={reduced ? { duration: 0 } : motionTokens.spring.snappy}
                   aria-hidden="true"
                 >
-                  <ChevronRight size={13} strokeWidth={1.75} />
+                  <CaretRightIcon size={13} />
                 </motion.span>
                 {collapsed ? t.showReplies(countTree(replies)) : t.hideReplies}
                 {collapsed && (
@@ -1085,7 +1085,7 @@ export const CommentThread = forwardRef<HTMLElement, CommentThreadProps>(functio
                 className="grid size-6 flex-none place-items-center rounded-full bg-[color-mix(in_oklab,var(--success)_14%,transparent)] text-success"
                 aria-hidden="true"
               >
-                <Check size={14} strokeWidth={2} />
+                <CheckIcon size={14} />
               </span>
               <span className="grid min-w-0 flex-1">
                 <span className="truncate font-medium">
@@ -1107,7 +1107,7 @@ export const CommentThread = forwardRef<HTMLElement, CommentThreadProps>(functio
                 ))}
               </span>
               <button type="button" className={pillButton} data-reopen onClick={() => setResolved(false)}>
-                <Undo size={14} strokeWidth={1.75} aria-hidden="true" />
+                <ArrowUUpLeftIcon size={14} aria-hidden="true" />
                 {t.reopen}
               </button>
             </motion.div>
@@ -1125,7 +1125,7 @@ export const CommentThread = forwardRef<HTMLElement, CommentThreadProps>(functio
                   disabled={!total}
                   onClick={() => setResolved(true)}
                 >
-                  <Check size={15} strokeWidth={1.75} aria-hidden="true" />
+                  <CheckIcon size={15} aria-hidden="true" />
                   {t.resolve}
                 </button>
               </header>
@@ -1143,7 +1143,7 @@ export const CommentThread = forwardRef<HTMLElement, CommentThreadProps>(functio
                   {replyTo && (
                     <motion.div key="replying" className="overflow-clip" {...grow}>
                       <span className="flex items-center gap-1.5 pt-0 pr-0.5 pb-2 pl-[38px] text-(length:--text-xs) text-text-secondary max-[420px]:pl-0.5">
-                        <CornerDownRight size={13} strokeWidth={1.75} aria-hidden="true" />
+                        <ArrowElbowDownRightIcon size={13} aria-hidden="true" />
                         <span>{highlight(t.replyingTo(replyTo.name), replyTo.name, "font-medium text-foreground")}</span>
                         <button
                           type="button"
@@ -1151,7 +1151,7 @@ export const CommentThread = forwardRef<HTMLElement, CommentThreadProps>(functio
                           aria-label={t.cancelReply}
                           onClick={() => setReplyTo(null)}
                         >
-                          <X size={14} strokeWidth={1.75} aria-hidden="true" />
+                          <XIcon size={14} aria-hidden="true" />
                         </button>
                       </span>
                     </motion.div>

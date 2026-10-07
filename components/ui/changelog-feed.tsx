@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type FocusEvent, type FormEvent, type KeyboardEvent } from "react";
 import Image, { type StaticImageData } from "next/image";
 import { AnimatePresence, motion, useAnimate, type Transition, type Variants } from "motion/react";
-import { ArrowRight, Bell, Check, ChevronDown } from "@mynaui/icons-react";
+import { ArrowRightIcon, BellIcon, CaretDownIcon, CheckIcon } from "@phosphor-icons/react"
 import { CopyButton } from "@/components/ui/copy-button";
 import { motionTokens } from "@/lib/motion-tokens";
 import { photo } from "@/lib/media";
@@ -233,15 +233,15 @@ function SubscribeControl({ reduce }: { reduce: boolean }) {
         <div ref={innerRef} className={s.subscribeInner}>
           <AnimatePresence mode="popLayout" initial={false}>
             {state === "idle" && <motion.button key="idle" ref={idleRef} type="button" className={s.subscribeIdle} onClick={() => go("editing")} initial={{ opacity: 0, scale: 0.96, filter: blurSubtle }} animate={{ opacity: 1, scale: 1, filter: none }} exit={leave} transition={swap}>
-              <Bell size={14} aria-hidden="true" />Subscribe
+              <BellIcon size={14} aria-hidden="true" />Subscribe
             </motion.button>}
             {state === "editing" && <motion.form key="form" className={s.subscribeForm} noValidate onSubmit={submit} onKeyDown={onKeyDown} onBlur={onBlur} initial={{ opacity: 0, scale: 0.96, filter: blurSubtle }} animate={{ opacity: 1, scale: 1, filter: none }} exit={leave} transition={swap}>
               <label className={s.srOnly} htmlFor={inputId}>Email address</label>
               <input className={s.subscribeInput} ref={inputRef} id={inputId} type="email" inputMode="email" autoComplete="email" placeholder="you@example.com" value={email} aria-invalid={error || undefined} onChange={(event) => { setEmail(event.target.value); if (error) setError(false); }} />
-              <button type="submit" className={s.subscribeSubmit} aria-label="Subscribe to release notes"><ArrowRight size={14} /></button>
+              <button type="submit" className={s.subscribeSubmit} aria-label="Subscribe to release notes"><ArrowRightIcon size={14} /></button>
             </motion.form>}
             {state === "done" && <motion.div key="done" className={s.subscribeDone} initial={{ opacity: 0, scale: 0.96, filter: blurSubtle }} animate={{ opacity: 1, scale: 1, filter: none }} exit={leave} transition={swap}>
-              <svg className={s.drawnCheck} width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <svg className={s.drawnCheck} width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <motion.path d="M4 12.5l5 5L20 6.5" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={reduce ? instant : { duration: 0.42, ease: [...motionTokens.ease.standard], delay: 0.12 }} />
               </svg>
               <span>Subscribed</span>
@@ -297,7 +297,7 @@ function EntryRow({ entry, open, onToggle, reduce }: { entry: Entry; open: boole
         <span className={s.title}>{entry.title}</span>
         <span className={s.summary}>{entry.summary}</span>
       </span>
-      <motion.span className={cn(s.chevron, open && "text-foreground")} aria-hidden="true" initial={false} animate={{ rotate: open ? 180 : 0 }} transition={reduce ? instant : motionTokens.spring.snappy}><ChevronDown size={16} /></motion.span>
+      <motion.span className={cn(s.chevron, open && "text-foreground")} aria-hidden="true" initial={false} animate={{ rotate: open ? 180 : 0 }} transition={reduce ? instant : motionTokens.spring.snappy}><CaretDownIcon size={16} /></motion.span>
     </button>
     <AnimatePresence initial={false}>
       {open && <motion.div key="panel" id={panelId} className={s.panel} initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0, transition: reduce ? instant : exitSpring }} transition={reduce ? instant : motionTokens.spring.smooth}>
@@ -412,7 +412,7 @@ export function ChangelogFeed({
           const on = filters.includes(kind.id);
           return <button key={kind.id} type="button" className={cn(s.chip, kindVars[kind.id], on ? "border-foreground bg-foreground text-background" : "border-border bg-transparent text-text-secondary pointer-fine:hover:border-border-strong pointer-fine:hover:text-foreground")} data-kind={kind.id} aria-pressed={on} onClick={() => toggleFilter(kind.id)}>
             <motion.span className={cn(s.chipMark, on ? "bg-[var(--mark)]" : "bg-[var(--kind)]")} aria-hidden="true" initial={false} animate={{ width: on ? 16 : 7, height: on ? 16 : 7 }} transition={reduce ? instant : motionTokens.spring.morph}>
-              <motion.span className={s.chipTick} initial={false} animate={{ opacity: on ? 1 : 0, scale: on ? 1 : 0.4 }} transition={reduce ? instant : { ...motionTokens.spring.snappy, delay: on ? 0.05 : 0 }}><Check size={11} strokeWidth={2.6} /></motion.span>
+              <motion.span className={s.chipTick} initial={false} animate={{ opacity: on ? 1 : 0, scale: on ? 1 : 0.4 }} transition={reduce ? instant : { ...motionTokens.spring.snappy, delay: on ? 0.05 : 0 }}><CheckIcon size={11} /></motion.span>
             </motion.span>
             <span>{kind.label}</span>
             <span className={cn(s.chipCount, on ? "text-[color:color-mix(in_srgb,var(--background)_62%,transparent)]" : "text-text-muted")}>{kindCounts[kind.id]}</span>

@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { ChevronDown, Code } from "@mynaui/icons-react";
+import { CaretDownIcon, CodeIcon } from "@phosphor-icons/react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { CopyButton } from "@/components/ui/copy-button";
@@ -166,7 +166,7 @@ export function CodeBlock({ code, filename, language = "tsx", maxLines }: CodeBl
     <section className="w-full max-w-full min-w-0 overflow-hidden rounded-panel border border-border bg-surface [--code-collapsed:calc(var(--code-lines,0)*var(--text-sm)*1.7_+_var(--space-5)*2)] max-[420px]:[--code-collapsed:calc(var(--code-lines,0)*var(--text-xs)*1.7_+_var(--space-4)*2)]" aria-label={filename ? `${filename} source code` : `${displayLanguage} source code`} style={maxLines ? { "--code-lines": maxLines } as CSSProperties : undefined}>
       <header className="flex min-h-[52px] items-center justify-between gap-3 border-b border-border-subtle bg-surface-raised py-2 pr-3 pl-4 max-[420px]:pl-3 max-[420px]:[&_button]:w-control-sm max-[420px]:[&_button]:px-0 max-[420px]:[&_button>span:last-of-type]:hidden">
         <div className="flex min-w-0 items-baseline gap-2 font-sans text-sm leading-body font-medium tracking-body text-text-secondary [&>svg]:flex-none [&>svg]:self-center [&>svg]:text-text-muted">
-          <Code size={16} strokeWidth={1.75} aria-hidden="true" />
+          <CodeIcon size={16} aria-hidden="true" />
           <FileName name={filename ?? "Source code"} reduced={reduced} />
           <span className="flex-none [font-family:ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace] text-xs font-normal text-text-muted before:mr-2 before:text-border-strong before:content-['·']">{displayLanguage}</span>
         </div>
@@ -183,7 +183,7 @@ export function CodeBlock({ code, filename, language = "tsx", maxLines }: CodeBl
         {/* Both labels reserve the cell, so the chevron never moves when the words change. */}
         <span className={swapClass} aria-hidden="true">{expandLabels.map(text => <span key={text} className="invisible">{text}</span>)}<span className={swapStackClass}><SwapText value={expandLabels[expanded ? 1 : 0]} reduced={reduced} /></span></span>
         <span className="sr-only">{expandLabels[expanded ? 1 : 0]}</span>
-        <motion.span className="grid flex-none place-items-center text-text-muted pointer-fine:group-hover/expand:text-foreground" aria-hidden="true" initial={false} animate={{ rotate: expanded ? 180 : 0 }} transition={reduced ? { duration: 0 } : motionTokens.spring.snappy}><ChevronDown size={16} strokeWidth={1.75} /></motion.span>
+        <motion.span className="grid flex-none place-items-center text-text-muted pointer-fine:group-hover/expand:text-foreground" aria-hidden="true" initial={false} animate={{ rotate: expanded ? 180 : 0 }} transition={reduced ? { duration: 0 } : motionTokens.spring.snappy}><CaretDownIcon size={16} /></motion.span>
       </button>}
     </section>
   );

@@ -22,7 +22,7 @@ import {
   useTransform,
 } from "motion/react"
 import type { HTMLMotionProps, MotionProps, TargetAndTransition, Transition } from "motion/react"
-import { CheckCircle, DangerTriangle, Info, X, XCircle } from "@mynaui/icons-react"
+import { CheckCircleIcon, InfoIcon, WarningIcon, XCircleIcon, XIcon } from "@phosphor-icons/react"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -123,10 +123,10 @@ const typeLabels: Record<ToastType, string> = {
   loading: "In progress",
 }
 const icons = {
-  success: CheckCircle,
-  info: Info,
-  warning: DangerTriangle,
-  error: XCircle,
+  success: CheckCircleIcon,
+  info: InfoIcon,
+  warning: WarningIcon,
+  error: XCircleIcon,
 }
 
 /** Every motion preset the toast reads, derived from the tokens so a live override reaches it. */
@@ -702,7 +702,7 @@ function ToastItem({
                 {...(reduce ? fadeOnly : iconSwap)}
               >
                 {Icon ? (
-                  <Icon width={18} height={18} strokeWidth={1.75} />
+                  <Icon width={18} height={18} />
                 ) : (
                   <span className="block size-[15px] animate-spin rounded-pill border-[1.75px] border-current border-r-transparent [animation-duration:.8s] motion-reduce:animate-none" />
                 )}
@@ -754,7 +754,7 @@ function ToastItem({
             aria-label="Dismiss notification"
             onClick={() => store.dismiss(id)}
           >
-            <X width={16} height={16} strokeWidth={1.75} aria-hidden="true" />
+            <XIcon size={16} aria-hidden="true" />
           </button>
         </motion.div>
       </motion.div>

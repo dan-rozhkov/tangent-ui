@@ -6,7 +6,7 @@ import { Radio } from "@base-ui/react/radio"
 import { RadioGroup } from "@base-ui/react/radio-group"
 import { AnimatePresence, LayoutGroup, animate, motion, useAnimationControls, useIsPresent, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { ChevronLeft, Plus, X } from "@mynaui/icons-react"
+import { CaretLeftIcon, PlusIcon, XIcon } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
@@ -168,7 +168,7 @@ function DrawnCheck({ reduced }: { reduced: boolean }) {
       <motion.path
         d="M5.5 12.5 10 17 18.5 7.5"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
         initial={reduced ? false : { pathLength: 0 }}
@@ -442,7 +442,7 @@ export function ActionMorph({ actions, label = "Create", onSubmit, corner = "end
                       exit={reduced ? { opacity: 0 } : { opacity: 0, rotate: 90, scale: 0.6 }}
                       transition={reduced ? { duration: motionTokens.duration.fast } : motionTokens.spring.snappy}
                     >
-                      <Plus className="size-[22px]" strokeWidth={1.75} aria-hidden="true" />
+                      <PlusIcon className="size-[22px]" aria-hidden="true" />
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -614,7 +614,7 @@ function Composer({
     <form className="flex flex-col gap-3 p-1.5" aria-labelledby={titleId} aria-busy={sending || undefined} onSubmit={onSubmitForm} noValidate>
       <div className="flex h-9 items-center gap-1">
         <IconButton label="Back" onClick={onBack}>
-          <ChevronLeft className="size-4" aria-hidden="true" />
+          <CaretLeftIcon className="size-4" aria-hidden="true" />
         </IconButton>
         <h2 id={titleId} className="min-w-0 flex-1 truncate text-sm leading-body font-medium">
           {composer.title}
@@ -723,7 +723,7 @@ function IconButton({ label, onClick, children }: { label: string; onClick: () =
 function CloseButton({ onClick }: { onClick: () => void }) {
   return (
     <IconButton label="Close" onClick={onClick}>
-      <X className="size-4" aria-hidden="true" />
+      <XIcon className="size-4" aria-hidden="true" />
     </IconButton>
   )
 }

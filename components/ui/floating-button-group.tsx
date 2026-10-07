@@ -143,7 +143,7 @@ function ItemBody({
       <AnimatePresence initial={false}>
         <Phase key={label} reduced={reduced}>
           {icon ? (
-            <span className="inline-flex flex-none [&_svg]:size-4 [&_svg]:stroke-[1.75]" aria-hidden="true">
+            <span className="inline-flex flex-none [&_svg]:size-4" aria-hidden="true">
               {icon}
             </span>
           ) : null}
