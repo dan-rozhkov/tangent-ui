@@ -205,18 +205,18 @@ const finishes: Record<WalletCardVariant, { className: string; style: (tint?: st
   },
 }
 
-/** The card itself. Every detail is sized in container units, so the card scales as one object. */
+/** The card itself. Every detail is sized in container units, so the card scales as one object; the corner radius is inherited from the card button. */
 function CardFace({ card }: { card: WalletCard }) {
   const material = materialOf(card)
   const finish = finishes[material]
   return (
-    <span className="@container absolute inset-0 block overflow-hidden rounded-[3.7cqw] text-left" aria-hidden="true">
+    <span className="@container absolute inset-0 block overflow-hidden rounded-[inherit] text-left" aria-hidden="true">
       {card.image ? (
         // eslint-disable-next-line @next/next/no-img-element -- card art can come from any host.
         <img src={card.image} alt="" draggable={false} className="absolute inset-0 size-full object-cover" />
       ) : null}
       <span
-        className={cn("absolute inset-0 flex flex-col justify-between p-[6cqw] ring-1 ring-[oklch(100%_0_0/.18)] ring-inset", finish.className)}
+        className={cn("absolute inset-0 flex flex-col justify-between rounded-[inherit] p-[6cqw] ring-1 ring-[oklch(100%_0_0/.18)] ring-inset", finish.className)}
         // Artwork shows through a color finish; metal and black stay opaque, and glass already lets it through.
         style={{
           ...finish.style(card.tint),
