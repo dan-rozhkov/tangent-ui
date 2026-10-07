@@ -75,16 +75,17 @@ type Drag = {
 }
 
 /* The surface clips every row, so revealed actions never spill past its rounded corners. It hides once the last row has left.
-   When the last row is on its way out, the frame fades with it instead of leaving a hairline behind. */
+   When the last row is on its way out, the frame and the rows' tint fade with it instead of leaving a hairline or a band behind. */
 const surfaceClass = [
   "overflow-hidden rounded-panel border border-border bg-surface [transition:border-color_var(--duration-standard)_var(--ease-standard),background-color_var(--duration-standard)_var(--ease-standard)] motion-reduce:transition-none",
   "[&:not(:has(>ul>li:not([data-removing])))]:border-transparent [&:not(:has(>ul>li:not([data-removing])))]:bg-transparent has-[>ul:empty]:hidden",
+  "[&:not(:has(>ul>li:not([data-removing])))_li]:bg-transparent",
 ].join(" ")
-/* The content follows the finger by transform only; vertical pans stay with the page. */
+/* The content follows the finger by transform only; vertical pans stay with the page. Its surface is a separate layer behind the children, and the
+   children get a compositing layer of their own, so the rounded edge can animate without re-rasterising images inside. */
 const contentClass = [
-  "relative z-10 flex min-h-16 touch-pan-y items-center gap-2 bg-surface py-3 pr-2 pl-4 select-none [-webkit-touch-callout:none] [&_img]:[-webkit-user-drag:none]",
+  "relative z-10 flex min-h-18 touch-pan-y items-center gap-2 py-3 pr-2 pl-4 select-none [-webkit-touch-callout:none] [&_img]:[-webkit-user-drag:none]",
   "pointer-fine:cursor-grab group-data-dragging/row:cursor-grabbing",
-  "after:pointer-events-none after:absolute after:right-0 after:bottom-0 after:left-(--swipe-actions-inset,var(--space-4)) after:h-px after:bg-border after:content-['']",
 ].join(" ")
 /* The button anchors a menu, so a press answers with colour, never scale. */
 const moreClass = [
@@ -93,12 +94,19 @@ const moreClass = [
   "active:bg-surface-muted active:text-foreground data-popup-open:bg-surface-muted data-popup-open:text-foreground pointer-fine:hover:bg-surface-muted pointer-fine:hover:text-foreground",
   "group-data-dragging/row:bg-transparent! group-data-dragging/row:text-text-muted!",
 ].join(" ")
-/* Each action spans the full row from the edge it hides behind and slides in by transform. Outer actions stack above inner ones. */
+/* Each action is a transparent hit target spanning the full row from the edge it hides behind, sliding in by transform. The list surface shows
+   through; only the pill and its label are drawn. Outer actions stack above inner ones. */
 const layerClass = [
-  "absolute top-0 bottom-0 w-full cursor-pointer border-0 bg-[color-mix(in_oklab,var(--foreground)_20%,var(--surface))] p-0 text-foreground [-webkit-tap-highlight-color:transparent] focus:outline-none",
+  "absolute top-0 bottom-0 w-full cursor-pointer border-0 bg-transparent p-0 text-text-secondary [-webkit-tap-highlight-color:transparent] focus:outline-none",
   "data-[side=leading]:right-full data-[side=trailing]:left-full",
-  "data-[tone=accent]:bg-accent data-[tone=accent]:text-accent-foreground data-[tone=danger]:bg-danger data-[tone=danger]:text-background",
 ].join(" ")
+/* The pill carries the tone; its icon reads against it in both themes. */
+const pillToneClass = {
+  neutral:
+    "bg-[color-mix(in_oklab,var(--foreground)_56%,var(--surface))] text-background dark:bg-[color-mix(in_oklab,var(--foreground)_26%,var(--surface))] dark:text-foreground",
+  accent: "bg-accent text-accent-foreground",
+  danger: "bg-danger text-background",
+} as const
 /* The menu grows from its trigger, matching the library dropdown. Transitions keyed off Base UI's starting and ending states stand in for the keyframes. */
 const menuClass = [
   "[--menu-x:0px] [--menu-y:-5px] data-[side=top]:[--menu-y:5px]",
@@ -117,9 +125,29 @@ const itemClass = [
 ].join(" ")
 
 /** Width of one action while a row rests open. */
-const ACTION = 76
+const ACTION = 80
+/** Height of a pill once its slot is wide enough, and the gap between neighbouring pills. */
+const PILL_H = 44
+const GAP = 8
+/** Space between a pill and its label, and the label's line height. */
+const LABEL_GAP = 4
+const LABEL_H = 16
+/** Travel over which the content's edge facing the revealed actions grows to `--radius-panel`. */
+const RADIUS_TRAVEL = 24
+/** A pill's icon fades in over the pill widths from `ICON_FROM`, across `ICON_SPAN`. */
+const ICON_FROM = 14
+const ICON_SPAN = 26
+/** Distance from a layer's outer edge to its inner edge, for the layer at `rank`. Past the outermost rank there is nothing, so the inset is zero. */
+function insetOf(rank: number, count: number, coverRank: number | null, revealed: number, progress: number) {
+  const base = ((count - rank) * revealed) / count
+  if (coverRank === rank) return base + progress * (revealed - base)
+  if (coverRank !== null && rank > coverRank) return base * (1 - progress)
+  return base
+}
 /** Movement before a press is read as a swipe or handed to the page as a scroll. */
 const SLOP = 8
+/** The divider fades out over the first few pixels of travel, the same distance a press needs to count as a swipe. */
+const DIVIDER_FADE = SLOP
 /** Seconds of travel projected from the release velocity, roughly a 0.99 deceleration rate. */
 const PROJECTION = 0.1
 /** Release speed in px/s that counts as a flick. */
@@ -195,6 +223,11 @@ export function SwipeActionsRow({
   const rowRef = useRef<HTMLLIElement>(null)
   const x = useMotionValue(0)
   const cover = useMotionValue(0)
+  // Only the edge facing the revealed actions rounds off, growing with the distance travelled.
+  const radiusTrailing = useTransform(x, (value) => `calc(var(--radius-panel) * ${clamp01(-value / RADIUS_TRAVEL)})`)
+  const radiusLeading = useTransform(x, (value) => `calc(var(--radius-panel) * ${clamp01(value / RADIUS_TRAVEL)})`)
+  // The divider would poke past the rounded corner, so it fades as soon as the row leaves home.
+  const dividerOpacity = useTransform(x, (value) => 1 - clamp01(Math.abs(value) / DIVIDER_FADE))
   const [covering, setCovering] = useState<{
     side: Side
     index: number
@@ -479,7 +512,8 @@ export function SwipeActionsRow({
   return (
     <motion.li
       ref={rowRef}
-      className={cn("group/row relative isolate overflow-hidden", className)}
+      // The tint behind the actions lets the rounded card edge read against the list surface.
+      className={cn("group/row relative isolate overflow-hidden bg-[color-mix(in_oklab,var(--foreground)_5%,var(--surface))] [transition:background-color_var(--duration-standard)_var(--ease-standard)] motion-reduce:transition-none", className)}
       style={{ "--swipe-action-width": `${ACTION}px` } as CSSProperties}
       initial={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
       animate={{ height: "auto", opacity: 1 }}
@@ -526,7 +560,22 @@ export function SwipeActionsRow({
         onPointerCancel={onPointerEnd}
         onClickCapture={onClickCapture}
       >
-        <div className="min-w-0 flex-[1_1_auto]">{children}</div>
+        <motion.span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10 bg-surface"
+          style={{
+            borderTopLeftRadius: radiusLeading,
+            borderBottomLeftRadius: radiusLeading,
+            borderTopRightRadius: radiusTrailing,
+            borderBottomRightRadius: radiusTrailing,
+          }}
+        />
+        <motion.span
+          aria-hidden="true"
+          className="pointer-events-none absolute right-0 bottom-0 left-(--swipe-actions-inset,var(--space-4)) h-px bg-border"
+          style={{ opacity: dividerOpacity }}
+        />
+        <div className="min-w-0 flex-[1_1_auto] will-change-transform">{children}</div>
         {menuItems.length > 0 && (
           <Menu.Root open={menuOpen} onOpenChange={(open) => setMenuOpen(open)} loopFocus>
             {/* Opens on click rather than on press, so a swipe that starts on the button still moves the row. */}
@@ -594,38 +643,47 @@ type LayerProps = {
 }
 
 /**
- * One revealed action. Rank 0 sits against the content and the highest rank at the row's outer edge. Every layer spans the full row and slides in by
- * transform only, so the actions share the revealed space evenly, widen together past the resting width, and the covering action can stretch across the row.
+ * One revealed action: a pill with its label below it. Rank 0 sits against the content and the highest rank at the row's outer edge. Every layer spans
+ * the full row, transparent, and slides in from its edge. Its slot is the strip of the revealed space it owns; the pill fills the slot minus a gap, so
+ * it starts as a small circle, grows, then stretches. The covering action's slot grows to the whole revealed width and its pill stretches across,
+ * with the icon staying at the inner edge.
  */
 function ActionLayer({ action, side, rank, count, coverRank, x, cover, onPress }: LayerProps) {
   const direction = side === "leading" ? 1 : -1
-  const segment = useTransform(x, (value) => Math.max(0, value * direction) / count)
-  // Distance from the row's outer edge to this layer's inner edge.
-  const inset = useTransform([x, cover], ([value, progress]: number[]) => {
-    const revealed = Math.max(0, value * direction),
-      base = ((count - rank) * revealed) / count
-    if (coverRank === rank) return base + progress * (revealed - base)
-    if (coverRank !== null && rank > coverRank) return base * (1 - progress)
-    return base
+  const covers = coverRank === rank
+  // `inset` is the distance from the row's outer edge to this layer's inner edge. The slot runs from there to the next layer's inner edge.
+  const place = useTransform([x, cover], ([value, progress]: number[]) => {
+    const revealed = Math.max(0, value * direction)
+    const inset = insetOf(rank, count, coverRank, revealed, progress)
+    return { inset, slot: Math.max(0, inset - insetOf(rank + 1, count, coverRank, revealed, progress)) }
   })
-  const shift = useTransform(inset, (value) => direction * value)
-  // The glyph rides the centre of its share, then hugs the content edge while this action covers the row.
-  const glyphX = useTransform(
-    [segment, cover],
-    ([share, progress]: number[]) =>
-      -direction * (coverRank === rank ? share / 2 + progress * (ACTION / 2 - share / 2) : share / 2)
+  const shift = useTransform(place, ({ inset }) => direction * inset)
+  const slot = useTransform(place, (value) => value.slot)
+  // The covering layer rises above the others only while it stretches, so at rest the outer layer always wins the tap.
+  const zIndex = useTransform(cover, (progress) => (progress > 0 && covers ? count + 1 : rank + 1))
+  const pillW = useTransform(slot, (value) => Math.max(0, value - GAP))
+  const pillH = useTransform(pillW, (value) => Math.min(PILL_H, value))
+  // The icon sits in a square-ish box at the inner edge of the pill, so it stays put while the pill stretches.
+  const iconBox = useTransform(pillW, (value) => Math.min(value, ACTION - GAP))
+  // The label rides the centre of the slot, then hugs the content edge while this action covers the row.
+  const labelX = useTransform(
+    [slot, cover],
+    ([share, progress]: number[]) => -direction * (covers ? share / 2 + progress * (ACTION / 2 - share / 2) : share / 2)
   )
-  const iconReveal = useTransform([segment, cover], ([share, progress]: number[]) => {
-    const own = clamp01((share - ACTION * 0.25) / (ACTION * 0.55))
-    if (coverRank === rank) return Math.max(own, progress)
+  const iconReveal = useTransform([pillW, cover], ([width, progress]: number[]) => {
+    const own = clamp01((width - ICON_FROM) / ICON_SPAN)
+    if (covers) return Math.max(own, progress)
     return coverRank === null ? own : own * (1 - progress)
   })
-  const labelReveal = useTransform([segment, cover], ([share, progress]: number[]) => {
+  const labelReveal = useTransform([slot, cover], ([share, progress]: number[]) => {
     const own = clamp01((share - ACTION * 0.72) / (ACTION * 0.24))
-    if (coverRank === rank) return Math.max(own, progress)
+    if (covers) return Math.max(own, progress)
     return coverRank === null ? own : own * (1 - progress)
   })
   const iconScale = useTransform(iconReveal, (value) => 0.6 + 0.4 * value)
+  const innerEdge = side === "trailing" ? "left" : "right"
+  // The pill and label stack is centred in the row, whatever the pill's current height.
+  const stackTop = `calc(50% - ${(PILL_H + LABEL_GAP + LABEL_H) / 2}px)`
   // The menu button is the accessible path, so the revealed copy stays out of the tab order and the accessibility tree.
   return (
     <motion.button
@@ -634,23 +692,29 @@ function ActionLayer({ action, side, rank, count, coverRank, x, cover, onPress }
       aria-hidden="true"
       className={layerClass}
       data-side={side}
-      data-tone={action.tone ?? "neutral"}
-      style={{ x: shift, zIndex: rank + 1 }}
+      style={{ x: shift, zIndex }}
       onClick={onPress}
     >
-      <motion.span
-        className={cn("absolute top-0 bottom-0 w-0", side === "trailing" ? "left-0" : "right-0")}
-        style={{ x: glyphX }}
-      >
-        <span className="absolute top-0 bottom-0 left-[calc(var(--swipe-action-width)/-2)] flex w-(--swipe-action-width) flex-col items-center justify-center gap-[3px]">
+      <span className="absolute flex items-center" style={{ top: stackTop, height: PILL_H, [innerEdge]: GAP / 2 }}>
+        <motion.span
+          className={cn("relative block overflow-hidden rounded-pill", pillToneClass[action.tone ?? "neutral"])}
+          style={{ width: pillW, height: pillH }}
+        >
           <motion.span
-            className="grid place-items-center [&_svg]:size-5"
-            style={{ opacity: iconReveal, scale: iconScale }}
+            className={cn("absolute inset-y-0 grid place-items-center [&_svg]:size-5", side === "trailing" ? "left-0" : "right-0")}
+            style={{ width: iconBox, opacity: iconReveal, scale: iconScale }}
           >
             {action.icon}
           </motion.span>
+        </motion.span>
+      </span>
+      <motion.span
+        className={cn("absolute w-0", side === "trailing" ? "left-0" : "right-0")}
+        style={{ x: labelX, top: `calc(${stackTop} + ${PILL_H + LABEL_GAP}px)`, height: LABEL_H }}
+      >
+        <span className="absolute inset-y-0 left-[calc(var(--swipe-action-width)/-2)] flex w-(--swipe-action-width) items-center justify-center">
           <motion.span
-            className="text-xs leading-body font-medium tracking-body whitespace-nowrap"
+            className="text-xs leading-4 font-medium tracking-body whitespace-nowrap"
             style={{ opacity: labelReveal }}
           >
             {action.label}
