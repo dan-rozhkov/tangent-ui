@@ -1,13 +1,14 @@
 import { OpenMenuButton } from "@/components/gallery/open-menu-button"
+import { SiteFooter } from "@/components/gallery/site-footer"
 import { SiteHeader } from "@/components/gallery/site-header"
 import { ShowcaseGrid } from "@/components/gallery/showcase-grid"
 import { catalog } from "@/lib/catalog"
 
 export default function Home() {
   return (
-    <div className="min-h-dvh">
+    <div className="flex min-h-dvh flex-col">
       <SiteHeader />
-      <main className="mx-auto flex max-w-6xl flex-col gap-14 px-4 py-14 sm:px-6">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-14 px-4 py-14 sm:px-6">
         <section className="flex max-w-2xl flex-col gap-4">
           <h1 className="font-display text-4xl leading-display font-medium tracking-display text-balance">
             React components with calm, physical motion
@@ -24,6 +25,7 @@ export default function Home() {
           <ShowcaseGrid />
         </section>
       </main>
+      <SiteFooter />
     </div>
   )
 }
