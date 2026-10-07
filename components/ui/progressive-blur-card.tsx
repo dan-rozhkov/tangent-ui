@@ -1,14 +1,20 @@
 "use client"
 
-import { useEffect, useId, useMemo, useRef, useState } from "react"
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type {
-  CSSProperties,
   KeyboardEvent,
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from "react"
-import { AnimatePresence, motion } from "motion/react"
-import type { Transition, Variants } from "motion/react"
+import {
+  AnimatePresence,
+  animate,
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "motion/react"
+import type { MotionValue, Transition, Variants } from "motion/react"
 import { CheckIcon, StarIcon } from "@phosphor-icons/react"
 
 import { useMotionTokens } from "@/lib/motion-tokens-context"
@@ -113,6 +119,8 @@ export interface ProgressiveBlurCardProps {
   connectedLabel?: string
   /** Forces the card collapsed and out of the tab order, for cards waiting behind another. */
   inactive?: boolean
+  /** Collapses the blur region while the card is dragged, so it moves as one clean slab. */
+  dragging?: boolean
   className?: string
 }
 
@@ -139,6 +147,7 @@ export function ProgressiveBlurCard({
   connectLabel = "Connect",
   connectedLabel = "Connected",
   inactive = false,
+  dragging = false,
   className,
 }: ProgressiveBlurCardProps) {
   const tokens = useMotionTokens()
@@ -151,7 +160,7 @@ export function ProgressiveBlurCard({
   const lastPointer = useRef<string>("mouse")
   const cardRef = useRef<HTMLDivElement>(null)
   const handleId = useId()
-  const expanded = !inactive && (hovered || focused || pinned)
+  const expanded = !inactive && !dragging && (hovered || focused || pinned)
   const hasDetails = !!bio || !!stats?.length
 
   // Going to the back clears every way of being open, so coming forward later starts closed.
@@ -464,7 +473,8 @@ export interface ProgressiveBlurCardStackItem extends ProgressiveBlurCardProps {
 
 /**
  * A diagonal cascade of progressive blur cards: the front card is live, the others peek out from behind it as a
- * stepped edge. Click a card behind it, or press the arrow keys, to bring it forward; the cards swap places on springs.
+ * stepped edge. Swipe or flick the front card either way and it flies off and slips to the back of the deck, so the
+ * deck never runs out. Click a card behind it, or press the arrow keys, to bring it forward instead.
  * Use it to browse a handful of profiles in a small space. Use a grid when people need to compare many at once.
  * Shows up to five cards.
  */
@@ -479,21 +489,533 @@ export interface ProgressiveBlurCardStackProps {
 const STEP = 20
 const MAX = 5
 const CARD_WIDTH_REM = 16
+/** Degrees of rotation per pixel of horizontal travel. */
+const ROTATE = 0.065
+/** A release faster than this (px/s) throws the card even when it has only moved a little. */
+const FLICK = 500
+/** A release past this share of the card width throws it. */
+const THROW_SHARE = 0.35
+/** Movement under this many px is still a tap. */
+const TAP_SLOP = 4
+/** Vertical travel is not a choice, so past a small free zone it resists like a rubber band. */
+const FREE_Y = 48
+const STRETCH_Y = 140
+
+const resistY = (raw: number) => {
+  const distance = Math.abs(raw)
+  return distance <= FREE_Y
+    ? raw
+    : Math.sign(raw) *
+        (FREE_Y +
+          (1 - 1 / (((distance - FREE_Y) * 0.55) / STRETCH_Y + 1)) * STRETCH_Y)
+}
+const unresistY = (shown: number) => {
+  const distance = Math.abs(shown)
+  if (distance <= FREE_Y) return shown
+  const stretch = Math.min(distance - FREE_Y, STRETCH_Y - 1)
+  return (
+    Math.sign(shown) *
+    (FREE_Y + ((1 / (1 - stretch / STRETCH_Y) - 1) * STRETCH_Y) / 0.55)
+  )
+}
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value))
+
+const dimFor = (slot: number) => Math.min(0.34, 0.14 + slot * 0.06)
+
+interface Sample {
+  t: number
+  x: number
+  y: number
+}
+
+function velocityOf(samples: Sample[], now: number) {
+  const recent = samples.filter((sample) => now - sample.t <= 80)
+  const first = recent[0]
+  const last = recent[recent.length - 1]
+  if (!first || !last || first === last || now - last.t > 60)
+    return { x: 0, y: 0 }
+  const seconds = Math.max(0.008, (last.t - first.t) / 1000)
+  return {
+    x: (last.x - first.x) / seconds,
+    y: (last.y - first.y) / seconds,
+  }
+}
+
+interface StackSlotProps {
+  item: ProgressiveBlurCardStackItem
+  slot: number
+  count: number
+  /** The card is flying out after a swipe: it stays live and above the others until it clears the stack. */
+  out: boolean
+  lifted: boolean
+  nudged: boolean
+  /** 0 to 1: how far the front card has been dragged, eased. Cards behind rise by it. */
+  lift: MotionValue<number>
+  /** The same value, unsmoothed, written while dragging. */
+  rawLift: MotionValue<number>
+  /** Returns whether the stack took the swipe; a card it refuses springs back. */
+  onSwipe: (id: string, trusted: boolean) => boolean
+  onCleared: (id: string) => void
+  onLiftDone: (id: string) => void
+  onBring: (id: string, trusted: boolean) => void
+  onNudge: (id: string | null) => void
+}
+
+function StackSlot({
+  item,
+  slot,
+  count,
+  out,
+  lifted,
+  nudged,
+  lift,
+  rawLift,
+  onSwipe,
+  onCleared,
+  onLiftDone,
+  onBring,
+  onNudge,
+}: StackSlotProps) {
+  const tokens = useMotionTokens()
+  const reduced = useReducedMotion()
+  const { id, ...card } = item
+  const front = slot === 0
+  const live = front || out
+  const nudge = !live && nudged && !reduced ? 6 : 0
+
+  // Where the slot sits, animated by hand so a reorder can start from where the card is seen, not where it was.
+  const sx = useMotionValue(slot * STEP)
+  const sy = useMotionValue(slot * STEP)
+  const x = useMotionValue(0)
+  const y = useMotionValue(0)
+  const tilt = useMotionValue(1)
+  const opacity = useMotionValue(1)
+  const shadow = useMotionValue(0)
+  const rotate = useTransform([x, tilt], ([offset, sign]: number[]) =>
+    reduced ? 0 : offset * ROTATE * sign
+  )
+  // Cards behind ease toward the slot in front of them as the front card is pulled away.
+  const rise = useTransform(lift, (value) => -value * STEP)
+  const dimBase = useMotionValue(live ? 0 : dimFor(slot))
+  const nextDim = useMotionValue(slot <= 1 ? 0 : dimFor(slot - 1))
+  const dimNow = useTransform(
+    [dimBase, nextDim, lift],
+    ([base, next, amount]: number[]) => base - (base - next) * amount
+  )
+
+  const [dragging, setDragging] = useState(false)
+  const el = useRef<HTMLDivElement>(null)
+  const drag = useRef<{
+    pointerId: number
+    startX: number
+    startY: number
+    ox: number
+    oy: number
+    moved: boolean
+    width: number
+    /** Velocity of the card at the moment it was grabbed, so a tap during a spring-back can resume it. */
+    vx: number
+    vy: number
+    samples: Sample[]
+  } | null>(null)
+  const suppressClick = useRef(false)
+  const clearTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const flight = useRef<(() => void) | null>(null)
+  const home = useRef<ReturnType<typeof animate>[]>([])
+  const frontRef = useRef(front)
+  const latest = useRef({ onCleared, onLiftDone })
+  const prev = useRef({ slot, live })
+
+  useLayoutEffect(() => {
+    frontRef.current = front
+    latest.current = { onCleared, onLiftDone }
+  })
+
+  // When the slot changes, fold what the card is currently showing (the rise and the dim) into the values that
+  // animate on, so the stack's own lift reset can't make the card jump. Runs before the stack resets the lift.
+  useLayoutEffect(() => {
+    const was = prev.current
+    prev.current = { slot, live }
+    if (was.slot === slot) return
+    const shown = was.live ? 0 : -lift.get() * STEP
+    if (shown) {
+      sx.set(sx.get() + shown)
+      sy.set(sy.get() + shown)
+    }
+    dimBase.set(was.live ? dimBase.get() : dimNow.get())
+  }, [slot, live, lift, sx, sy, dimBase, dimNow])
+
+  useEffect(() => {
+    const transition: Transition = lifted
+      ? { duration: tokens.duration.fast, ease: [...tokens.ease.enter] as Bezier }
+      : reduced
+        ? { duration: 0.01 }
+        : { ...tokens.spring.morph, bounce: 0.1 }
+    const runs = [
+      animate(sx, slot * STEP + (lifted ? 34 : 0) + nudge, {
+        ...transition,
+        onComplete: () => {
+          if (lifted) latest.current.onLiftDone(id)
+        },
+      }),
+      animate(sy, slot * STEP + (lifted ? -8 : 0) + nudge, transition),
+    ]
+    return () => runs.forEach((run) => run.stop())
+  }, [slot, lifted, nudge, reduced, tokens, id, sx, sy])
+
+  useEffect(() => {
+    const target = live ? 0 : dimFor(slot)
+    const run = animate(dimBase, target, {
+      duration: reduced ? 0 : tokens.duration.standard,
+    })
+    nextDim.set(slot <= 1 ? 0 : dimFor(slot - 1))
+    return () => run.stop()
+  }, [live, slot, reduced, tokens, dimBase, nextDim])
+
+  useEffect(
+    () => () => {
+      clearTimeout(clearTimer.current)
+      home.current.forEach((run) => run.stop())
+      flight.current?.()
+    },
+    []
+  )
+
+  // Only the front card's motion drives the shared lift.
+  const syncLift = () => {
+    if (reduced || !frontRef.current) return
+    const width = el.current?.offsetWidth ?? 1
+    rawLift.set(clamp(Math.hypot(x.get(), y.get() * 0.5) / (width * 0.55), 0, 1))
+  }
+
+  const settle = () => {
+    setDragging(false)
+    animate(shadow, 0, { duration: tokens.duration.fast })
+  }
+
+  const stopHome = () => {
+    home.current.forEach((run) => run.stop())
+    home.current = []
+  }
+
+  // Every way a card comes back to rest goes through here, so a stopped animation is always resumed or settled.
+  const springHome = (vx: number, vy: number) => {
+    stopHome()
+    if (reduced) {
+      x.jump(0)
+      y.jump(0)
+      if (frontRef.current) rawLift.set(0)
+      settle()
+      return
+    }
+    let pending = 2
+    const finish = () => {
+      if (--pending > 0) return
+      home.current = []
+      settle()
+    }
+    home.current = [
+      animate(x, 0, {
+        ...tokens.spring.morph,
+        velocity: vx,
+        onUpdate: syncLift,
+        onComplete: finish,
+      }),
+      animate(y, 0, {
+        ...tokens.spring.morph,
+        velocity: vy,
+        onUpdate: syncLift,
+        onComplete: finish,
+      }),
+    ]
+  }
+
+  const down = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (!front || out || event.button !== 0 || !event.isPrimary) return
+    if (
+      event.target instanceof Element &&
+      event.target.closest("button, a, input, select, textarea, [role='button']")
+    )
+      return
+    clearTimeout(clearTimer.current)
+    suppressClick.current = false
+    const vx = x.getVelocity()
+    const vy = y.getVelocity()
+    stopHome()
+    x.stop()
+    y.stop()
+    if (Math.abs(x.get()) < 2) {
+      // Grabbing the top half tips the card the way the hand moves; the bottom half tips it the other way.
+      const rect = event.currentTarget.getBoundingClientRect()
+      tilt.set(event.clientY < rect.top + rect.height / 2 ? 1 : -1)
+    }
+    drag.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      ox: event.clientX - x.get(),
+      oy: event.clientY - unresistY(y.get()),
+      moved: false,
+      width: event.currentTarget.offsetWidth,
+      vx,
+      vy,
+      samples: [{ t: event.timeStamp, x: event.clientX, y: event.clientY }],
+    }
+  }
+
+  const release = (event: ReactPointerEvent<HTMLDivElement>, cancelled: boolean) => {
+    const state = drag.current
+    if (!state || event.pointerId !== state.pointerId) return
+    drag.current = null
+    try {
+      if (event.currentTarget.hasPointerCapture(event.pointerId))
+        event.currentTarget.releasePointerCapture(event.pointerId)
+    } catch {}
+    if (!state.moved) {
+      // A tap. If it landed on a card still springing home, the grab stopped that spring, so resume it.
+      if (Math.abs(x.get()) > 0.5 || Math.abs(y.get()) > 0.5)
+        springHome(state.vx, state.vy)
+      else settle()
+      return
+    }
+    // The click that follows a drag must not reach Connect or the tap-to-expand.
+    clearTimer.current = setTimeout(() => {
+      suppressClick.current = false
+    }, 80)
+    const velocity = cancelled
+      ? { x: 0, y: 0 }
+      : velocityOf(state.samples, event.timeStamp)
+    const offset = x.get()
+    const direction = Math.sign(offset)
+    const flick =
+      Math.abs(velocity.x) > FLICK &&
+      Math.sign(velocity.x) === direction &&
+      Math.abs(offset) > 12
+    const far =
+      Math.abs(offset) > state.width * THROW_SHARE &&
+      !(Math.sign(velocity.x) === -direction && Math.abs(velocity.x) > 300)
+    if (
+      !cancelled &&
+      direction &&
+      (flick || far) &&
+      onSwipe(id, event.nativeEvent.isTrusted)
+    ) {
+      throwCard(direction, velocity, state.width)
+      return
+    }
+    // Below the threshold, or when the stack refuses the swipe, the card springs home with the speed it has.
+    springHome(cancelled ? 0 : x.getVelocity(), cancelled ? 0 : y.getVelocity())
+  }
+
+  const move = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const state = drag.current
+    if (!state || event.pointerId !== state.pointerId) return
+    // The button was let go somewhere we never heard about: the press is over.
+    if (event.buttons === 0) {
+      release(event, true)
+      return
+    }
+    if (!state.moved) {
+      if (
+        Math.hypot(event.clientX - state.startX, event.clientY - state.startY) <
+        TAP_SLOP
+      )
+        return
+      // Only now does this become a drag: capturing earlier would retarget a plain tap's click away from its button.
+      state.moved = true
+      suppressClick.current = true
+      state.ox = event.clientX - x.get()
+      state.oy = event.clientY - unresistY(y.get())
+      try {
+        event.currentTarget.setPointerCapture(event.pointerId)
+      } catch {}
+      setDragging(true)
+      animate(shadow, 1, { duration: tokens.duration.fast })
+    }
+    x.set(event.clientX - state.ox)
+    y.set(resistY(event.clientY - state.oy))
+    syncLift()
+    state.samples.push({ t: event.timeStamp, x: event.clientX, y: event.clientY })
+    if (state.samples.length > 12) state.samples.shift()
+  }
+
+  const throwCard = (
+    direction: number,
+    velocity: { x: number; y: number },
+    width: number
+  ) => {
+    if (reduced) {
+      // No flight: the card fades out where it is and back in at the end of the deck.
+      x.jump(0)
+      y.jump(0)
+      opacity.set(0)
+      animate(opacity, 1, { duration: 0.15, ease: "linear" })
+      onCleared(id)
+      settle()
+      return
+    }
+    const reach = width + (count - 1) * STEP + 60
+    const exit = { type: "spring", visualDuration: 0.5, bounce: 0 } as const
+    const fromY = y.get()
+    const throwY = y.getVelocity()
+    const outX = animate(x, direction * reach, { ...exit, velocity: velocity.x })
+    const outY = animate(y, fromY + clamp(throwY * 0.1, -70, 70), {
+      ...exit,
+      velocity: throwY,
+    })
+    // Where x must reach for the card to be off the stack's footprint, worked out once rather than per frame.
+    let clearAt = direction * reach
+    const stack = el.current?.closest("[data-pbc-stack]")
+    if (stack && el.current) {
+      const box = el.current.getBoundingClientRect()
+      const bounds = stack.getBoundingClientRect()
+      const travel = Math.max(
+        0,
+        direction > 0 ? bounds.right - box.left : box.right - bounds.left
+      )
+      // The tilt grows with travel and swings the leading corner further out.
+      const sine = (distance: number) =>
+        Math.sin((Math.min(60, Math.abs(distance) * ROTATE) * Math.PI) / 180)
+      const now = x.get()
+      const margin = Math.max(
+        0,
+        (box.height / 2) * (sine(now + direction * travel) - sine(now))
+      )
+      clearAt = now + direction * (travel + margin)
+    }
+    let cleared = false
+    let watch: () => void = () => {}
+    const clear = () => {
+      if (cleared) return
+      cleared = true
+      watch()
+      flight.current = null
+      outX.stop()
+      outY.stop()
+      // Off the stack's footprint: drop to the back, then slide home underneath the others.
+      onCleared(id)
+      animate(shadow, 0, { duration: tokens.duration.standard })
+      springHome(x.getVelocity(), y.getVelocity())
+    }
+    flight.current = () => {
+      // The slot went away mid-flight: stop, and let the stack forget the card.
+      cleared = true
+      watch()
+      outX.stop()
+      outY.stop()
+      flight.current = null
+      latest.current.onCleared(id)
+    }
+    watch = x.on("change", (value) => {
+      if (direction > 0 ? value >= clearAt : value <= clearAt) clear()
+    })
+    outX.then(clear)
+  }
+
+  return (
+    <motion.div
+      data-pbc-slot={slot}
+      className="absolute top-0 left-0 will-change-transform"
+      style={{ width: "100%", x: sx, y: sy }}
+      initial={false}
+      animate={{
+        scale: lifted ? 1.02 : 1,
+        zIndex: out ? count + 2 : lifted ? count + 1 : count - slot,
+      }}
+      transition={{
+        ...(lifted
+          ? {
+              duration: tokens.duration.fast,
+              ease: [...tokens.ease.enter] as Bezier,
+            }
+          : reduced
+            ? { duration: 0.01 }
+            : { ...tokens.spring.morph, bounce: 0.1 }),
+        zIndex: { duration: 0 },
+      }}
+    >
+      <motion.div style={{ x: live ? 0 : rise, y: live ? 0 : rise }}>
+        <motion.div
+          ref={el}
+          className={cn(
+            "relative touch-pan-y select-none [-webkit-tap-highlight-color:transparent]",
+            front && "pointer-fine:cursor-grab",
+            dragging && "pointer-fine:cursor-grabbing"
+          )}
+          style={{ x, y, rotate, opacity }}
+          onPointerDown={down}
+          onPointerMove={move}
+          onPointerUp={(event) => release(event, false)}
+          onPointerCancel={(event) => release(event, true)}
+          onLostPointerCapture={(event) => {
+            // Touch capture held by a child is handed to the card on the first move; that bubbles here and is not a cancel.
+            if (event.target === event.currentTarget) release(event, true)
+          }}
+          onClickCapture={(event) => {
+            if (!suppressClick.current) return
+            event.preventDefault()
+            event.stopPropagation()
+          }}
+        >
+          {/* Resting cards sit on the standard shadow; a card in the hand or in flight floats on a deeper one. */}
+          <motion.div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 rounded-surface shadow-[0_28px_56px_-14px_oklch(0_0_0/0.4),0_10px_20px_-10px_oklch(0_0_0/0.28)]"
+            style={{ opacity: shadow }}
+          />
+          <ProgressiveBlurCard
+            {...card}
+            inactive={!live}
+            dragging={dragging}
+          />
+          {/* A live card (in hand or in flight) is never dimmed, whatever the lift. */}
+          <motion.div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 rounded-surface bg-black"
+            style={{ opacity: live ? dimBase : dimNow }}
+          />
+          {!live ? (
+            <button
+              type="button"
+              data-pbc-back=""
+              aria-label={`Bring ${card.name} to front`}
+              onClick={(event) => onBring(id, event.nativeEvent.isTrusted)}
+              onPointerEnter={(event) => {
+                if (event.pointerType === "mouse") onNudge(id)
+              }}
+              onPointerLeave={() => onNudge(null)}
+              className={cn(
+                "absolute inset-0 cursor-pointer rounded-surface",
+                lifted && "pointer-events-none"
+              )}
+            />
+          ) : null}
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  )
+}
 
 export function ProgressiveBlurCardStack({
   items,
   label = "Creators",
   className,
 }: ProgressiveBlurCardStackProps) {
-  const tokens = useMotionTokens()
   const reduced = useReducedMotion()
+  const tokens = useMotionTokens()
+  const hintId = useId()
   const shown = useMemo(() => items.slice(0, MAX), [items])
   const count = shown.length
   const offset = Math.max(0, count - 1) * STEP
   const [rawOrder, setOrder] = useState(() => shown.map((item) => item.id))
   const [leaving, setLeaving] = useState<string | null>(null)
   const [nudged, setNudged] = useState<string | null>(null)
+  const [out, setOut] = useState<string[]>([])
+  const [message, setMessage] = useState("")
   const rootRef = useRef<HTMLDivElement>(null)
+  const rawLift = useMotionValue(0)
+  const lift = useSpring(rawLift, tokens.spring.smooth)
 
   // Keep the order in step if the items change: drop what is gone, append what is new.
   const order = useMemo(() => {
@@ -506,13 +1028,27 @@ export function ProgressiveBlurCardStack({
   if (leaving !== null && !shown.some((item) => item.id === leaving))
     setLeaving(null)
 
-  const reorder = (next: string[]) => {
+  // The lift belongs to whoever was in front. When the front changes it resets, after the cards have folded
+  // what they were showing into their own motion (children's layout effects run first).
+  const frontId = order[0]
+  useLayoutEffect(() => {
+    rawLift.set(0)
+    lift.jump(0)
+  }, [frontId, rawLift, lift])
+
+  // Only reorders the viewer caused are announced: autoplay's synthetic events are not trusted.
+  const reorder = (next: string[], trusted: boolean, swiped = false) => {
     if (next[0] === order[0]) return
     // The old front card lifts out first; its lift animation clears this when it ends, so it follows the gallery speed.
-    // Clear any stale lift first, in case the last animation was cut off.
-    setLeaving(reduced ? null : order[0])
+    // A swiped card has already flown out, so it needs no lift.
+    setLeaving(reduced || swiped ? null : order[0])
     setOrder(next)
     setNudged(null)
+    const front = shown.find((item) => item.id === next[0])
+    if (front && trusted)
+      setMessage(
+        `${front.name}, card ${shown.indexOf(front) + 1} of ${count}, is now in front.`
+      )
     // Keep the keys working after a click, but never pull focus away from something else the viewer is using.
     const root = rootRef.current
     const active = document.activeElement
@@ -520,8 +1056,17 @@ export function ProgressiveBlurCardStack({
       root.focus({ preventScroll: true })
   }
 
-  const bringToFront = (id: string) =>
-    reorder([id, ...order.filter((other) => other !== id)])
+  const cycle = () => order.slice(1).concat(order[0])
+
+  const swipe = (id: string, trusted: boolean) => {
+    if (id !== order[0] || order.length < 2) return false
+    setOut((current) => [...current, id])
+    reorder(cycle(), trusted, true)
+    return true
+  }
+
+  const bringToFront = (id: string, trusted: boolean) =>
+    reorder([id, ...order.filter((other) => other !== id)], trusted)
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return
@@ -531,23 +1076,23 @@ export function ProgressiveBlurCardStack({
     // Both keys cycle the whole stack: right sends the front card to the back, left brings the back card forward.
     reorder(
       event.key === "ArrowRight"
-        ? order.slice(1).concat(order[0])
-        : [order[order.length - 1], ...order.slice(0, -1)]
+        ? cycle()
+        : [order[order.length - 1], ...order.slice(0, -1)],
+      event.nativeEvent.isTrusted
     )
   }
 
-  const move: Transition = reduced
-    ? { duration: 0.01 }
-    : { ...tokens.spring.morph, bounce: 0.1 }
   const byId = new Map(shown.map((item) => [item.id, item]))
   const wrapperWidth = `calc(${CARD_WIDTH_REM}rem + ${offset}px)`
 
   return (
     <div
       ref={rootRef}
+      data-pbc-stack=""
       role="group"
       aria-label={label}
       aria-roledescription="card stack"
+      aria-describedby={hintId}
       tabIndex={0}
       onKeyDown={onKeyDown}
       className={cn("relative w-full outline-none", className)}
@@ -562,75 +1107,50 @@ export function ProgressiveBlurCardStack({
           marginBottom: offset,
         }}
       />
-      {order.map((id, slot) => {
-        const item = byId.get(id)
-        if (!item) return null
-        const { id: itemId, ...card } = item
-        const front = slot === 0
-        const lifted = leaving === id
-        const nudge = !front && nudged === id && !reduced ? 6 : 0
-        const dim = Math.min(0.34, 0.14 + slot * 0.06)
-        const style: CSSProperties = { width: `calc(100% - ${offset}px)` }
-        return (
-          <motion.div
-            key={itemId}
-            data-pbc-slot={slot}
-            className="absolute top-0 left-0 will-change-transform"
-            style={style}
-            initial={false}
-            animate={{
-              x: slot * STEP + (lifted ? 34 : 0) + nudge,
-              y: slot * STEP + (lifted ? -8 : 0) + nudge,
-              scale: lifted ? 1.02 : 1,
-              zIndex: lifted ? count + 1 : count - slot,
-            }}
-            transition={{
-              ...(lifted
-                ? {
-                    duration: tokens.duration.fast,
-                    ease: [...tokens.ease.enter] as Bezier,
-                  }
-                : move),
-              zIndex: { duration: 0 },
-            }}
-            onAnimationComplete={() => {
-              if (lifted)
-                setLeaving((current) => (current === id ? null : current))
-            }}
-          >
-            <ProgressiveBlurCard {...card} inactive={!front} />
-            {!front ? (
-              <>
-                <motion.div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 rounded-surface bg-black"
-                  initial={false}
-                  animate={{ opacity: dim }}
-                  transition={{ duration: tokens.duration.standard }}
-                />
-                <button
-                  type="button"
-                  data-pbc-back=""
-                  aria-label={`Bring ${card.name} to front`}
-                  onClick={() => bringToFront(itemId)}
-                  onPointerEnter={(event) => {
-                    if (event.pointerType === "mouse") setNudged(itemId)
-                  }}
-                  onPointerLeave={() =>
-                    setNudged((current) =>
-                      current === itemId ? null : current
-                    )
-                  }
-                  className={cn(
-                    "absolute inset-0 cursor-pointer rounded-surface",
-                    lifted && "pointer-events-none"
-                  )}
-                />
-              </>
-            ) : null}
-          </motion.div>
-        )
-      })}
+      {/* Each slot is as wide as a card, not the whole box. */}
+      <div
+        className="absolute top-0 left-0"
+        style={{ width: `calc(100% - ${offset}px)` }}
+      >
+        {order.map((id, slot) => {
+          const item = byId.get(id)
+          if (!item) return null
+          return (
+            <StackSlot
+              key={id}
+              item={item}
+              slot={slot}
+              count={count}
+              out={out.includes(id)}
+              lifted={leaving === id}
+              nudged={nudged === id}
+              lift={lift}
+              rawLift={rawLift}
+              onSwipe={swipe}
+              onCleared={(cleared) =>
+                setOut((current) => current.filter((other) => other !== cleared))
+              }
+              onLiftDone={(done) =>
+                setLeaving((current) => (current === done ? null : current))
+              }
+              onBring={bringToFront}
+              onNudge={(next) =>
+                setNudged((current) =>
+                  next === null ? (current === id ? null : current) : next
+                )
+              }
+            />
+          )
+        })}
+      </div>
+      <p id={hintId} className="sr-only">
+        Swipe or drag the front card left or right, or press the left and right
+        arrow keys, to cycle through the cards. Activate a card behind it to
+        bring it forward.
+      </p>
+      <p className="sr-only" role="status" aria-live="polite">
+        {message}
+      </p>
     </div>
   )
 }

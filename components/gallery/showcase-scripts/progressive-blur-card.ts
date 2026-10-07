@@ -17,16 +17,24 @@ const script: AutoplayScript = async (ctx) => {
   ctx.unhover(first)
   await ctx.wait(900)
 
-  // Bring the card behind forward and look at it.
-  await ctx.tap(await ctx.find('[data-pbc-slot="1"] [data-pbc-back]'))
+  // Throw the front card: it flies off and slips to the back of the deck.
+  await ctx.drag(await front(ctx), { dx: 220, dy: -14, duration: 380 })
+  await ctx.wait(1500)
+
+  // A short drag is not enough: the card springs back.
+  await ctx.drag(await front(ctx), { dx: 60, duration: 420 })
   await ctx.wait(900)
+
+  // And the other way.
+  await ctx.drag(await front(ctx), { dx: -220, dy: 10, duration: 380 })
+  await ctx.wait(1500)
   const second = await front(ctx)
   ctx.hover(second)
-  await ctx.wait(1800)
+  await ctx.wait(1500)
   ctx.unhover(second)
-  await ctx.wait(700)
+  await ctx.wait(600)
 
-  // And one more.
+  // Or click a card behind to bring it forward.
   await ctx.tap(await ctx.find('[data-pbc-slot="2"] [data-pbc-back]'))
   await ctx.wait(1400)
 }
