@@ -6,6 +6,7 @@ export const showcaseScripts: Record<string, () => Promise<{ default: AutoplaySc
   "radial-picker": () => import("./radial-picker"),
   "pass-deck": () => import("./pass-deck"),
   "card-stack": () => import("./card-stack"),
+  "progressive-blur-card": () => import("./progressive-blur-card"),
   "depth-rail": () => import("./depth-rail"),
   "blob-tabs": () => import("./blob-tabs"),
   "swipe-actions": () => import("./swipe-actions"),

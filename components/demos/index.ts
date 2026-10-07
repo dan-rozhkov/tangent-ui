@@ -95,6 +95,7 @@ export const demos: Record<string, ComponentType> = {
   "plan-comparison": lazy(() => import("./plan-comparison")),
   "popover": lazy(() => import("./popover")),
   "progress": lazy(() => import("./progress")),
+  "progressive-blur-card": lazy(() => import("./progressive-blur-card")),
   "radial-picker": lazy(() => import("./radial-picker")),
   "radio-cards": lazy(() => import("./radio-cards")),
   "radio-group": lazy(() => import("./radio-group")),
