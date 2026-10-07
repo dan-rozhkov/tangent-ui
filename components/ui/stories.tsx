@@ -226,7 +226,7 @@ function SegmentRing({ seenMask }: { seenMask: string }) {
           strokeDashoffset={count > 1 ? -(at * share + (RING_GAP + RING_STROKE) / 2) : undefined}
           className={cn(
             "transition-[stroke] duration-240 ease-standard motion-reduce:transition-none",
-            flag === "1" ? "stroke-border-strong" : "stroke-primary",
+            flag === "1" ? "stroke-border-strong" : "stroke-accent",
           )}
         />
       ))}
