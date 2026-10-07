@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import { HeaderActions } from "@/components/gallery/header-actions"
+import { ShowcaseGrid } from "@/components/gallery/showcase-grid"
 import { catalog } from "@/lib/catalog"
 
 const sections = [
@@ -38,6 +39,10 @@ export default function Home() {
               Start with the glass tab bar
             </Link>
           </div>
+        </section>
+        <section className="flex flex-col gap-4">
+          <h2 className="font-display text-xl font-medium tracking-display">In motion</h2>
+          <ShowcaseGrid />
         </section>
         {sections.map(section => {
           const items = catalog.filter(item => item.category === section.id)

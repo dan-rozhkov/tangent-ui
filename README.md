@@ -32,6 +32,8 @@ With the dev server running on port 3456:
 node scripts/record-demo.mjs <name> [--dark]
 ```
 
+Home-page showcase clips (16:10, both themes, into `public/showcase/`): `node scripts/record-showcase.mjs [name...]` (default dev server `http://localhost:3100`, override with `BASE_URL`).
+
 ## License
 
 See `THIRD_PARTY_NOTICES` for third-party licenses. Demo photos are from Unsplash, listed in `public/media/CREDITS.md`.
