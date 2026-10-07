@@ -131,6 +131,7 @@ export const demos: Record<string, ComponentType> = {
   "switch": lazy(() => import("./switch")),
   "tabs": lazy(() => import("./tabs")),
   "tag-input": lazy(() => import("./tag-input")),
+  "task-input": lazy(() => import("./task-input")),
   "text-morph": lazy(() => import("./text-morph")),
   "text-reveal": lazy(() => import("./text-reveal")),
   "text-shimmer": lazy(() => import("./text-shimmer")),
@@ -149,6 +150,7 @@ export const demos: Record<string, ComponentType> = {
   "treemap": lazy(() => import("./treemap")),
   "usage-meter": lazy(() => import("./usage-meter")),
   "user-menu": lazy(() => import("./user-menu")),
+  "voice-chat": lazy(() => import("./voice-chat")),
   "waffle-chart": lazy(() => import("./waffle-chart")),
   "wallet-stack": lazy(() => import("./wallet-stack")),
 }
