@@ -125,6 +125,7 @@ export const demos: Record<string, ComponentType> = {
   "split-button": lazy(() => import("./split-button")),
   "stats-band": lazy(() => import("./stats-band")),
   "stepper": lazy(() => import("./stepper")),
+  "stories": lazy(() => import("./stories")),
   "streamgraph": lazy(() => import("./streamgraph")),
   "swipe-actions": lazy(() => import("./swipe-actions")),
   "switch": lazy(() => import("./switch")),
