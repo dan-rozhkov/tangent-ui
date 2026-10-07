@@ -12,6 +12,7 @@ import { motionTokens as presets } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
+import { clamp, pointerVelocity, rubberBand, type Sample } from "@/lib/gesture"
 
 export interface StoryFrame {
   src: string
@@ -68,9 +69,10 @@ const dragReturn = { type: "spring", stiffness: 272, damping: 26 } as const
 const outCubic = [0.33, 1, 0.68, 1] as [number, number, number, number]
 const fade = { duration: 0.1, ease: [...presets.ease.standard] as [number, number, number, number] }
 
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
-/** Past an edge, travel approaches `limit` px instead of following the pointer. */
-const rubber = (distance: number, limit = 120) => (1 - 1 / ((distance * 0.55) / limit + 1)) * limit
+/** Past the first or last author, cube travel approaches this many px instead of following the pointer. */
+const EDGE_STRETCH = 120
+/** Pulling a story up instead of down approaches this many px. */
+const DISMISS_STRETCH = 60
 
 const keyOf = (author: StoryAuthor, frame: number) => `${author.id}:${frame}`
 /** One character per frame, "1" once seen: a string, so the memoized avatar re-renders only when its own ring changes. */
@@ -286,8 +288,6 @@ const Avatar = memo(function Avatar({
   )
 })
 
-type Samples = { x: number; y: number; t: number }[]
-
 interface Gesture {
   kind: "pending" | "swipe" | "dismiss"
   id: number
@@ -297,16 +297,7 @@ interface Gesture {
   pos: number
   held: boolean
   timer: number
-  samples: Samples
-}
-
-function velocityOf(samples: Samples, now: number) {
-  const recent = samples.filter(sample => now - sample.t <= 100)
-  const first = recent[0]
-  const last = recent[recent.length - 1]
-  if (!first || !last || first === last || now - last.t > 60) return { x: 0, y: 0 }
-  const seconds = Math.max(0.008, (last.t - first.t) / 1000)
-  return { x: (last.x - first.x) / seconds, y: (last.y - first.y) / seconds }
+  samples: Sample[]
 }
 
 function Viewer({
@@ -710,12 +701,12 @@ function Viewer({
       const low = Math.max(0, stateRef.current.index - 1)
       const high = Math.min(last, stateRef.current.index + 1)
       let next = state.pos - deltaX / width
-      if (next < low) next = low - rubber((low - next) * width) / width
-      if (next > high) next = high + rubber((next - high) * width) / width
+      if (next < low) next = low - rubberBand((low - next) * width, EDGE_STRETCH) / width
+      if (next > high) next = high + rubberBand((next - high) * width, EDGE_STRETCH) / width
       pos.set(Number.isFinite(next) ? next : state.pos)
       return
     }
-    const down = deltaY >= 0 ? deltaY : -rubber(-deltaY, 60)
+    const down = deltaY >= 0 ? deltaY : -rubberBand(-deltaY, DISMISS_STRETCH)
     dy.set(down)
     dx.set(deltaX)
     // Scale (in `shrink`), veil and chrome are straight lines in the distance, the chrome going first.
@@ -732,7 +723,7 @@ function Viewer({
     window.clearTimeout(state.timer)
     const f = flags.current
     if (f.closing) return
-    const velocity = velocityOf(state.samples, event.timeStamp)
+    const velocity = pointerVelocity(state.samples, event.timeStamp, { window: 100 })
     const still = stateRef.current.reduced
 
     if (state.kind === "pending") {

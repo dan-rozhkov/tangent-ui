@@ -11,6 +11,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
+import { axisVelocity, clamp, rubberBand, unRubberBand } from "@/lib/gesture"
 
 export type DrillPresentation = "auto" | "sheet" | "dialog"
 
@@ -138,8 +139,6 @@ const DIALOG_LIFT = 18
 const DIALOG_ENTER_SCALE = 0.98
 const DIALOG_EXIT_SCALE = 0.97
 
-const rubber = (distance: number) => (1 - 1 / ((distance * 0.55) / STRETCH + 1)) * STRETCH
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 type Bezier = [number, number, number, number]
 /** Transitions derived from the motion tokens; recomputed only when the tokens change. */
 function useSheetMotion() {
@@ -506,7 +505,7 @@ function SheetPanel({ id, title, subtitle: description, children, actions: foote
   const beginDrag = useCallback(
     (clientY: number, time: number) => {
       offset.stop()
-      dragState.current = { startY: clientY, origin: offset.get() < 0 ? -rubber(-offset.get()) : offset.get(), samples: [{ t: time, y: clientY }], moved: false }
+      dragState.current = { startY: clientY, origin: offset.get() < 0 ? -unRubberBand(-offset.get(), STRETCH) : offset.get(), samples: [{ t: time, y: clientY }], moved: false }
     },
     [offset],
   )
@@ -519,7 +518,7 @@ function SheetPanel({ id, title, subtitle: description, children, actions: foote
       state.moved = true
       const raw = state.origin + delta
       // Down follows the pointer; up resists like a rubber band. The sheets below ease back as it goes.
-      const next = raw >= 0 ? raw : -rubber(-raw)
+      const next = raw >= 0 ? raw : -rubberBand(-raw, STRETCH)
       offset.set(next)
       pull.set(clamp(next / Math.max(height.get(), 1), 0, 1))
       state.samples.push({ t: time, y: clientY })
@@ -533,10 +532,7 @@ function SheetPanel({ id, title, subtitle: description, children, actions: foote
       const state = dragState.current
       dragState.current = null
       if (!state?.moved) return
-      const recent = state.samples.filter(sample => time - sample.t <= 90)
-      const first = recent[0]
-      const last = recent[recent.length - 1]
-      const velocity = first && last && first !== last && time - last.t < 60 ? (last.y - first.y) / ((last.t - first.t) / 1000) : 0
+      const velocity = axisVelocity(state.samples, time, sample => sample.y, { window: 90 })
       const travelled = offset.get()
       if (travelled > height.get() * DISMISS || (travelled > 0 && velocity > FLICK)) {
         flung.current = Math.max(velocity, 0)
