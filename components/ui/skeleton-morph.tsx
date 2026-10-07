@@ -14,7 +14,7 @@ export interface SkeletonMorphProps {
   loading: boolean
   /** The loaded layout, with each visible piece wrapped in a MorphBlock. */
   children: ReactNode
-  /** Seconds between blocks as they resolve in reading order. */
+  /** Seconds between blocks as they crossfade in reading order. Keep it small so they fade nearly together. */
   stagger?: number
   /** Status text read by screen readers while loading. */
   loadingLabel?: string
@@ -66,13 +66,12 @@ const barTone = "bg-surface-muted"
 /** Text bars are this tall, centred in a box of the text's own line height so the skeleton keeps the loaded line boxes. */
 const BAR = 12
 
-/** The shell eases to its new height, and placeholders stretch to their content, on one medium critically damped spring. */
+/** The shell eases to its new height on a medium critically damped spring; blocks only fade, on these tweens. */
 const SHELL = { type: "spring", stiffness: 256, damping: 32 } as const
-const STRETCH = { type: "spring", stiffness: 290, damping: 34 } as const
-/** Placeholders fade on a much stiffer spring, so each one is gone well before the shell settles. */
-const FADE = { type: "spring", stiffness: 900, damping: 60 } as const
-/** The first placeholder starts to fade this long after the content lands; the rest follow it by `stagger`. */
-const FADE_LEAD = 0.06
+/** Seconds: the skeleton fades in and out a little faster than the content arrives; reduced motion shortens both. */
+const SKELETON_FADE = 0.24
+const CONTENT_FADE = 0.32
+const REDUCED_FADE = 0.12
 
 /** Pins the shell's height while blocks resolve and springs it to the new natural height, clipping while it moves so the card border never jumps. */
 function useShellHeight(reduce: boolean) {
@@ -141,11 +140,11 @@ function useShellHeight(reduce: boolean) {
 }
 
 /**
- * A loading region whose skeleton blocks become the real content. Loading swaps in at once with a slow pulse; on
- * resolve the content lands underneath, each placeholder stretches to its content's measured box and fades in reading
- * order, and the shell eases to its new height.
+ * A loading region whose skeleton blocks crossfade into the real content. Loading fades in with a slow pulse; on
+ * resolve the content lands in the layout and fades in while each placeholder fades out in place, nearly together in
+ * reading order, and the shell eases to its new height. Nothing is stretched or moved.
  */
-export function SkeletonMorph({ loading, children, stagger = 0.04, loadingLabel = "Loading", as, className, style }: SkeletonMorphProps) {
+export function SkeletonMorph({ loading, children, stagger = 0.02, loadingLabel = "Loading", as, className, style }: SkeletonMorphProps) {
   const Root = (as ?? "div") as ElementType
   const reduce = useReducedMotion() ?? false
   const { root, hold, release, reset } = useShellHeight(reduce)
@@ -208,75 +207,48 @@ function Lines({ count, lineHeight, shape, reduce, pulse }: { count: number; lin
   )
 }
 
-type Phase = "skeleton" | "morphing" | "done"
-
-type Box = { left: number; top: number; width: number; height: number }
+type Phase = "skeleton" | "fading" | "done"
 
 /**
- * The box of what is actually drawn: text runs and media, not the full width of the blocks they sit in, so a short
- * name stretches its placeholder to the name and not to the end of the line. Falls back to the content's own box.
- */
-function inkBox(root: HTMLElement): Box {
-  let left = Infinity
-  let top = Infinity
-  let right = -Infinity
-  let bottom = -Infinity
-  const add = (rect: DOMRect) => {
-    if (!rect.width || !rect.height) return
-    left = Math.min(left, rect.left)
-    top = Math.min(top, rect.top)
-    right = Math.max(right, rect.right)
-    bottom = Math.max(bottom, rect.bottom)
-  }
-  const range = document.createRange()
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT)
-  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
-    if (node.nodeType === Node.TEXT_NODE) {
-      if (!node.textContent?.trim()) continue
-      range.selectNodeContents(node)
-      for (const rect of Array.from(range.getClientRects())) add(rect)
-    } else if (node instanceof HTMLElement || node instanceof SVGElement) {
-      const media = /^(IMG|SVG|VIDEO|CANVAS|PICTURE|IFRAME|INPUT|BUTTON|TEXTAREA|SELECT)$/i.test(node.nodeName)
-      if (media) add(node.getBoundingClientRect())
-    }
-  }
-  if (left === Infinity) return root.getBoundingClientRect()
-  return { left, top, width: right - left, height: bottom - top }
-}
-
-/**
- * One piece of the layout. It is a size-matched skeleton while loading. On resolve the real content lands at once
- * underneath, and the placeholder stretches in place to the content's measured box while it fades away, in reading
- * order.
+ * One piece of the layout. It is a size-matched skeleton while loading. On resolve the real content lands in the
+ * layout at once and fades in, while the placeholder fades out where it stands, at its own size, in reading order.
+ * Only opacity changes; nothing moves or resizes.
  */
 export function MorphBlock({ children, width = "100%", height, radius = 6, lines, lineHeight = 20, as = "div", className, style }: MorphBlockProps) {
   const region = useContext(Region)
+  const motionTokens = useMotionTokens()
   const Tag = as as ElementType
   const block = useRef<HTMLElement | null>(null)
-  const content = useRef<HTMLSpanElement | null>(null)
   const loading = region?.loading ?? false
   const reduce = region?.reduce ?? false
   const [phase, setPhase] = useState<Phase>(loading ? "skeleton" : "done")
   // Going back to loading is immediate, so fast reloads never leave a block stuck halfway.
   const [wasLoading, setWasLoading] = useState(loading)
+  /** Set once the block has left its first state, so a later return to loading fades in and the first mount does not. */
+  const [fadeIn, setFadeIn] = useState(false)
   if (wasLoading !== loading) {
     setWasLoading(loading)
-    if (loading) setPhase("skeleton")
+    if (loading) {
+      setPhase("skeleton")
+      setFadeIn(true)
+    }
   }
   /** The skeleton's box, read just before it gives way to the content. */
-  const from = useRef<{ width: number; height: number } | null>(null)
-  /** This block's place among its region's blocks, which sets when its placeholder fades. */
+  const [from, setFrom] = useState<{ width: number; height: number } | null>(null)
+  /** This block's place among its region's blocks, which sets when its fades start. */
   const order = useRef(0)
 
-  const overlayLeft = useMotionValue(0)
-  const overlayTop = useMotionValue(0)
-  const overlayWidth = useMotionValue(0)
-  const overlayHeight = useMotionValue(0)
+  const contentOpacity = useMotionValue(loading ? 0 : 1)
   const overlayOpacity = useMotionValue(1)
 
   const lineCount = lines && lines > 0 ? Math.floor(lines) : 0
   const skeletonHeight = height ?? (lineCount ? lineCount * lineHeight : 12)
   const shape = radius === "circle" ? "9999px" : px(radius)
+
+  // The content is hidden while loading, so it is already transparent when it lands.
+  useLayoutEffect(() => {
+    if (loading) contentOpacity.jump(0)
+  }, [loading, contentOpacity])
 
   // Every block gives way in the same commit: pin the shell at the skeleton's height, then swap in the content.
   useLayoutEffect(() => {
@@ -285,52 +257,24 @@ export function MorphBlock({ children, width = "100%", height, radius = 6, lines
     const all = region?.root.current ? Array.from(region.root.current.querySelectorAll("[data-morph-block]")) : []
     order.current = Math.max(0, node ? all.indexOf(node) : 0)
     const box = node?.getBoundingClientRect()
-    from.current = box ? { width: box.width, height: box.height } : null
+    setFrom(box ? { width: box.width, height: box.height } : null)
     region?.hold()
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- the skeleton is measured and the shell pinned before the content replaces it
-    setPhase("morphing")
+    setPhase("fading")
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the phase only matters at the moment loading flips
   }, [loading])
 
-  // The content is in the layout now: measure it, let the shell ease, then stretch the placeholder over it and fade it out.
+  // The content is in the layout now: let the shell ease, fade the content in and the placeholder out.
   useLayoutEffect(() => {
-    if (phase !== "morphing") return
-    const node = block.current
-    const inner = content.current
+    if (phase !== "fading") return
     region?.release()
-    const start = from.current
-    if (!node || !inner || !start) {
-      setPhase("done")
-      return
-    }
-    const outer = node.getBoundingClientRect()
-    const target = inkBox(inner)
-    // Text keeps its line boxes: the bars stretch to the run's width but stay as tall as the lines they sit in.
-    const lineBox = lineCount ? inner.getBoundingClientRect() : target
-    const to = { left: target.left - outer.left, top: lineBox.top - outer.top, width: target.width, height: lineBox.height }
-
-    overlayLeft.jump(0)
-    overlayTop.jump(0)
-    overlayWidth.jump(start.width)
-    overlayHeight.jump(start.height)
+    const ease = [...motionTokens.ease.standard] as [number, number, number, number]
     overlayOpacity.jump(1)
-    const runs: AnimationPlaybackControls[] = []
-    if (reduce) {
-      // No stretch and no stagger: every placeholder crossfades off the content together.
-      runs.push(animate(overlayOpacity, 0, { duration: 0.115, ease: [0, 0, 0.58, 1], onComplete: () => setPhase("done") }))
-    } else {
-      runs.push(
-        animate(overlayLeft, to.left, STRETCH),
-        animate(overlayTop, to.top, STRETCH),
-        animate(overlayWidth, to.width, STRETCH),
-        animate(overlayHeight, to.height, STRETCH),
-        animate(overlayOpacity, 0, {
-          ...FADE,
-          delay: FADE_LEAD + order.current * (region?.stagger ?? 0),
-          onComplete: () => setPhase("done"),
-        }),
-      )
-    }
+    contentOpacity.jump(0)
+    const delay = reduce ? 0 : order.current * (region?.stagger ?? 0)
+    const runs: AnimationPlaybackControls[] = [
+      animate(overlayOpacity, 0, { duration: reduce ? REDUCED_FADE : SKELETON_FADE, ease, delay }),
+      animate(contentOpacity, 1, { duration: reduce ? REDUCED_FADE : CONTENT_FADE, ease, delay, onComplete: () => setPhase("done") }),
+    ]
     return () => runs.forEach(run => run.stop())
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runs once per resolve
   }, [phase])
@@ -350,19 +294,27 @@ export function MorphBlock({ children, width = "100%", height, radius = 6, lines
       style={isSkeleton ? { ...style, width: px(width), height: px(skeletonHeight) } : style}
     >
       {isSkeleton ? (
-        <span aria-hidden="true" className="block size-full">
+        // The fade-in sits on this wrapper, so it never fights the pulse on the bars inside.
+        <motion.span
+          aria-hidden="true"
+          className="block size-full"
+          initial={fadeIn ? { opacity: 0 } : false}
+          animate={{ opacity: 1 }}
+          transition={{ duration: reduce ? REDUCED_FADE : SKELETON_FADE, ease: [...motionTokens.ease.standard] }}
+        >
           {skeleton}
-        </span>
+        </motion.span>
       ) : (
         <>
-          <span ref={content} className="block">
+          <motion.span className="block" style={{ opacity: contentOpacity }}>
             {children}
-          </span>
-          {phase === "morphing" && (
+          </motion.span>
+          {phase === "fading" && from && (
             <motion.span
               aria-hidden="true"
-              className="pointer-events-none absolute block overflow-hidden"
-              style={{ left: overlayLeft, top: overlayTop, width: overlayWidth, height: overlayHeight, opacity: overlayOpacity, borderRadius: shape }}
+              // Capped to the block, so a skeleton taller or wider than its content never covers the next block.
+              className="pointer-events-none absolute top-0 left-0 block max-h-full max-w-full overflow-hidden"
+              style={{ width: from.width, height: from.height, opacity: overlayOpacity, borderRadius: shape }}
             >
               {lineCount ? (
                 <Lines count={lineCount} lineHeight={lineHeight} shape={shape} reduce={reduce} pulse={false} />

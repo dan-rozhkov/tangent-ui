@@ -930,7 +930,7 @@ export const catalog: CatalogItem[] = [
   {"name": "lightbox-gallery", "title": "Lightbox gallery", "description": "A masonry grid where photos zoom from their slot into a viewer you can swipe, pinch, and drag away.", "category": "original", "kind": "component"},
   {"name": "control-center", "title": "Control center", "description": "Workspace quick settings: tiles that morph into detail, a duration dial, and rubber-banded meters.", "category": "original", "kind": "component"},
   {"name": "link-unfurl", "title": "Link unfurl", "description": "A composer where pasting a URL shows a loading shimmer on the link, then unfurls it into a rich preview card with title, image and favicon in one morph, which can be collapsed back to the inline link or removed.", "category": "original", "kind": "component"},
-  {"name": "skeleton-morph", "title": "Skeleton morph", "description": "Loading skeletons that grow into the real content, block by block, instead of swapping.", "category": "original", "kind": "component"},
+  {"name": "skeleton-morph", "title": "Skeleton morph", "description": "Loading skeletons that crossfade into the real content while the card eases to its new height.", "category": "original", "kind": "component"},
   {"name": "date-reel", "title": "Date reel", "description": "A 3D wheel date and time picker (like iOS reels) with momentum scrolling, snapping, curved perspective, and full keyboard support.", "category": "original", "kind": "component"},
   {"name": "page-curl", "title": "Page curl", "description": "A small magazine you read by dragging page corners, with a real fold, lit curl, and flick to turn.", "category": "original", "kind": "component"}
 ]
