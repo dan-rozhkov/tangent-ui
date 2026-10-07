@@ -1,4 +1,5 @@
 export const showcase = [
+  "now-playing",
   "action-morph",
   "orbit-menu",
   "wallet-stack",
@@ -8,7 +9,6 @@ export const showcase = [
   "swipe-actions",
   "dock",
   "signature-pad",
-  "now-playing",
   "booking-pill",
   "voice-chat",
   "radio-cards",

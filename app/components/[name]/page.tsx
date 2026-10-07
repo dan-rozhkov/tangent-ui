@@ -17,7 +17,7 @@ export default async function ComponentPage({ params }: { params: Promise<{ name
         <h1 className="font-display text-3xl font-medium tracking-display">{item.title}</h1>
         <p className="text-text-secondary">{item.description}</p>
       </header>
-      <DemoStage name={item.name} />
+      <DemoStage name={item.name} title={item.title} />
     </article>
   )
 }
