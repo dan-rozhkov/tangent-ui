@@ -10,20 +10,18 @@ import { MagnifyingGlassIcon } from "@phosphor-icons/react"
 import { demos } from "@/components/demos"
 import { CommandPalette, type CommandItem } from "@/components/ui/command-palette"
 import { Dialog } from "@/components/ui/dialog"
-import { catalog, categories, categoryLabel } from "@/lib/catalog"
+import { catalogByCategory } from "@/lib/catalog"
 import { motionTokens } from "@/lib/motion-tokens"
 import { useReducedMotion } from "@/lib/reduced-motion"
 
-const items: CommandItem[] = categories.flatMap(category =>
-  catalog
-    .filter(item => item.category === category && item.name in demos)
-    .map(item => ({
-      id: item.name,
-      label: item.title,
-      description: item.description,
-      group: categoryLabel(category),
-      keywords: item.name.split("-"),
-    })),
+const items: CommandItem[] = catalogByCategory(item => item.name in demos).flatMap(({ label, items }) =>
+  items.map(item => ({
+    id: item.name,
+    label: item.title,
+    description: item.description,
+    group: label,
+    keywords: item.name.split("-"),
+  })),
 )
 
 function isTypingTarget(target: EventTarget | null) {

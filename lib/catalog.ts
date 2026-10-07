@@ -934,3 +934,14 @@ export const catalog: CatalogItem[] = [
   {"name": "date-reel", "title": "Date reel", "description": "A 3D wheel date and time picker (like iOS reels) with momentum scrolling, snapping, curved perspective, and full keyboard support.", "category": "original", "kind": "component"},
   {"name": "page-curl", "title": "Page curl", "description": "A small magazine you read by dragging page corners, with a real fold, lit curl, and flick to turn.", "category": "original", "kind": "component"}
 ]
+
+/** The catalog grouped by category in `categories` order. Empty groups are left out; `filter` narrows the items first. */
+export function catalogByCategory(filter?: (item: CatalogItem) => boolean): { category: string; label: string; items: CatalogItem[] }[] {
+  return categories
+    .map(category => ({
+      category,
+      label: categoryLabel(category),
+      items: catalog.filter(item => item.category === category && (!filter || filter(item))),
+    }))
+    .filter(group => group.items.length > 0)
+}

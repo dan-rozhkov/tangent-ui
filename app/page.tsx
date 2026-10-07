@@ -1,6 +1,6 @@
 import Link from "next/link"
 
-import { HeaderActions } from "@/components/gallery/header-actions"
+import { SiteHeader } from "@/components/gallery/site-header"
 import { ShowcaseGrid } from "@/components/gallery/showcase-grid"
 import { catalog } from "@/lib/catalog"
 
@@ -19,10 +19,7 @@ const sections = [
 export default function Home() {
   return (
     <div className="min-h-dvh">
-      <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border-subtle bg-background/90 px-4 backdrop-blur sm:px-6">
-        <span className="font-display text-base font-medium tracking-display">Tangent UI</span>
-        <HeaderActions />
-      </header>
+      <SiteHeader />
       <main className="mx-auto flex max-w-6xl flex-col gap-14 px-4 py-14 sm:px-6">
         <section className="flex max-w-2xl flex-col gap-4">
           <h1 className="font-display text-4xl leading-display font-medium tracking-display text-balance">
