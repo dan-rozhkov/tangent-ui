@@ -39,7 +39,8 @@ export default function Demo() {
   const [last, setLast] = useState("Home")
 
   return (
-    <div className="flex min-h-[380px] flex-col items-center justify-end gap-6">
+    // The menu opens upward from the bar, so the box keeps equal room above and below the resting bar and caption.
+    <div className="flex h-[24rem] flex-col items-center justify-center gap-6">
       <ToolbarMenu
         items={items}
         value={value}

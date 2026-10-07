@@ -14,6 +14,7 @@ export default function Demo() {
         value={topics}
         onValueChange={setTopics}
         maxVisible={4}
+        className="justify-center"
         options={["Design", "Motion", "Code", "Research", "Writing"].map(topic => ({ value: topic.toLowerCase(), label: topic }))}
       />
     </div>

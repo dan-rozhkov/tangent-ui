@@ -12,8 +12,8 @@ const tracks = [
 
 export default function Demo() {
   return (
-    // The player rests at the bottom like an app's mini bar and grows upward into the full player.
-    <div className="flex h-[27rem] w-full max-w-sm flex-col items-center justify-end">
+    // The mini bar rests at the centre of the box and the full player grows out of it, up and down. In the home tile the box shrinks to fit.
+    <div className="flex h-[30rem] w-84 max-w-full items-center justify-center in-data-showcase-tile:h-[26rem] in-data-showcase-tile:w-72">
       <NowPlaying tracks={tracks} />
     </div>
   )

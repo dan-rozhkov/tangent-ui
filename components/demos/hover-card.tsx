@@ -9,7 +9,7 @@ const mention =
 
 export default function Demo() {
   return (
-    <p className="m-0 max-w-md text-sm leading-body text-text-secondary">
+    <p className="m-0 max-w-md text-center text-sm leading-body text-text-secondary">
       The checkout redesign is led by{" "}
       <HoverCard
         content={

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { FocusEvent, KeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { SlidersHorizontalIcon } from "@phosphor-icons/react"
+import { GearSixIcon } from "@phosphor-icons/react"
 
 import { useThemeTransition } from "@/components/demos/theme-switch"
 import { accents, motionSpeeds, setAccent, setMotionReduce, setMotionSpeed, useMotionSettings, type Accent } from "@/components/gallery/motion-settings"
@@ -323,7 +323,7 @@ export function SettingsPopover() {
                 onClick={openPanel}
                 className={iconButton}
               >
-                <SlidersHorizontalIcon className={iconGlyph} aria-hidden="true" />
+                <GearSixIcon className={iconGlyph} aria-hidden="true" />
               </button>
             </FaceLayer>
           )}

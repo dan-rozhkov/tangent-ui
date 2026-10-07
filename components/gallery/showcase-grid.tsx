@@ -33,7 +33,7 @@ function ShowcaseTile({ name }: { name: string }) {
 
   return (
     <div className="flex flex-col">
-      <div ref={areaRef} className="flex h-[28rem] items-center justify-center overflow-hidden bg-surface p-4">
+      <div ref={areaRef} data-showcase-tile className="flex h-[28rem] items-center justify-center overflow-hidden bg-surface p-4">
         {near && (
           <Suspense fallback={null}>
             <Demo />

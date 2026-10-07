@@ -74,8 +74,12 @@ const cards: WalletCard[] = [
 
 export default function Demo() {
   return (
-    <div className="grid w-full place-items-center">
-      <WalletStack cards={cards} label="Jordan's cards" />
+    // The stack scales with its width. The box is as tall as the open card with its activity, so the opened state stays inside it. In the home tile everything shrinks to fit.
+    <div className="flex h-[34rem] w-74 max-w-full items-center justify-center in-data-showcase-tile:h-[26rem] in-data-showcase-tile:w-56">
+      {/* The stack's own area has spare room below the cards for the open card, so it sits this much lower to rest centred. */}
+      <div className="mt-24 w-full in-data-showcase-tile:mt-12">
+        <WalletStack cards={cards} label="Jordan's cards" />
+      </div>
     </div>
   )
 }

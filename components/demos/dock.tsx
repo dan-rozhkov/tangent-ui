@@ -29,10 +29,8 @@ export default function Demo() {
   const [items, setItems] = useState(initialItems)
 
   return (
-    <div className="flex h-[420px] w-full max-w-[720px] flex-col items-center justify-between gap-4 pt-6 pb-10">
-      <p className="text-center text-sm text-balance text-text-secondary">
-        Drag a tool, or hold Alt with the arrow keys, to reorder. Comments clear their badge when opened.
-      </p>
+    // The group tray opens upward from the bar, so the box keeps equal room above and below the bar and its hint.
+    <div className="flex w-full max-w-[26rem] min-w-fit flex-col items-center gap-4 py-14">
       <Dock
         label="Board tools"
         items={items}
@@ -43,6 +41,9 @@ export default function Demo() {
         }}
         onItemsChange={(next) => setItems(next)}
       />
+      <p className="max-w-full text-center text-sm text-balance text-text-secondary">
+        Drag a tool, or hold Alt with the arrow keys, to reorder. Comments clear their badge when opened.
+      </p>
     </div>
   )
 }

@@ -63,7 +63,7 @@ export default function Demo() {
     <div className="w-full max-w-[520px]">
       <TaskInput lists={lists} onSubmit={add} />
       <p className="mt-3 px-1 text-xs text-text-muted">Try “Send email to Ana tomorrow #work”.</p>
-      <ul className="mt-3 flex h-80 flex-col gap-1 overflow-y-auto p-1" aria-label="Tasks">
+      <ul className="mt-3 flex h-[8.25rem] flex-col gap-1 overflow-y-auto p-1" aria-label="Tasks">
         <AnimatePresence initial={false}>
           {items.map(item => {
             const list = lists.find(entry => entry.id === item.list)
