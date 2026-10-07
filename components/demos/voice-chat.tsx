@@ -16,10 +16,10 @@ export default function Demo() {
   const [joined, setJoined] = useState(false)
 
   return (
-    // A fixed-height box: the pill and its status line rest at the centre, and the card opens inside the box without
-    // changing the layout, so nothing re-centres while it morphs.
+    // A fixed-height box with the pill at its centre: the card opens from the pill's centre, so it lands centred in the
+    // box without changing the layout.
     <div className="relative h-[26rem] w-full">
-      <div className="absolute inset-x-0 top-[calc(50%-42px)] in-data-showcase-tile:top-[calc(50%-50px)] flex flex-col items-center gap-4">
+      <div className="absolute inset-x-0 top-[calc(50%-24px)] in-data-showcase-tile:top-[calc(50%-32px)] flex flex-col items-center gap-4">
         <VoiceChat
           participants={participants}
           joinLabel={joined ? "Leave" : "Join Now"}

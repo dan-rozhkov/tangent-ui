@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { KeyboardEvent, ReactNode } from "react"
-import { AnimatePresence, LayoutGroup, animate, motion, useIsPresent, useMotionValue } from "motion/react"
+import { AnimatePresence, LayoutGroup, animate, motion, useIsPresent, useMotionValue, useTransform } from "motion/react"
 import type { Transition, Variants } from "motion/react"
 import { CaretDownIcon, XIcon } from "@phosphor-icons/react"
 
@@ -154,7 +154,7 @@ function FaceLayer({
       animate="shown"
       exit="gone"
       inert={!present || undefined}
-      className={cn("absolute top-0 left-1/2 w-max -translate-x-1/2", className)}
+      className={cn("absolute top-1/2 left-1/2 w-max -translate-x-1/2 -translate-y-1/2", className)}
       {...rest}
     >
       {children}
@@ -197,6 +197,8 @@ export function VoiceChat({
   const width = useMotionValue(168)
   const height = useMotionValue(PILL_HEIGHT)
   const radius = useMotionValue(PILL_RADIUS)
+  // The surface grows from the pill's centre on both axes, on whole pixels so an odd card height never leaves its text blurry.
+  const top = useTransform(height, h => PILL_RADIUS - Math.round(h / 2))
   const current = useRef<Face>("pill")
   const target = useRef<{ id: Face; w: number; h: number } | null>(null)
   const onSize = useCallback(
@@ -260,10 +262,10 @@ export function VoiceChat({
     <div ref={rootRef} className={cn("relative z-10 h-12 touch-manipulation", className)} style={{ width: pillWidth }}>
       <motion.div
         className={cn(
-          "absolute top-0 left-1/2 -translate-x-1/2 overflow-hidden bg-surface-raised text-foreground ring-1 ring-border",
+          "absolute left-1/2 -translate-x-1/2 overflow-hidden bg-surface-raised text-foreground ring-1 ring-border",
           open ? "shadow-floating" : "shadow-raised",
         )}
-        style={{ width, height, borderRadius: radius }}
+        style={{ top, width, height, borderRadius: radius }}
         onKeyDown={onKeyDown}
       >
         <LayoutGroup id={uid}>
