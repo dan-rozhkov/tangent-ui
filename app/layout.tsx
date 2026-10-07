@@ -1,7 +1,8 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Geist, Geist_Mono, Inter } from "next/font/google"
 
 import "./globals.css"
+import { SiteMenuProvider } from "@/components/gallery/site-menu-context"
 import { MotionSettingsRoot } from "@/components/gallery/motion-settings"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
@@ -15,12 +16,17 @@ export const metadata: Metadata = {
   description: "Animated React components on shadcn/ui, Base UI and Motion.",
 }
 
+// maximumScale stops iOS Safari zooming into inputs on focus; pinch-zoom still works there.
+export const viewport: Viewport = { width: "device-width", initialScale: 1, maximumScale: 1 }
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" data-accent="neutral" suppressHydrationWarning className={cn(geist.variable, inter.variable, geistMono.variable)}>
       <body>
         <ThemeProvider>
-          <MotionSettingsRoot>{children}</MotionSettingsRoot>
+          <MotionSettingsRoot>
+            <SiteMenuProvider>{children}</SiteMenuProvider>
+          </MotionSettingsRoot>
         </ThemeProvider>
       </body>
     </html>

@@ -8,6 +8,7 @@ import { SlidersHorizontalIcon } from "@phosphor-icons/react"
 
 import { useThemeTransition } from "@/components/demos/theme-switch"
 import { accents, motionSpeeds, setAccent, setMotionReduce, setMotionSpeed, useMotionSettings, type Accent } from "@/components/gallery/motion-settings"
+import { iconButton, iconGlyph } from "@/components/gallery/icon-button"
 import SegmentedControl from "@/components/ui/segmented-control"
 import { Switch } from "@/components/ui/switch"
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
@@ -43,10 +44,12 @@ const physical = (visualDuration: number, bounce: number): Transition => {
   return { type: "spring", stiffness: root * root, damping: 2 * (1 - bounce) * root, mass: 1 }
 }
 
-/** The button is 38px with a 12px corner; the panel's 20px corner is its 8px control radius plus the 12px padding, so the two stay concentric. */
-const SIZE = 38
-const BUTTON_RADIUS = 12
+/** The button is 36px with a fully round 18px corner; the panel's 20px corner is its 8px control radius plus the 12px padding, so the two stay concentric. */
+const SIZE = 36
+const BUTTON_RADIUS = 18
 const PANEL_RADIUS = 20
+/** The trigger sits 8px past the header gutter (optical alignment, like the burger); the open panel pulls back onto the gutter. */
+const PANEL_SHIFT = -8
 
 function buildMotion(motionTokens: MotionTokens) {
   const { blur } = motionTokens
@@ -211,6 +214,7 @@ export function SettingsPopover() {
   const width = useMotionValue(SIZE)
   const height = useMotionValue(SIZE)
   const radius = useMotionValue(BUTTON_RADIUS)
+  const shift = useMotionValue(0)
   const target = useRef<{ id: Face; w: number; h: number } | null>(null)
   const onSize = useCallback(
     (id: Face, w: number, h: number) => {
@@ -223,14 +227,16 @@ export function SettingsPopover() {
         width.jump(w)
         height.jump(h)
         radius.jump(r)
+        shift.jump(id === "button" ? 0 : PANEL_SHIFT)
         return
       }
       const spring = id === "button" ? FOLD : GROW
       animate(width, w, spring)
       animate(height, h, spring)
       animate(radius, r, spring)
+      animate(shift, id === "button" ? 0 : PANEL_SHIFT, spring)
     },
-    [FOLD, GROW, height, radius, reduced, width],
+    [FOLD, GROW, height, radius, reduced, shift, width],
   )
 
   const go = useCallback((next: Face, focus: string | null) => {
@@ -295,14 +301,14 @@ export function SettingsPopover() {
   }
 
   return (
-    <div ref={rootRef} onBlur={onBlur} className="relative z-50 size-[38px] flex-none touch-manipulation">
+    <div ref={rootRef} onBlur={onBlur} className="relative z-50 -mr-2 size-9 flex-none touch-manipulation">
       <motion.div
         ref={surfaceRef}
         className={cn(
           "absolute top-0 right-0 z-50 overflow-hidden text-foreground ring-1 transition-[background-color,box-shadow] duration-160 ease-standard motion-reduce:transition-none",
-          open ? "bg-surface-raised shadow-floating ring-border" : "bg-surface shadow-none ring-border",
+          open ? "bg-surface-raised shadow-floating ring-border" : "bg-transparent shadow-none ring-transparent",
         )}
-        style={{ width, height, borderRadius: radius }}
+        style={{ width, height, borderRadius: radius, x: shift }}
         onKeyDown={onSurfaceKeyDown}
       >
         <AnimatePresence initial={false}>
@@ -315,9 +321,9 @@ export function SettingsPopover() {
                 aria-haspopup="dialog"
                 aria-expanded={false}
                 onClick={openPanel}
-                className="grid size-[38px] cursor-pointer place-items-center text-text-secondary outline-none transition-[color,background-color] duration-160 ease-standard [-webkit-tap-highlight-color:transparent] pointer-fine:hover:bg-surface-muted pointer-fine:hover:text-foreground motion-reduce:transition-none"
+                className={iconButton}
               >
-                <SlidersHorizontalIcon className="size-[18px]" aria-hidden="true" />
+                <SlidersHorizontalIcon className={iconGlyph} aria-hidden="true" />
               </button>
             </FaceLayer>
           )}

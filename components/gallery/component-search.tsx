@@ -9,6 +9,7 @@ import { MagnifyingGlassIcon } from "@phosphor-icons/react"
 
 import { demos } from "@/components/demos"
 import { CommandPalette, type CommandItem } from "@/components/ui/command-palette"
+import { iconButton, iconGlyph } from "@/components/gallery/icon-button"
 import { Dialog } from "@/components/ui/dialog"
 import { catalogByCategory } from "@/lib/catalog"
 import { motionTokens } from "@/lib/motion-tokens"
@@ -18,9 +19,8 @@ const items: CommandItem[] = catalogByCategory(item => item.name in demos).flatM
   items.map(item => ({
     id: item.name,
     label: item.title,
-    description: item.description,
     group: label,
-    keywords: item.name.split("-"),
+    keywords: [...item.name.split("-"), ...item.description.split(/\W+/)],
   })),
 )
 
@@ -84,9 +84,9 @@ export function ComponentSearch() {
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="grid size-[38px] cursor-pointer place-items-center rounded-[12px] border border-border bg-surface text-text-secondary transition-[color,background-color] duration-160 ease-standard [-webkit-tap-highlight-color:transparent] pointer-fine:hover:bg-surface-muted pointer-fine:hover:text-foreground motion-reduce:transition-none"
+        className={iconButton}
       >
-        <MagnifyingGlassIcon className="size-[18px]" aria-hidden="true" />
+        <MagnifyingGlassIcon className={iconGlyph} aria-hidden="true" />
       </button>
       <AnimatePresence>
         {open && (

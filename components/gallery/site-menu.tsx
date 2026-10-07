@@ -1,21 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { AnimatePresence, motion } from "motion/react"
-import { ListIcon, XIcon } from "@phosphor-icons/react"
+import { XIcon } from "@phosphor-icons/react"
 
 import { demos } from "@/components/demos"
+import { iconButton, iconGlyph } from "@/components/gallery/icon-button"
+import { useSiteMenu } from "@/components/gallery/site-menu-context"
 import { Dialog } from "@/components/ui/dialog"
 import { catalogByCategory, type CatalogItem } from "@/lib/catalog"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { useReducedMotion } from "@/lib/reduced-motion"
 import { cn } from "@/lib/utils"
-
-const iconButton =
-  "grid size-9 cursor-pointer place-items-center rounded-control text-text-secondary transition-colors duration-160 ease-standard [-webkit-tap-highlight-color:transparent] pointer-fine:hover:text-foreground motion-reduce:transition-none"
 
 const ported = (item: CatalogItem) => item.name in demos
 
@@ -27,23 +26,42 @@ const sections = [
   })),
 ]
 
+/** Two-bar menu glyph, drawn on Phosphor's 256 grid at its regular stroke so it sits with the other header icons. */
+function MenuGlyph({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 256 256" fill="none" stroke="currentColor" strokeWidth={16} strokeLinecap="round" className={className} aria-hidden="true">
+      <path d="M40 100h176M40 156h176" />
+    </svg>
+  )
+}
+
 /** Burger button in the site header. Opens a fullscreen menu listing Home and every ported component by category. */
 export function SiteMenu() {
-  const [open, setOpen] = useState(false)
+  const { open, setOpen, returnFocusRef } = useSiteMenu()
   const pathname = usePathname()
   const { duration, ease, stagger } = useMotionTokens()
   const reduced = useReducedMotion()
   let index = 0
 
+  // The open state lives above the routes, so back/forward navigation must close the menu too.
+  useEffect(() => {
+    setOpen(false)
+  }, [pathname, setOpen])
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogPrimitive.Trigger aria-label="Open menu" className={cn(iconButton, "-ml-2")}>
-        <ListIcon className="size-5" aria-hidden="true" />
+        <MenuGlyph className={iconGlyph} />
       </DialogPrimitive.Trigger>
       <AnimatePresence>
         {open && (
           <DialogPrimitive.Portal key="menu" keepMounted>
             <DialogPrimitive.Popup
+              finalFocus={() => {
+                const target = returnFocusRef.current
+                returnFocusRef.current = null
+                return target?.isConnected ? target : true
+              }}
               className="fixed inset-0 z-50 flex flex-col bg-background outline-none data-closed:pointer-events-none!"
               render={
                 <motion.div
@@ -56,7 +74,7 @@ export function SiteMenu() {
               <DialogPrimitive.Title className="sr-only">Menu</DialogPrimitive.Title>
               <div className="flex h-14 shrink-0 items-center gap-2 px-4 sm:px-6">
                 <DialogPrimitive.Close aria-label="Close menu" className={cn(iconButton, "-ml-2")}>
-                  <XIcon className="size-5" aria-hidden="true" />
+                  <XIcon className={iconGlyph} aria-hidden="true" />
                 </DialogPrimitive.Close>
                 <span aria-hidden="true" className="font-display text-base font-medium tracking-display">
                   Menu
@@ -76,7 +94,11 @@ export function SiteMenu() {
                             <motion.li key={link.href} {...row(index++, reduced, duration.standard, ease.enter, stagger.item)}>
                               <Link
                                 href={link.href}
-                                onClick={() => setOpen(false)}
+                                onClick={() => {
+                                  // The opener may unmount on navigation; let focus fall to the burger instead.
+                                  returnFocusRef.current = null
+                                  setOpen(false)
+                                }}
                                 aria-current={active ? "page" : undefined}
                                 className="inline-flex items-center gap-3 font-display text-3xl leading-tight font-medium tracking-display text-foreground transition-colors duration-160 ease-standard pointer-fine:hover:text-text-secondary motion-reduce:transition-none"
                               >
