@@ -7,7 +7,8 @@ import { catalogByCategory } from "@/lib/catalog"
 import { cn } from "@/lib/utils"
 
 export function Sidebar({ ported }: { ported: string[] }) {
-  const pathname = usePathname()
+  // trailingSlash is on, so the path ends in a slash that the catalog links leave off.
+  const pathname = usePathname().replace(/(.)\/$/, "$1")
   return (
     <nav className="flex flex-col gap-6 text-sm">
       {catalogByCategory().map(({ category, label, items }) => (

@@ -93,7 +93,8 @@ export function SiteMenu() {
                         </motion.h2>
                         <ul className="flex flex-col gap-3">
                           {section.links.map(link => {
-                            const active = pathname === link.href
+                            // trailingSlash is on, so the path ends in a slash that the links leave off.
+                            const active = pathname.replace(/(.)\/$/, "$1") === link.href
                             return (
                               <motion.li key={link.href} {...row(index++, reduced, duration.standard, ease.enter, stagger.item)}>
                                 <Link
