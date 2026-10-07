@@ -606,14 +606,14 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
   return (
     <div className={cn("grid w-[min(100%,18.5rem)] gap-2", className)}>
       <div className="flex h-8 items-center justify-between gap-3">
-        <h3 id={headingId} className="m-0 text-base leading-body font-medium">
+        <h3 id={headingId} className="m-0 min-w-0 truncate text-base leading-body font-medium">
           {label}
         </h3>
         <AnimatePresence mode="popLayout" initial={false}>
           {selected === null ? (
             <motion.span
               key="count"
-              className="inline-flex h-5 min-w-[38px] items-center justify-center overflow-hidden rounded-pill bg-surface-muted px-2 text-xs leading-none text-text-secondary tabular-nums"
+              className="inline-flex h-5 min-w-[38px] flex-none items-center justify-center overflow-hidden rounded-pill bg-surface-muted px-2 text-xs leading-none text-text-secondary tabular-nums"
               aria-label={count === 1 ? "1 card" : `${count} cards`}
               {...swap}
             >
@@ -635,7 +635,7 @@ export function WalletStack({ cards, label = "Wallet", currency = "USD", locale 
             <motion.button
               key="all"
               type="button"
-              className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-pill border border-border bg-surface pr-3 pl-2.5 text-sm font-medium text-foreground transition-colors duration-160 ease-standard pointer-fine:hover:bg-surface-muted motion-reduce:transition-none"
+              className="inline-flex h-8 flex-none cursor-pointer items-center gap-1.5 rounded-pill border border-border bg-surface pr-3 pl-2.5 text-sm font-medium whitespace-nowrap text-foreground transition-colors duration-160 ease-standard pointer-fine:hover:bg-surface-muted motion-reduce:transition-none"
               onClick={() => {
                 const index = selected
                 close()
