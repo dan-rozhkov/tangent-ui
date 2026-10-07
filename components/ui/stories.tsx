@@ -939,8 +939,11 @@ function Face({
           )
         })}
         {active && veil ? (
-          <motion.div aria-hidden="true" className="absolute inset-0 will-change-[opacity]" style={{ opacity: veil }}>
-            <Image src={author.avatar} alt="" fill sizes="128px" className="object-cover" draggable={false} />
+          // The avatar fills only the centered square the flight's circle crops to, so it sits at the tray's scale instead of covering the tall card.
+          <motion.div aria-hidden="true" className="absolute inset-0 grid place-items-center will-change-[opacity] [container-type:size]" style={{ opacity: veil }}>
+            <div className="relative size-[min(100cqw,100cqh)]">
+              <Image src={author.avatar} alt="" fill sizes="128px" className="object-cover" draggable={false} />
+            </div>
           </motion.div>
         ) : null}
       </div>
