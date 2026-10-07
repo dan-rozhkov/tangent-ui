@@ -10,10 +10,10 @@ export default function Home() {
       <SiteHeader />
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-14 px-4 py-14 sm:px-6">
         <section className="mx-auto flex max-w-2xl flex-col items-center gap-4 text-center">
-          <h1 className="font-display text-4xl leading-display font-medium tracking-display text-balance">
+          <h1 className="font-display text-[length:clamp(var(--text-3xl),1.5rem_+_3vw,var(--text-4xl))] leading-display font-medium tracking-display text-balance">
             React components with calm, physical motion
           </h1>
-          <p className="max-w-xl text-lg text-pretty text-text-secondary">
+          <p className="max-w-xl text-base leading-body text-balance text-text-secondary sm:text-lg">
             {catalog.length} components and blocks built on Base UI, Tailwind and Motion. Every demo is live: press, drag and scroll them.
           </p>
           <div>
