@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState, type FocusEvent, type FormEvent, type KeyboardEvent } from "react";
 import Image, { type StaticImageData } from "next/image";
 import { AnimatePresence, motion, useAnimate, type Transition, type Variants } from "motion/react";
-import { ArrowRight, Bell, Check, ChevronDown } from "lucide-react";
+import { ArrowRight, Bell, Check, ChevronDown } from "@mynaui/icons-react";
 import { CopyButton } from "@/components/ui/copy-button";
 import { motionTokens } from "@/lib/motion-tokens";
 import { photo } from "@/lib/media";

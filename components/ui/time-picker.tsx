@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
-import { ChevronDown, Clock3 } from "lucide-react"
+import { ChevronDown, Clock3 } from "@mynaui/icons-react"
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react"
 import type { KeyboardEvent } from "react"
 

@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { Circle, Diamond, Hand, MessageCircle, MousePointer2, Square, StickyNote, Triangle, Type } from "lucide-react"
+import { Circle, Clipboard, Diamond, Hand, Message, MousePointer, Square, Triangle, TypeText } from "@mynaui/icons-react"
 
 import { Dock, type DockItem } from "@/components/ui/dock"
 
 const initialItems: DockItem[] = [
-  { id: "move", label: "Move", icon: <MousePointer2 />, shortcut: "V" },
+  { id: "move", label: "Move", icon: <MousePointer />, shortcut: "V" },
   { id: "hand", label: "Hand", icon: <Hand />, shortcut: "H" },
   {
     id: "shapes",
@@ -19,9 +19,9 @@ const initialItems: DockItem[] = [
       { id: "diamond", label: "Diamond", icon: <Diamond />, shortcut: "D" },
     ],
   },
-  { id: "text", label: "Text", icon: <Type />, shortcut: "T" },
-  { id: "sticky", label: "Sticky note", icon: <StickyNote />, shortcut: "S" },
-  { id: "comment", label: "Comment", icon: <MessageCircle />, shortcut: "C", badge: 3 },
+  { id: "text", label: "Text", icon: <TypeText />, shortcut: "T" },
+  { id: "sticky", label: "Sticky note", icon: <Clipboard />, shortcut: "S" },
+  { id: "comment", label: "Comment", icon: <Message />, shortcut: "C", badge: 3 },
 ]
 
 export default function Demo() {

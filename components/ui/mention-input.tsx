@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useId, useImperativeHandle, useLayoutEffect, u
 import type { ChangeEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode, UIEvent } from "react";
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react";
 import type { Transition } from "motion/react";
-import { Hash } from "lucide-react";
+import { Hash } from "@mynaui/icons-react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";

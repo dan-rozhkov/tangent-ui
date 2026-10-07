@@ -1,6 +1,6 @@
 "use client"
 
-import { Archive, Clock3, Forward, Reply, Trash2 } from "lucide-react"
+import { Archive, Clock3, Forward, MessageReply, Trash } from "@mynaui/icons-react"
 
 import { ExpandingButtonGroup } from "@/components/ui/expanding-button-group"
 
@@ -13,20 +13,20 @@ export default function Demo() {
         label="Message actions"
         defaultExpanded="reply"
         items={[
-          { id: "reply", label: "Reply", icon: <Reply /> },
+          { id: "reply", label: "Reply", icon: <MessageReply /> },
           { id: "forward", label: "Forward", icon: <Forward /> },
           { id: "archive", label: "Archive", doneLabel: "Archived", icon: <Archive /> },
           { id: "snooze", label: "Snooze", doneLabel: "Snoozed", icon: <Clock3 />, onSelect: () => wait(700) },
-          { id: "delete", label: "Delete", doneLabel: "Deleted", tone: "danger", icon: <Trash2 /> },
+          { id: "delete", label: "Delete", doneLabel: "Deleted", tone: "danger", icon: <Trash /> },
         ]}
       />
       <ExpandingButtonGroup
         label="Compact message actions"
         size="sm"
         items={[
-          { id: "reply", label: "Reply", icon: <Reply /> },
+          { id: "reply", label: "Reply", icon: <MessageReply /> },
           { id: "archive", label: "Archive", doneLabel: "Archived", icon: <Archive /> },
-          { id: "delete", label: "Delete", doneLabel: "Deleted", tone: "danger", icon: <Trash2 />, disabled: true },
+          { id: "delete", label: "Delete", doneLabel: "Deleted", tone: "danger", icon: <Trash />, disabled: true },
         ]}
       />
     </div>

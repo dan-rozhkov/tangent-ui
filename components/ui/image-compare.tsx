@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { animate, motion, useMotionValue, useTransform } from "motion/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "@mynaui/icons-react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";

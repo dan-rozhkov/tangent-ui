@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Volume1, Volume2 } from "lucide-react"
+import { VolumeHigh, VolumeLow } from "@mynaui/icons-react"
 
 import { Slider } from "@/components/ui/slider"
 
@@ -24,8 +24,8 @@ export default function Demo() {
         value={volume}
         onValueChange={setVolume}
         format={(v) => `${v}%`}
-        start={<Volume1 size={16} strokeWidth={1.75} className="text-text-muted" aria-hidden="true" />}
-        end={<Volume2 size={16} strokeWidth={1.75} className="text-text-muted" aria-hidden="true" />}
+        start={<VolumeLow size={16} strokeWidth={1.75} className="text-text-muted" aria-hidden="true" />}
+        end={<VolumeHigh size={16} strokeWidth={1.75} className="text-text-muted" aria-hidden="true" />}
       />
       <Slider
         label="Quality"

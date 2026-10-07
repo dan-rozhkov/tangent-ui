@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { CalendarPlus, CheckSquare, StickyNote } from "lucide-react"
+import { CalendarPlus, CheckSquare, Clipboard } from "@mynaui/icons-react"
 
 import { ActionMorph, type ActionMorphSubmission } from "@/components/ui/action-morph"
 
@@ -50,7 +50,7 @@ export default function Demo() {
             id: "note",
             label: "New note",
             description: "Jot something down",
-            icon: <StickyNote strokeWidth={1.75} />,
+            icon: <Clipboard strokeWidth={1.75} />,
             shortcut: "n",
             composer: { title: "New note", placeholder: "Write a note", multiline: true, submitLabel: "Save", successLabel: "Note saved" },
           },

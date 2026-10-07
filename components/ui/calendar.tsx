@@ -2,7 +2,7 @@
 
 import { useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "@mynaui/icons-react"
 import { animate, AnimatePresence, motion, useMotionValue, useMotionValueEvent, useTransform } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue, Variants } from "motion/react"
 

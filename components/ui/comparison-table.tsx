@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { Check, Minus } from "lucide-react";
+import { Check, Minus } from "@mynaui/icons-react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { comparisonColumns, comparisonSections } from "@/components/ui/comparison-table-data";

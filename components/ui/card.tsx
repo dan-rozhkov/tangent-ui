@@ -5,7 +5,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from
 import type { CSSProperties, HTMLAttributes, ReactNode } from "react"
 import { AnimatePresence, LayoutGroup, motion } from "motion/react"
 import type { HTMLMotionProps, MotionProps, Transition, Variants } from "motion/react"
-import { X } from "lucide-react"
+import { X } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"

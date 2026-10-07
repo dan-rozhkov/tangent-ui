@@ -21,7 +21,7 @@ import {
   type Transition,
   type Variants,
 } from "motion/react"
-import { Check, FingerprintPattern, Mail } from "lucide-react"
+import { Check, FaceId, Mail } from "@mynaui/icons-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -206,7 +206,7 @@ function PasskeyPulse({ reduce }: { reduce: boolean }) {
             transition={{ duration: 1.2, ease: [...motionTokens.ease.standard], delay: index * 0.6 }}
           />
         ))}
-      <FingerprintPattern size={16} strokeWidth={1.75} aria-hidden="true" />
+      <FaceId size={16} strokeWidth={1.75} aria-hidden="true" />
     </span>
   )
 }
@@ -537,7 +537,7 @@ export function LoginCentered({
       </>
     ) : (
       <>
-        <FingerprintPattern size={16} strokeWidth={1.75} aria-hidden="true" />
+        <FaceId size={16} strokeWidth={1.75} aria-hidden="true" />
         Sign in with passkey
       </>
     )
@@ -726,7 +726,7 @@ export function LoginCentered({
                     </form>
                     {!signingUp && (
                       <button type="button" className={styles.textButton} onClick={switchToPasskey}>
-                        <FingerprintPattern size={14} strokeWidth={1.75} aria-hidden="true" />
+                        <FaceId size={14} strokeWidth={1.75} aria-hidden="true" />
                         Use a passkey instead
                       </button>
                     )}

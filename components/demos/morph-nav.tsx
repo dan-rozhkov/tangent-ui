@@ -1,20 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import {
-  BarChart3,
-  BookOpen,
-  Boxes,
-  Briefcase,
-  Building2,
-  CalendarClock,
-  FileText,
-  GraduationCap,
-  LifeBuoy,
-  Map as MapIcon,
-  Newspaper,
-  Users,
-} from "lucide-react"
+import { BookOpen, Briefcase, Building, Calendar, ChartBar, FileText, GraduationCap, Map, Package, Support, Users } from "@mynaui/icons-react"
 
 import { MorphNav, type MorphNavItem } from "@/components/ui/morph-nav"
 
@@ -43,10 +30,10 @@ const items: MorphNavItem[] = [
     label: "Product",
     links: [
       { label: "Field reports", description: "Capture site visits with photos, notes, and sign-off", href: "#reports", icon: <FileText /> },
-      { label: "Scheduling", description: "Plan crews and visits around real availability", href: "#scheduling", icon: <CalendarClock /> },
-      { label: "Asset map", description: "Every site and asset on one live map", href: "#map", icon: <MapIcon /> },
-      { label: "Insights", description: "Trends across jobs, crews, and regions", href: "#insights", icon: <BarChart3 /> },
-      { label: "Integrations", description: "Sync with the tools your office already uses", href: "#integrations", icon: <Boxes /> },
+      { label: "Scheduling", description: "Plan crews and visits around real availability", href: "#scheduling", icon: <Calendar /> },
+      { label: "Asset map", description: "Every site and asset on one live map", href: "#map", icon: <Map /> },
+      { label: "Insights", description: "Trends across jobs, crews, and regions", href: "#insights", icon: <ChartBar /> },
+      { label: "Integrations", description: "Sync with the tools your office already uses", href: "#integrations", icon: <Package /> },
       { label: "Teams", description: "Roles, permissions, and shared workspaces", href: "#teams", icon: <Users /> },
     ],
     feature: feature("What’s new", "Offline sync, faster photo uploads, and a new report builder", "#new"),
@@ -55,10 +42,10 @@ const items: MorphNavItem[] = [
     value: "solutions",
     label: "Solutions",
     links: [
-      { label: "Utilities", description: "Inspections and outage response at scale", href: "#utilities", icon: <Building2 /> },
+      { label: "Utilities", description: "Inspections and outage response at scale", href: "#utilities", icon: <Building /> },
       { label: "Construction", description: "Daily logs, punch lists, and handover", href: "#construction", icon: <Briefcase /> },
-      { label: "Facilities", description: "Planned maintenance across every building", href: "#facilities", icon: <Building2 /> },
-      { label: "Field services", description: "Dispatch, track, and invoice from one place", href: "#services", icon: <CalendarClock /> },
+      { label: "Facilities", description: "Planned maintenance across every building", href: "#facilities", icon: <Building /> },
+      { label: "Field services", description: "Dispatch, track, and invoice from one place", href: "#services", icon: <Calendar /> },
     ],
     feature: feature("Customer story", "How Northwind cut report turnaround from days to hours", "#story"),
   },
@@ -68,8 +55,8 @@ const items: MorphNavItem[] = [
     links: [
       { label: "Docs", description: "Set up, configure, and extend Fieldwork", href: "#docs", icon: <BookOpen /> },
       { label: "Academy", description: "Short courses for admins and crews", href: "#academy", icon: <GraduationCap /> },
-      { label: "Blog", description: "Product news and field notes", href: "#blog", icon: <Newspaper /> },
-      { label: "Support", description: "Talk to a person, any time zone", href: "#support", icon: <LifeBuoy /> },
+      { label: "Blog", description: "Product news and field notes", href: "#blog", icon: <FileText /> },
+      { label: "Support", description: "Talk to a person, any time zone", href: "#support", icon: <Support /> },
     ],
     feature: feature("Field guide", "A practical playbook for rolling out mobile reporting", "#guide"),
   },
@@ -78,10 +65,10 @@ const items: MorphNavItem[] = [
 
 const searchItems = [
   { label: "Field reports", group: "Product", href: "#reports", description: "Capture site visits", icon: <FileText /> },
-  { label: "Scheduling", group: "Product", href: "#scheduling", description: "Plan crews and visits", icon: <CalendarClock /> },
-  { label: "Customers", group: "Company", href: "#customers", description: "Teams using Fieldwork", icon: <Building2 /> },
+  { label: "Scheduling", group: "Product", href: "#scheduling", description: "Plan crews and visits", icon: <Calendar /> },
+  { label: "Customers", group: "Company", href: "#customers", description: "Teams using Fieldwork", icon: <Building /> },
   { label: "Docs", group: "Resources", href: "#docs", description: "Set up and configure", icon: <BookOpen />, keywords: "setup install" },
-  { label: "Support", group: "Resources", href: "#support", description: "Talk to a person", icon: <LifeBuoy /> },
+  { label: "Support", group: "Resources", href: "#support", description: "Talk to a person", icon: <Support /> },
   { label: "Careers", group: "Company", href: "#careers", description: "Open roles", icon: <Briefcase /> },
   { label: "Academy", group: "Resources", href: "#academy", description: "Short courses", icon: <GraduationCap /> },
 ]

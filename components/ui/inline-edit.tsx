@@ -10,7 +10,7 @@ import type {
 } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { TargetAndTransition, Variants } from "motion/react"
-import { Check, CircleAlert, Pencil, X } from "lucide-react"
+import { Check, DangerCircle, Pencil, X } from "@mynaui/icons-react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -438,7 +438,7 @@ export function InlineEdit({
         tone: "error" as const,
         node: (
           <>
-            <CircleAlert className="mt-0.5 flex-none text-danger" size={14} strokeWidth={2} aria-hidden="true" />
+            <DangerCircle className="mt-0.5 flex-none text-danger" size={14} strokeWidth={2} aria-hidden="true" />
             <span>{error}</span>
           </>
         ),
@@ -449,7 +449,7 @@ export function InlineEdit({
           tone: "failed" as const,
           node: (
             <>
-              <CircleAlert className="mt-0.5 flex-none text-danger" size={14} strokeWidth={2} aria-hidden="true" />
+              <DangerCircle className="mt-0.5 flex-none text-danger" size={14} strokeWidth={2} aria-hidden="true" />
               <span>
                 {`Couldn’t save “${failed}”, so the last saved ${noun} is back.`}{" "}
                 <button
@@ -661,7 +661,7 @@ export function InlineEdit({
                       <DrawnCheck reduced={reduced} />
                     </span>
                   ) : slot === "failed" ? (
-                    <CircleAlert className="ml-px text-danger" size={16} strokeWidth={1.75} aria-hidden="true" />
+                    <DangerCircle className="ml-px text-danger" size={16} strokeWidth={1.75} aria-hidden="true" />
                   ) : (
                     <Pencil
                       data-pencil=""

@@ -5,7 +5,7 @@ import type { ButtonHTMLAttributes, ReactNode, Ref, PointerEvent as ReactPointer
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { AnimatePresence, animate, motion, useMotionValue, usePresence, useTransform } from "motion/react"
 import type { MotionValue } from "motion/react"
-import { ChevronLeft, X } from "lucide-react"
+import { ChevronLeft, X } from "@mynaui/icons-react"
 
 import { buttonVariants } from "@/components/ui/button"
 import { useMotionTokens } from "@/lib/motion-tokens-context"

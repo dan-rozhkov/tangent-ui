@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Bell, FilePlus, FolderPlus, Keyboard, LayoutDashboard, Moon, Settings, UserPlus, Users } from "lucide-react"
+import { Bell, Cog, FilePlus, FolderPlus, Keyboard, LayoutDashboard, Moon, UserPlus, Users } from "@mynaui/icons-react"
 
 import { CommandPalette, type CommandItem } from "@/components/ui/command-palette"
 
@@ -14,7 +14,7 @@ const items: CommandItem[] = [
   { id: "members", label: "Manage members", description: "Roles and access", group: "Team", keywords: ["people"], icon: <Users {...icon} /> },
   { id: "dashboard", label: "Go to dashboard", group: "Navigate", shortcut: "G", icon: <LayoutDashboard {...icon} /> },
   { id: "notifications", label: "Open notifications", group: "Navigate", icon: <Bell {...icon} /> },
-  { id: "settings", label: "Open settings", description: "Workspace preferences", group: "Navigate", shortcut: ",", icon: <Settings {...icon} /> },
+  { id: "settings", label: "Open settings", description: "Workspace preferences", group: "Navigate", shortcut: ",", icon: <Cog {...icon} /> },
   { id: "theme", label: "Toggle theme", description: "Switch light and dark", keywords: ["dark", "light", "appearance"], icon: <Moon {...icon} /> },
   { id: "shortcuts", label: "Keyboard shortcuts", description: "See every shortcut", keywords: ["keys", "help"], icon: <Keyboard {...icon} /> },
 ]

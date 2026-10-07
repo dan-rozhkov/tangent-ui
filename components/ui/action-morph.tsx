@@ -6,7 +6,7 @@ import { Radio } from "@base-ui/react/radio"
 import { RadioGroup } from "@base-ui/react/radio-group"
 import { AnimatePresence, LayoutGroup, animate, motion, useAnimationControls, useIsPresent, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { ChevronLeft, Plus, X } from "lucide-react"
+import { ChevronLeft, Plus, X } from "@mynaui/icons-react"
 
 import { Button } from "@/components/ui/button"
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"

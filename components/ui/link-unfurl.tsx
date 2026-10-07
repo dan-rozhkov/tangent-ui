@@ -7,7 +7,7 @@ import type { CSSProperties, ClipboardEvent, FormEvent, KeyboardEvent, PointerEv
 import { createPortal } from "react-dom"
 import { AnimatePresence, animate, motion } from "motion/react"
 import type { AnimationPlaybackControls, Transition } from "motion/react"
-import { ArrowUp, Check, ChevronUp, Globe, Link2, X } from "lucide-react"
+import { ArrowUp, Check, ChevronUp, Globe, Link as LinkIcon, X } from "@mynaui/icons-react"
 
 import { motionTokens as presets } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
@@ -225,7 +225,7 @@ function ChipFace({ link, still, onActivate }: { link: Link; still: boolean; onA
               exit={{ opacity: 0, transition: { duration: duration.instant } }}
               transition={loading && !still ? { duration: 1.2, ease: "easeInOut", repeat: Infinity } : { duration: duration.fast }}
             >
-              {ready ? <Link2 className="size-3.5" /> : <Globe className="size-3.5" />}
+              {ready ? <LinkIcon className="size-3.5" /> : <Globe className="size-3.5" />}
             </motion.span>
           )}
         </AnimatePresence>
@@ -288,7 +288,7 @@ function PreviewCard({
             <img ref={bind("fav")} src={preview.favicon} alt="" className="size-4 flex-none rounded-[4px] object-cover" draggable={false} />
           ) : (
             <span ref={bind("fav")} className="grid size-4 flex-none place-items-center text-text-muted" aria-hidden="true">
-              <Link2 className="size-3.5" />
+              <LinkIcon className="size-3.5" />
             </span>
           )}
           <span className="min-w-0 flex-1 truncate text-xs leading-[1.4] text-text-secondary">{preview.site}</span>
@@ -1101,7 +1101,7 @@ export function LinkUnfurl({
                       {sample.favicon ? (
                         <img src={sample.favicon} alt="" className="size-3.5 rounded-[3px] object-cover" />
                       ) : (
-                        <Link2 className="size-3.5" aria-hidden="true" />
+                        <LinkIcon className="size-3.5" aria-hidden="true" />
                       )}
                       {sample.site}
                     </button>

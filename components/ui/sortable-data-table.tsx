@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { KeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode, RefObject } from "react";
-import { ArrowUp } from "lucide-react";
+import { ArrowUp } from "@mynaui/icons-react";
 import { AnimatePresence, animate, motion, useMotionValue, type Transition, type Variants } from "motion/react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";

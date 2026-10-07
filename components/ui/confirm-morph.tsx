@@ -4,7 +4,8 @@ import { useCallback, useEffect, useId, useImperativeHandle, useLayoutEffect, us
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode, Ref } from "react"
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue } from "motion/react"
 import type { AnimationPlaybackControls, Transition, Variants } from "motion/react"
-import { CircleAlert, LoaderCircle } from "lucide-react"
+import { DangerCircle } from "@mynaui/icons-react"
+import { SpinnerArc } from "@/components/ui/icons"
 
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
@@ -482,7 +483,7 @@ export function ConfirmMorph({
       case "pending":
         return (
           <span className={cn(statusClass, "pr-4 pl-[14px] text-text-secondary")}>
-            <LoaderCircle
+            <SpinnerArc
               className="animate-spin [animation-duration:.7s] motion-reduce:[animation-duration:1.6s]"
               size={16}
               strokeWidth={1.75}
@@ -509,7 +510,7 @@ export function ConfirmMorph({
         return (
           <>
             <span className={cn(statusClass, "[&>svg]:text-danger")} data-tone="danger">
-              <CircleAlert size={16} strokeWidth={1.75} aria-hidden="true" />
+              <DangerCircle size={16} strokeWidth={1.75} aria-hidden="true" />
               <span className="leading-[1.3]">{errorLabel}</span>
             </span>
             <button type="button" className={secondaryClass(true)} data-autofocus onClick={() => void perform(working)}>

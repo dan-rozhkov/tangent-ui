@@ -1,6 +1,6 @@
 "use client"
 
-import { KeyRound, Trash2 } from "lucide-react"
+import { Key, Trash } from "@mynaui/icons-react"
 
 import { ConfirmMorph } from "@/components/ui/confirm-morph"
 
@@ -11,14 +11,14 @@ export default function Demo() {
     <div className="flex flex-wrap items-center justify-center gap-4">
       <ConfirmMorph
         label="Delete"
-        icon={<Trash2 size={16} strokeWidth={1.75} />}
+        icon={<Trash size={16} strokeWidth={1.75} />}
         prompt="Delete 3 files?"
         onConfirm={() => wait(1200)}
         onUndo={() => wait(800)}
       />
       <ConfirmMorph
         label="Revoke access"
-        icon={<KeyRound size={16} strokeWidth={1.75} />}
+        icon={<Key size={16} strokeWidth={1.75} />}
         prompt="Revoke for Maya?"
         confirmLabel="Revoke"
         pendingLabel="Revoking"

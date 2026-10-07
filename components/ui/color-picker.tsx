@@ -4,7 +4,7 @@ import { useEffect, useEffectEvent, useId, useLayoutEffect, useRef, useState, us
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react"
 import { AnimatePresence, Reorder, animate, motion, useMotionValue, useTransform } from "motion/react"
 import type { Transition } from "motion/react"
-import { Check, Pipette, Plus } from "lucide-react"
+import { Check, Droplet, Plus } from "@mynaui/icons-react"
 
 import { TextMorph } from "@/components/ui/text-morph"
 import { motionTokens } from "@/lib/motion-tokens"
@@ -684,7 +684,7 @@ export function ColorPicker({
               <motion.span className="flex gap-0.5" style={{ opacity: contentOpacity }}>
                 {canPick && (
                   <button type="button" className={iconButtonClass} aria-label="Pick a color from the screen" onClick={pickFromScreen}>
-                    <Pipette size={18} strokeWidth={1.75} aria-hidden="true" />
+                    <Droplet size={18} strokeWidth={1.75} aria-hidden="true" />
                   </button>
                 )}
                 <button type="button" className={iconButtonClass} aria-label="Done" onClick={() => hide()}>

@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
-import { ChevronRight, File, Folder, FolderOpen } from "lucide-react";
+import { ChevronRight, File, Folder, FolderOne } from "@mynaui/icons-react";
 import { AnimatePresence, motion, useIsPresent } from "motion/react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
@@ -65,7 +65,7 @@ function FolderIcon({ open, reduced }: { open: boolean; reduced: boolean }) {
       animate={{ opacity: 1, scale: 1, filter: blur(0) }}
       exit={reduced ? { opacity: 0, transition: still } : { opacity: 0, scale: .6, filter: blur(motionTokens.blur.subtle), transition: fadeOut }}
       transition={reduced ? still : { ...motionTokens.spring.snappy, opacity: fadeIn, filter: fadeIn }}
-    >{open ? <FolderOpen size={16} strokeWidth={1.7} /> : <Folder size={16} strokeWidth={1.7} />}</motion.span>
+    >{open ? <FolderOne size={16} strokeWidth={1.7} /> : <Folder size={16} strokeWidth={1.7} />}</motion.span>
   </AnimatePresence>;
 }
 

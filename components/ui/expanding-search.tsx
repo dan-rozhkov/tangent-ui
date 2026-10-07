@@ -5,7 +5,7 @@ import type { KeyboardEvent, ReactNode, RefObject } from "react"
 import { flushSync } from "react-dom"
 import { AnimatePresence, animate, motion, useMotionValue, useMotionValueEvent } from "motion/react"
 import type { MotionValue } from "motion/react"
-import { Search, X } from "lucide-react"
+import { Search, X } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"

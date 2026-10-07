@@ -4,7 +4,7 @@ import { Children, isValidElement, useEffect, useEffectEvent, useId, useLayoutEf
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode, Ref } from "react";
 import { AnimatePresence, animate, motion, motionValue, useMotionValue, useTransform } from "motion/react";
 import type { AnimationPlaybackControls, MotionValue, TargetAndTransition } from "motion/react";
-import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight, PauseSolid, PlaySolid } from "@mynaui/icons-react";
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";
@@ -317,7 +317,7 @@ export function Carousel({ label, children, index: controlledIndex, defaultIndex
       {canRotate && <button ref={playRef} type="button" className={controlClass} aria-label={playing ? "Pause slide rotation" : "Start slide rotation"} onClick={toggleRotation}>
         <span className="grid size-4 place-items-center"><AnimatePresence initial={false}>
           <motion.span key={playing ? "pause" : "play"} className="grid [grid-area:1/1] place-items-center" initial={reduced ? { opacity: 0 } : iconIn} animate={iconRest} exit={reduced ? { opacity: 0, transition: { duration: motionTokens.duration.instant } } : iconOut} transition={reduced ? { duration: motionTokens.duration.instant } : iconEnter}>
-            {playing ? <Pause size={15} strokeWidth={1.75} fill="currentColor" aria-hidden="true" /> : <Play size={15} strokeWidth={1.75} fill="currentColor" aria-hidden="true" />}
+            {playing ? <PauseSolid size={15} aria-hidden="true" /> : <PlaySolid size={15} aria-hidden="true" />}
           </motion.span>
         </AnimatePresence></span>
       </button>}

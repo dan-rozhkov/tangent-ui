@@ -6,7 +6,7 @@ import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { cva } from "class-variance-authority"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { TargetAndTransition } from "motion/react"
-import { ChevronDown } from "lucide-react"
+import { ChevronDown } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"

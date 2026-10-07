@@ -3,7 +3,7 @@
 import { forwardRef, useId, useLayoutEffect, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowUpRight, Check } from "lucide-react";
+import { ArrowUpRight, Check } from "@mynaui/icons-react";
 import { Button } from "@/components/ui/button";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { motionTokens } from "@/lib/motion-tokens";

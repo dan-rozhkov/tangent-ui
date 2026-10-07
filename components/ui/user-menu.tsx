@@ -5,7 +5,8 @@ import type { CSSProperties, FocusEvent, KeyboardEvent, MouseEvent, PointerEvent
 import { createPortal } from "react-dom"
 import { AnimatePresence, motion } from "motion/react"
 import type { PanInfo, Transition, Variants } from "motion/react"
-import { ChevronDown, LoaderCircle, LogOut, Monitor, Moon, Sun, SunMoon } from "lucide-react"
+import { ChevronDown, Logout, Monitor, Moon, Sun } from "@mynaui/icons-react"
+import { SpinnerArc } from "@/components/ui/icons"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -718,7 +719,7 @@ export function UserMenu({
             {showTheme && (
               <Segmented
                 label="Theme"
-                icon={<SunMoon size={16} strokeWidth={1.75} />}
+                icon={<Sun size={16} strokeWidth={1.75} />}
                 value={theme}
                 onChange={changeTheme}
                 options={themes}
@@ -744,13 +745,13 @@ export function UserMenu({
         >
           <span className={itemIconClass(true)} aria-hidden="true">
             {signingOut ? (
-              <LoaderCircle
+              <SpinnerArc
                 className="animate-spin [animation-duration:.8s] motion-reduce:[animation-duration:2.4s]"
                 size={16}
                 strokeWidth={1.75}
               />
             ) : (
-              <LogOut size={16} strokeWidth={1.75} />
+              <Logout size={16} strokeWidth={1.75} />
             )}
           </span>
           <span className="relative inline-flex min-w-0 flex-1">

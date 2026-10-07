@@ -21,7 +21,8 @@ import type {
 } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { Transition } from "motion/react"
-import { ArrowDown, ArrowUp, FileText, Paperclip, RotateCw, SmilePlus, X } from "lucide-react"
+import { ArrowDown, ArrowUp, FileText, Paperclip, Refresh, X } from "@mynaui/icons-react"
+import { SmilePlus } from "@/components/ui/icons"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -1115,7 +1116,7 @@ export const ChatThread = forwardRef<ChatThreadHandle, ChatThreadProps>(function
                                           )}
                                           onClick={() => onRetry(message.id)}
                                         >
-                                          <RotateCw size={12} strokeWidth={2} aria-hidden="true" />
+                                          <Refresh size={12} strokeWidth={2} aria-hidden="true" />
                                           {t.retry}
                                         </button>
                                       )}

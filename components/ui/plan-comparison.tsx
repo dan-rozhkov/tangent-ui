@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { animate, AnimatePresence, motion } from "motion/react";
-import { Check } from "lucide-react";
+import { Check } from "@mynaui/icons-react";
 import { Button } from "@/components/ui/button";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { Switch } from "@/components/ui/switch";

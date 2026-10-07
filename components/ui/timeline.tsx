@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useId, useMemo, useR
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import type { Transition } from "motion/react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown } from "@mynaui/icons-react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";

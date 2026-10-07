@@ -5,7 +5,7 @@ import type { CSSProperties, KeyboardEvent, ReactNode } from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { AnimatePresence, animate, motion } from "motion/react"
 import type { Transition } from "motion/react"
-import { CalendarDays, Check, ChevronDown } from "lucide-react"
+import { Calendar, Check, ChevronDown } from "@mynaui/icons-react"
 
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
@@ -420,7 +420,7 @@ export function TaskInput({ lists, placeholder = "Write a new task", onSubmit, d
                 aria-label={`Due date: ${dateLabel ?? "none"}`}
                 aria-haspopup="menu"
               >
-                <CalendarDays className="size-[18px] flex-none" strokeWidth={1.8} aria-hidden="true" />
+                <Calendar className="size-[18px] flex-none" strokeWidth={1.8} aria-hidden="true" />
                 {dateLabel && (
                   <FadeLabel id={dateLabel} reduced={reduced} blur={blur.soft} className="pl-1.5">
                     {dateLabel}

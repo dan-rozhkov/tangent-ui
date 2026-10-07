@@ -18,7 +18,7 @@ export interface ExpandingButtonGroupItem {
   id: string
   /** Visible label once the button expands, and its accessible name at all times. Use a short verb, such as "Archive". */
   label: string
-  /** Icon shown while collapsed. A 16px lucide icon fits; it is sized by the group. */
+  /** Icon shown while collapsed. A 16px icon fits; it is sized by the group. */
   icon: ReactNode
   /** Runs the action. Return false, or reject, to skip the confirmation. A promise keeps the button busy until it settles. */
   onSelect?: () => void | boolean | Promise<void | boolean>

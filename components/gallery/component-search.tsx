@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { AnimatePresence, motion } from "motion/react"
 import type { Transition } from "motion/react"
-import { Search } from "lucide-react"
+import { Search } from "@mynaui/icons-react"
 
 import { demos } from "@/components/demos"
 import { CommandPalette, type CommandItem } from "@/components/ui/command-palette"

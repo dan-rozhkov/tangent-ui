@@ -24,7 +24,7 @@ import {
   type MotionValue,
   type Variants,
 } from "motion/react"
-import { CircleAlert, TriangleAlert } from "lucide-react"
+import { DangerCircle, DangerTriangle } from "@mynaui/icons-react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -399,7 +399,7 @@ function StatusBadge({
     observer.observe(node)
     return () => observer.disconnect()
   }, [reduced, width])
-  const Icon = status === "over" ? TriangleAlert : CircleAlert
+  const Icon = status === "over" ? DangerTriangle : DangerCircle
   return (
     <motion.span
       className={cn(
@@ -842,7 +842,7 @@ export function UsageMeter({
                         animate="shown"
                         exit="gone"
                       >
-                        <TriangleAlert size={12} strokeWidth={2} />
+                        <DangerTriangle size={12} strokeWidth={2} />
                       </motion.span>
                     ) : (
                       <motion.span

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from
 import type { KeyboardEvent, MouseEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue, useSpring, useTransform } from "motion/react"
 import type { MotionValue } from "motion/react"
-import { Check, Ellipsis, X } from "lucide-react"
+import { Check, Dots, X } from "@mynaui/icons-react"
 
 import { motionTokens as defaultTokens } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
@@ -636,7 +636,7 @@ export function OrbitMenu({
             }
             transition={reduced ? { duration: motionTokens.duration.instant } : motionTokens.spring.snappy}
           >
-            {glyph === "done" ? <Check /> : glyph === "close" ? <X /> : <Ellipsis />}
+            {glyph === "done" ? <Check /> : glyph === "close" ? <X /> : <Dots />}
           </motion.span>
         </AnimatePresence>
       </motion.button>

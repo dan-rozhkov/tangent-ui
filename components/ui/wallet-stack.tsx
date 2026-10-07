@@ -5,7 +5,7 @@ import type { CSSProperties, KeyboardEvent, PointerEvent as ReactPointerEvent, R
 import { AnimatePresence, animate, motion, useMotionValue, useSpring, useTransform } from "motion/react"
 import type { MotionValue, TargetAndTransition, Transition } from "motion/react"
 
-import { ChevronLeft } from "lucide-react"
+import { ChevronLeft } from "@mynaui/icons-react"
 
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"

@@ -19,7 +19,7 @@ import {
   useTransform,
 } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue } from "motion/react"
-import { MoreHorizontal } from "lucide-react"
+import { Dots } from "@mynaui/icons-react"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -539,7 +539,7 @@ export function SwipeActionsRow({
                 if (event.detail > 0) setMenuOpen((open) => !open)
               }}
             >
-              <MoreHorizontal size={18} strokeWidth={1.75} aria-hidden="true" />
+              <Dots size={18} strokeWidth={1.75} aria-hidden="true" />
             </Menu.Trigger>
             <Menu.Portal>
               <Menu.Positioner className="z-60" align="end" sideOffset={6} collisionPadding={12}>

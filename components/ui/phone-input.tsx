@@ -16,7 +16,7 @@ import {
 import type { ClipboardEvent as ReactClipboardEvent, CSSProperties, FocusEvent as ReactFocusEvent, KeyboardEvent as ReactKeyboardEvent } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { Check, ChevronDown, Search, X } from "lucide-react"
+import { Check, ChevronDown, Search, X } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"

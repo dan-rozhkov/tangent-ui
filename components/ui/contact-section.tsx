@@ -4,7 +4,7 @@ import { forwardRef, useEffect, useId, useLayoutEffect, useRef, useState } from 
 import type { FormEvent, KeyboardEvent, ReactNode } from "react";
 import { AnimatePresence, LayoutGroup, motion, useAnimate, useIsPresent } from "motion/react";
 import type { Variants } from "motion/react";
-import { Check, Clock, Mail, MessageCircle, Phone, Users } from "lucide-react";
+import { Check, Clock3, Mail, Message, Telephone, Users } from "@mynaui/icons-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/ui/copy-button";
@@ -266,7 +266,7 @@ function ConfirmAction({ idle, busy, done, note }: { idle: string; busy?: boolea
 
 export const contactExampleChannels: ContactChannel[] = [
   {
-    value: "chat", label: "Chat with support", meta: "Replies in about 4 minutes", icon: <MessageCircle {...ICON} />,
+    value: "chat", label: "Chat with support", meta: "Replies in about 4 minutes", icon: <Message {...ICON} />,
     detail: <>
       <h3>Chat with support</h3>
       <p>Hannah and Jordan are online now. Chat is best for quick questions about installing, theming, or a component that misbehaves.</p>
@@ -282,7 +282,7 @@ export const contactExampleChannels: ContactChannel[] = [
     </>,
   },
   {
-    value: "sales", label: "Talk to sales", meta: "Weekdays, 9am to 6pm PT", icon: <Phone {...ICON} />,
+    value: "sales", label: "Talk to sales", meta: "Weekdays, 9am to 6pm PT", icon: <Telephone {...ICON} />,
     detail: <>
       <h3>Talk to sales</h3>
       <p>Licensing for a larger team, invoicing, or a security review. Tyler will walk you through it on a 20 minute call.</p>
@@ -337,7 +337,7 @@ function Offices({ offices }: { offices: ContactOffice[] }) {
       return <li key={office.city} className="grid content-start gap-3 rounded-panel border border-border bg-surface p-6">
         <div className="flex items-baseline justify-between gap-3 [&_h3]:m-0 [&_h3]:text-(length:--text-lg) [&_h3]:font-medium [&_h3]:leading-body">
           <h3>{office.city}</h3>
-          <span className="inline-flex flex-none items-baseline gap-1.5 text-(length:--text-sm) text-text-secondary [&_svg]:self-center"><Clock size={14} strokeWidth={1.75} aria-hidden="true" /><span className="tabular-nums">{time}</span></span>
+          <span className="inline-flex flex-none items-baseline gap-1.5 text-(length:--text-sm) text-text-secondary [&_svg]:self-center"><Clock3 size={14} strokeWidth={1.75} aria-hidden="true" /><span className="tabular-nums">{time}</span></span>
         </div>
         <span className="group/status inline-flex items-center gap-2 text-(length:--text-sm) text-text-secondary" data-open={open === null ? undefined : open ? "" : undefined} data-closed={open === false ? "" : undefined}>
           <span className="size-[7px] rounded-full bg-border-strong transition-[background-color] duration-240 ease-standard motion-reduce:transition-none group-data-[open]/status:bg-success group-data-[open]/status:shadow-[0_0_0_3px_color-mix(in_oklab,var(--success)_18%,transparent)]" aria-hidden="true" />{open === null ? "Checking hours" : open ? `Open until ${hourLabel((office.hours ?? [9, 18])[1])}` : "Closed now"}
@@ -424,7 +424,7 @@ export const ContactSection = forwardRef<HTMLElement, ContactSectionProps>(funct
         <h2 id={`${id}-title`} className="m-0 font-display text-[length:clamp(1.75rem,1rem+3cqi,var(--text-4xl))] font-medium tracking-display leading-display text-balance">{title ?? copy.title}</h2>
         <p className="m-0 text-(length:--text-base) leading-normal text-text-secondary text-pretty">{description ?? copy.description}</p>
         {variant === "form" && <ul className="m-0 mt-4 grid list-none gap-2 p-0 [&_li]:flex [&_li]:min-h-8 [&_li]:items-center [&_li]:gap-2 [&_li]:text-(length:--text-sm) [&_li]:text-text-secondary [&_svg]:flex-none">
-          <li><Clock size={16} strokeWidth={1.75} aria-hidden="true" />Replies within one business day</li>
+          <li><Clock3 size={16} strokeWidth={1.75} aria-hidden="true" />Replies within one business day</li>
           <li><Mail size={16} strokeWidth={1.75} aria-hidden="true" /><span>hello@example.com</span><CopyButton value="hello@example.com" label="Copy email" iconOnly variant="plain" /></li>
         </ul>}
       </div>

@@ -4,7 +4,7 @@ import { Children, Fragment, isValidElement, useEffect, useRef, useState } from 
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactElement, ReactNode } from "react";
 import { AnimatePresence, animate, motion, motionValue, useTransform } from "motion/react";
 import type { AnimationPlaybackControls, MotionValue, TargetAndTransition, Transition } from "motion/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "@mynaui/icons-react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";

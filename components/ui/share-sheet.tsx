@@ -16,7 +16,7 @@ import {
   useTransform,
 } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { Check, ChevronDown, Copy, Link2, RotateCcw, Share, X } from "lucide-react"
+import { Check, ChevronDown, Copy, Link, Refresh, Share, X } from "@mynaui/icons-react"
 
 import { Button } from "@/components/ui/button"
 import { motionTokens as defaults } from "@/lib/motion-tokens"
@@ -563,7 +563,7 @@ export function ShareSheet({
   const copyLabels = [
     { key: "idle", text: "Copy", icon: <Copy /> },
     { key: "copied", text: "Copied", icon: <Check /> },
-    { key: "failed", text: "Retry", icon: <RotateCcw /> },
+    { key: "failed", text: "Retry", icon: <Refresh /> },
   ] as const
   const panelBody = (
     <div ref={setLayer} className="relative flex flex-col gap-3 p-2">
@@ -584,7 +584,7 @@ export function ShareSheet({
       {/* Link and access share one card; the access list opens inside it and the surface grows to fit. */}
       <div className="flex flex-col rounded-[20px] bg-surface-muted/70 ring-1 ring-border-subtle ring-inset">
         <div className="flex h-12 items-center gap-2.5 pr-1.5 pl-3.5">
-          <Link2 className="size-4 flex-none text-text-secondary" aria-hidden="true" />
+          <Link className="size-4 flex-none text-text-secondary" aria-hidden="true" />
           <span className="min-w-0 flex-1 truncate text-sm leading-body text-text-secondary" title={link}>
             {link.replace(/^https?:\/\//, "")}
           </span>

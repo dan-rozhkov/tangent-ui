@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Check, Copy, FileDown, FileText, Link, Trash2 } from "lucide-react"
+import { Check, Copy, Download, FileText, Link, Trash } from "@mynaui/icons-react"
 
 import { SplitButton } from "@/components/ui/split-button"
 
@@ -35,8 +35,8 @@ export default function Demo() {
         actions={[
           { label: "Copy link", icon: <Link size={15} />, onSelect: copy },
           { label: "View as Markdown", icon: <FileText size={15} /> },
-          { label: "Download PDF", icon: <FileDown size={15} />, disabled: true },
-          { label: "Delete page", icon: <Trash2 size={15} />, destructive: true },
+          { label: "Download PDF", icon: <Download size={15} />, disabled: true },
+          { label: "Delete page", icon: <Trash size={15} />, destructive: true },
         ]}
       />
       <SplitButton label="Merge" disabled actions={[{ label: "Squash and merge" }]} />

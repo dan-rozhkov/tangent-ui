@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState } from "react"
-import { Bookmark, Compass, House, Search, UserRound } from "lucide-react"
+import { Bookmark, Compass, Home, Search, User } from "@mynaui/icons-react"
 
 import { GlassTabBar } from "@/components/ui/glass-tabbar"
 import { photos } from "@/lib/media"
@@ -53,10 +53,10 @@ export default function Demo() {
         }}
         scrollRef={scrollRef}
         items={[
-          { value: "home", label: "Home", icon: <House /> },
+          { value: "home", label: "Home", icon: <Home /> },
           { value: "explore", label: "Explore", icon: <Compass /> },
           { value: "saved", label: "Saved", icon: <Bookmark />, badge: 3 },
-          { value: "profile", label: "Profile", icon: <UserRound /> },
+          { value: "profile", label: "Profile", icon: <User /> },
         ]}
         action={{ value: "search", label: "Search", icon: <Search /> }}
       />

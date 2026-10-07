@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState, u
 import type { HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
-import { RotateCcw, Search, X } from "lucide-react"
+import { Search, Undo, X } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -675,7 +675,7 @@ export function ShortcutRecorder({
                 exit={{ opacity: 0, scale: 0.6, transition: { duration: 0.1 } }}
                 transition={reduced ? { duration: 0 } : motionTokens.spring.snappy}
               >
-                <RotateCcw size={16} strokeWidth={1.75} aria-hidden="true" />
+                <Undo size={16} strokeWidth={1.75} aria-hidden="true" />
               </motion.button>
             )}
             {canClear && (

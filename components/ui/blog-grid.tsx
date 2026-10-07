@@ -4,7 +4,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { MouseEvent, ReactNode } from "react";
 import { AnimatePresence, LayoutGroup, animate, motion, useMotionValue } from "motion/react";
-import { ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight } from "@mynaui/icons-react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { blogCategories, blogPosts } from "@/components/ui/blog-grid-data";

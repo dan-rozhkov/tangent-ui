@@ -10,7 +10,7 @@ import {
   type Transition,
   type Variants,
 } from "motion/react"
-import { Check, KeyRound } from "lucide-react"
+import { Check, Key } from "@mynaui/icons-react"
 
 import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -493,7 +493,7 @@ export function SignIn({ demoCode = "123456", onSignIn }: SignInProps) {
                       loading={busy === "passkey"}
                       onClick={() => signInWith("passkey")}
                     >
-                      <KeyRound size={16} strokeWidth={1.75} aria-hidden="true" />
+                      <Key size={16} strokeWidth={1.75} aria-hidden="true" />
                       Sign in with a passkey
                     </Button>
                     <div className="grid grid-cols-3 gap-2" role="group" aria-label="Single sign-on">

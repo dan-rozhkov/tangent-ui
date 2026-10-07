@@ -5,7 +5,7 @@ import type { ButtonHTMLAttributes, RefObject } from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { TargetAndTransition, Variants } from "motion/react"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"

@@ -4,7 +4,8 @@ import { forwardRef, useCallback, useEffect, useId, useImperativeHandle, useLayo
 import type { ClipboardEvent as ReactClipboardEvent, CSSProperties, FormEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useTransform } from "motion/react";
 import type { Transition, Variants } from "motion/react";
-import { ArrowLeft, Bold, Check, Code, Heading1, Heading2, Heading3, Italic, Link, List, ListOrdered, Minus, Pilcrow, Quote, SquareCode, Strikethrough, Unlink } from "lucide-react";
+import { ArrowLeft, Chat, Check, Code, CodeSquare, Heading1, Heading2, Heading3, Link, List, ListNumber, Minus, TypeBold, TypeItalic, TypeText, Unlink } from "@mynaui/icons-react";
+import { Strikethrough } from "@/components/ui/icons";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";
@@ -654,14 +655,14 @@ type Snapshot = { html: string; selection: Offsets | null; kind: "type" | "comma
 
 const icon = { size: 16, strokeWidth: 1.75, "aria-hidden": true } as const;
 const SLASH_ITEMS: SlashItem[] = [
-  { type: "p", label: "Text", hint: "", keywords: "paragraph plain body", icon: <Pilcrow {...icon} /> },
+  { type: "p", label: "Text", hint: "", keywords: "paragraph plain body", icon: <TypeText {...icon} /> },
   { type: "h1", label: "Heading 1", hint: "#", keywords: "title h1 large", icon: <Heading1 {...icon} /> },
   { type: "h2", label: "Heading 2", hint: "##", keywords: "subtitle h2 section", icon: <Heading2 {...icon} /> },
   { type: "h3", label: "Heading 3", hint: "###", keywords: "h3 small", icon: <Heading3 {...icon} /> },
   { type: "ul", label: "Bulleted list", hint: "-", keywords: "bullet unordered ul points", icon: <List {...icon} /> },
-  { type: "ol", label: "Numbered list", hint: "1.", keywords: "ordered ol steps numbers", icon: <ListOrdered {...icon} /> },
-  { type: "blockquote", label: "Quote", hint: ">", keywords: "blockquote citation callout", icon: <Quote {...icon} /> },
-  { type: "pre", label: "Code block", hint: "```", keywords: "pre snippet monospace", icon: <SquareCode {...icon} /> },
+  { type: "ol", label: "Numbered list", hint: "1.", keywords: "ordered ol steps numbers", icon: <ListNumber {...icon} /> },
+  { type: "blockquote", label: "Quote", hint: ">", keywords: "blockquote citation callout", icon: <Chat {...icon} /> },
+  { type: "pre", label: "Code block", hint: "```", keywords: "pre snippet monospace", icon: <CodeSquare {...icon} /> },
   { type: "hr", label: "Divider", hint: "---", keywords: "rule hr line separator", icon: <Minus {...icon} /> },
 ];
 
@@ -1561,8 +1562,8 @@ export const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorPro
         <AnimatePresence initial={false} custom={direction}>
           {face === "format" ? <Face key="format" direction={direction} reduced={reduced} onSize={onFaceSize}>
             <div className={styles.row}>
-              <ToolButton label="Bold" pressed={formats.bold} shortcut="⌘B" onPress={() => toggleMark("bold")}><Bold {...icon} /></ToolButton>
-              <ToolButton label="Italic" pressed={formats.italic} shortcut="⌘I" onPress={() => toggleMark("italic")}><Italic {...icon} /></ToolButton>
+              <ToolButton label="Bold" pressed={formats.bold} shortcut="⌘B" onPress={() => toggleMark("bold")}><TypeBold {...icon} /></ToolButton>
+              <ToolButton label="Italic" pressed={formats.italic} shortcut="⌘I" onPress={() => toggleMark("italic")}><TypeItalic {...icon} /></ToolButton>
               <ToolButton label="Strikethrough" pressed={formats.strike} shortcut="⌘⇧X" onPress={() => toggleMark("strike")}><Strikethrough {...icon} /></ToolButton>
               <ToolButton label="Inline code" pressed={formats.code} shortcut="⌘E" onPress={() => toggleMark("code")}><Code {...icon} /></ToolButton>
               <ToolButton label={formats.link ? "Edit link" : "Link"} pressed={!!formats.link} shortcut="⌘K" onPress={openLink}><Link {...icon} /></ToolButton>
@@ -1570,7 +1571,7 @@ export const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorPro
               <span className={styles.divider} aria-hidden="true" />
               <ToolButton label="Heading 1" pressed={formats.block === "h1"} onPress={() => run(() => applyBlock("h1"))}><Heading1 {...icon} /></ToolButton>
               <ToolButton label="Heading 2" pressed={formats.block === "h2"} onPress={() => run(() => applyBlock("h2"))}><Heading2 {...icon} /></ToolButton>
-              <ToolButton label="Quote" pressed={formats.block === "blockquote"} onPress={() => run(() => applyBlock("blockquote"))}><Quote {...icon} /></ToolButton>
+              <ToolButton label="Quote" pressed={formats.block === "blockquote"} onPress={() => run(() => applyBlock("blockquote"))}><Chat {...icon} /></ToolButton>
               </span>
             </div>
           </Face> : <Face key="link" direction={direction} reduced={reduced} onSize={onFaceSize}>

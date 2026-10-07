@@ -14,7 +14,7 @@ import {
   type TargetAndTransition,
   type Transition,
 } from "motion/react"
-import { Check, Info as InfoCircle, TriangleAlert as WarningTriangle, CircleX as XmarkCircle, X } from "lucide-react"
+import { Check, DangerTriangle, Info, X, XCircle } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -32,7 +32,7 @@ export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
 }
 type AlertBoxProps = Omit<AlertProps, "open"> & { reduce: boolean | null; animateIcon?: boolean }
 
-const icons = { info: InfoCircle, success: Check, warning: WarningTriangle, danger: XmarkCircle }
+const icons = { info: Info, success: Check, warning: DangerTriangle, danger: XCircle }
 const toneIcon: Record<AlertTone, string> = {
   info: "text-accent",
   success: "text-success",

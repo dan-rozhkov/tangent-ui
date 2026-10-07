@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { FileText, Folder } from "lucide-react"
+import { FileText, Folder } from "@mynaui/icons-react"
 
 import { ExpandingSearch, type ExpandingSearchItem } from "@/components/ui/expanding-search"
 

@@ -3,7 +3,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react"
 import type { KeyboardEvent, MouseEvent } from "react"
 import { AnimatePresence, motion, useAnimate } from "motion/react"
-import { X as Xmark } from "lucide-react"
+import { X } from "@mynaui/icons-react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -346,7 +346,7 @@ export function TagInput({
                     "motion-reduce:transition-none motion-reduce:active:transform-none"
                   )}
                 >
-                  <Xmark width={14} height={14} aria-hidden="true" />
+                  <X width={14} height={14} aria-hidden="true" />
                 </button>
               </motion.span>
             ))}

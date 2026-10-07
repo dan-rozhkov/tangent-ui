@@ -4,7 +4,7 @@ import { forwardRef, useId, useState } from "react"
 import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
-import { Check, ChevronDown, ChevronUp } from "lucide-react"
+import { Check, ChevronDown, ChevronUp } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"

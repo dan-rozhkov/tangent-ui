@@ -15,7 +15,8 @@ import {
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { Check, ChevronRight, CornerDownRight, RotateCcw, SmilePlus, X } from "lucide-react"
+import { Check, ChevronRight, CornerDownRight, Undo, X } from "@mynaui/icons-react"
+import { SmilePlus } from "@/components/ui/icons"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -1106,7 +1107,7 @@ export const CommentThread = forwardRef<HTMLElement, CommentThreadProps>(functio
                 ))}
               </span>
               <button type="button" className={pillButton} data-reopen onClick={() => setResolved(false)}>
-                <RotateCcw size={14} strokeWidth={1.75} aria-hidden="true" />
+                <Undo size={14} strokeWidth={1.75} aria-hidden="true" />
                 {t.reopen}
               </button>
             </motion.div>

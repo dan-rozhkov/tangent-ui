@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { KeyboardEvent as ReactKeyboardEvent, CSSProperties, FocusEvent as ReactFocusEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useTransform } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight } from "lucide-react"
+import { Calendar, ChevronDown, ChevronLeft, ChevronRight } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -920,7 +920,7 @@ export function DateRangePicker({
         onClick={openPanel}
       >
         <motion.span className="grid flex-none place-items-center text-text-secondary" initial={false} animate={quiet} transition={quietTransition}>
-          <CalendarDays size={16} strokeWidth={1.75} aria-hidden="true" />
+          <Calendar size={16} strokeWidth={1.75} aria-hidden="true" />
         </motion.span>
         {open || !layoutId ? (
           <motion.span

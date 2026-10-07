@@ -5,7 +5,7 @@ import type { ReactNode } from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { AnimatePresence, motion } from "motion/react"
 import type { Transition } from "motion/react"
-import { X } from "lucide-react"
+import { X } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"

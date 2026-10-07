@@ -5,7 +5,7 @@ import type { FormEvent, ReactNode } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion, useAnimate } from "motion/react";
 import type { Variants } from "motion/react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight } from "@mynaui/icons-react";
 import AnimatedCounter from "@/components/ui/animated-counter";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { Switch } from "@/components/ui/switch";

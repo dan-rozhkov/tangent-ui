@@ -1,6 +1,6 @@
 "use client"
 
-import { Plane, ShoppingBag, Train } from "lucide-react"
+import { Plane, ShoppingBag, Train } from "@mynaui/icons-react"
 
 import { WalletStack } from "@/components/ui/wallet-stack"
 import type { WalletCard } from "@/components/ui/wallet-stack"

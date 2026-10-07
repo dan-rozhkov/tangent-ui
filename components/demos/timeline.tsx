@@ -1,6 +1,6 @@
 "use client"
 
-import { GitMerge, Rocket, TriangleAlert } from "lucide-react"
+import { DangerTriangle, GitMerge, Rocket } from "@mynaui/icons-react"
 
 import { Timeline, type TimelineEvent } from "@/components/ui/timeline"
 import { avatar } from "@/lib/media"
@@ -27,7 +27,7 @@ const events: TimelineEvent[] = [
     at: hours(9),
     title: "Staging deploy failed",
     meta: "Build 1,203",
-    icon: <TriangleAlert />,
+    icon: <DangerTriangle />,
     tone: "danger",
     detail: <pre className="m-0 overflow-x-auto font-mono text-xs">{"Step 4/6: migrate\nerror: column \"currency\" already exists\nBuild step exited with code 1"}</pre>,
   },

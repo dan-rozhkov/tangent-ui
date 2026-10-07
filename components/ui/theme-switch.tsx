@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { AnimatePresence, motion } from "motion/react"
-import { Moon, Sun } from "lucide-react"
+import { Moon, Sun } from "@mynaui/icons-react"
 
 import { Button } from "@/components/ui/button"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"

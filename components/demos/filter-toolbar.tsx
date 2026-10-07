@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { CircleDot, Flag, Tag, User } from "lucide-react"
+import { Flag, Record, Tag, User } from "@mynaui/icons-react"
 
 import { FilterToolbar, type FilterChip, type FilterField } from "@/components/ui/filter-toolbar"
 
 const fields: FilterField[] = [
-  { id: "status", label: "Status", icon: <CircleDot size={15} strokeWidth={1.8} />, options: [{ value: "Open", hint: 18 }, { value: "In review", hint: 7 }, { value: "Closed", hint: 41 }] },
+  { id: "status", label: "Status", icon: <Record size={15} strokeWidth={1.8} />, options: [{ value: "Open", hint: 18 }, { value: "In review", hint: 7 }, { value: "Closed", hint: 41 }] },
   { id: "owner", label: "Owner", icon: <User size={15} strokeWidth={1.8} />, options: ["Maya", "Leo", "Priya", "Tomas"] },
   { id: "priority", label: "Priority", icon: <Flag size={15} strokeWidth={1.8} />, options: ["Urgent", "High", "Normal", "Low"] },
   { id: "label", label: "Label", icon: <Tag size={15} strokeWidth={1.8} />, options: ["Bug", "Design", "Billing", "Onboarding"] },

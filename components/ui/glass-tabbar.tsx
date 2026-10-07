@@ -29,7 +29,7 @@ export interface GlassTabBarItem {
   value: string
   /** Visible label and accessible name. The action shows only its icon and uses the label as its name. */
   label: string
-  /** Icon at 22px; lucide icons are sized automatically. */
+  /** Icon at 22px; Myna icons are sized automatically. */
   icon: ReactNode
   /** Count shown as an accent badge on the icon. 0 or empty hides it. */
   badge?: number | string
@@ -267,7 +267,7 @@ function Dispersed({
 
 /* ---------- small parts ---------- */
 
-/** Lucide icons take the size and stroke of their slot. */
+/** Icons take the size and stroke of their slot. */
 function Icon({ children }: { children: ReactNode }) {
   return (
     <span

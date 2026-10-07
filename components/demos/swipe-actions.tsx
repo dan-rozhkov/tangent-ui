@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Archive, Clock, MailOpen, RotateCcw } from "lucide-react"
+import { Archive, Clock3, MailOpen, Undo } from "@mynaui/icons-react"
 
 import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -73,7 +73,7 @@ export default function Demo() {
                 },
               ]}
               trailing={[
-                { label: "Snooze", icon: <Clock size={18} strokeWidth={1.75} />, onSelect: () => remove(message.id) },
+                { label: "Snooze", icon: <Clock3 size={18} strokeWidth={1.75} />, onSelect: () => remove(message.id) },
                 {
                   label: "Archive",
                   icon: <Archive size={18} strokeWidth={1.75} />,
@@ -102,7 +102,7 @@ export default function Demo() {
       </SwipeActions>
       {messages.length < inbox.length && (
         <Button variant="ghost" size="sm" className="justify-self-center" onClick={() => setMessages(inbox)}>
-          <RotateCcw size={16} strokeWidth={1.75} aria-hidden="true" />
+          <Undo size={16} strokeWidth={1.75} aria-hidden="true" />
           Restore messages
         </Button>
       )}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Bookmark, Home, Inbox, Library, Radio, Search, User } from "lucide-react"
+import { Bookmark, BookOpen, Home, Inbox, Radio, Search, User } from "@mynaui/icons-react"
 
 import { LiquidTabBar, liquidPanelId, liquidTabId } from "@/components/ui/liquid-tab-bar"
 
@@ -47,7 +47,7 @@ export default function Demo() {
         tabs={[
           { value: "home", label: "Home", icon: <Home /> },
           { value: "radio", label: "Radio", icon: <Radio /> },
-          { value: "library", label: "Library", icon: <Library /> },
+          { value: "library", label: "Library", icon: <BookOpen /> },
           { value: "search", label: "Search", icon: <Search /> },
         ]}
       />

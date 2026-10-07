@@ -4,7 +4,7 @@ import { useEffect, useId, useRef, useState } from "react"
 import type { ButtonHTMLAttributes, FocusEvent, KeyboardEvent } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
-import { CalendarDays, ChevronDown } from "lucide-react"
+import { Calendar as CalendarIcon, ChevronDown } from "@mynaui/icons-react"
 
 import { Calendar, type CalendarDateMatcher } from "@/components/ui/calendar"
 import { motionTokens } from "@/lib/motion-tokens"
@@ -195,7 +195,7 @@ export function DatePicker({
           onClick={() => (open ? close() : show())}
           onKeyDown={onTriggerKeyDown}
         >
-          <CalendarDays size={16} strokeWidth={1.75} aria-hidden="true" />
+          <CalendarIcon size={16} strokeWidth={1.75} aria-hidden="true" />
           <span className="sr-only">{shown}</span>
           {/* Old and new values cross in place; each part of a date is its own box so a wider day or month moves the rest along on a spring. */}
           <span className="relative flex min-w-0 flex-1" aria-hidden="true">

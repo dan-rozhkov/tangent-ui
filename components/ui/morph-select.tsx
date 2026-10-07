@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { CSSProperties, FocusEvent as ReactFocusEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
-import { Check, ChevronDown, Search, X } from "lucide-react"
+import { Check, ChevronDown, Search, X } from "@mynaui/icons-react"
 
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"

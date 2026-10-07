@@ -12,7 +12,7 @@ import {
   type TargetAndTransition,
   type Transition,
 } from "motion/react"
-import { Check } from "lucide-react"
+import { Check } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"

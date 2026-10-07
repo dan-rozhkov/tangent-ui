@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Search } from "lucide-react"
+import { Search } from "@mynaui/icons-react"
 
 import { Button } from "@/components/ui/button"
 import { EmptyState } from "@/components/ui/empty-state"

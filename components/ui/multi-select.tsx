@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
-import { ChevronDown, X } from "lucide-react"
+import { ChevronDown, X } from "@mynaui/icons-react"
 import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"

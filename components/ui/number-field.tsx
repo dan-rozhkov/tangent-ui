@@ -4,7 +4,7 @@ import { Fragment, useEffect, useId, useLayoutEffect, useMemo, useRef, useState 
 import type { KeyboardEvent, PointerEvent, Ref } from "react"
 import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "motion/react"
 import type { MotionValue, Variants } from "motion/react"
-import { Minus, Plus } from "lucide-react"
+import { Minus, Plus } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"

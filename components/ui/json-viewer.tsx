@@ -4,7 +4,7 @@ import { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } 
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, LayoutGroup, animate, motion } from "motion/react"
 import type { AnimationPlaybackControls, Transition } from "motion/react"
-import { Check, ChevronDown, ChevronRight, ChevronUp, ChevronsDownUp, ChevronsUpDown, Copy, Link2, Search, X } from "lucide-react"
+import { Check, ChevronDown, ChevronRight, ChevronsUp, ChevronsUpDown, ChevronUp, Copy, Link, Search, X } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -748,7 +748,7 @@ export const JsonViewer = forwardRef<HTMLDivElement, JsonViewerProps>(function J
             <ChevronsUpDown size={15} strokeWidth={1.75} aria-hidden="true" />
           </button>
           <button type="button" className={toolClass} aria-label="Collapse all" title="Collapse all" onClick={collapseAll}>
-            <ChevronsDownUp size={15} strokeWidth={1.75} aria-hidden="true" />
+            <ChevronsUp size={15} strokeWidth={1.75} aria-hidden="true" />
           </button>
         </div>
       ) : null}
@@ -921,7 +921,7 @@ export const JsonViewer = forwardRef<HTMLDivElement, JsonViewerProps>(function J
                             />
                             <CopyButton
                               label="Copy path"
-                              icon={<Link2 size={14} strokeWidth={1.75} aria-hidden="true" />}
+                              icon={<Link size={14} strokeWidth={1.75} aria-hidden="true" />}
                               reduced={reduced}
                               onCopy={() => copy(row, "path")}
                             />

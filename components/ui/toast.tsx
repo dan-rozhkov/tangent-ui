@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, type AnimationPlaybackControls, type HTMLMotionProps, type MotionProps, type PanInfo, type TargetAndTransition, type Transition, type Variants } from "motion/react";
-import { X } from "lucide-react";
+import { X } from "@mynaui/icons-react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";

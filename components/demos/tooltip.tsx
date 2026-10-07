@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Archive, Bold, Copy, Italic, Underline } from "lucide-react"
+import { Archive, Copy, TypeBold, TypeItalic, TypeUnderline } from "@mynaui/icons-react"
 
 import { Button } from "@/components/ui/button"
 import { Tooltip } from "@/components/ui/tooltip"
@@ -15,17 +15,17 @@ export default function Demo() {
       <div className="flex gap-1">
         <Tooltip content="Bold">
           <Button variant="ghost" size="sm" aria-label="Bold">
-            <Bold size={16} strokeWidth={1.75} aria-hidden="true" />
+            <TypeBold size={16} strokeWidth={1.75} aria-hidden="true" />
           </Button>
         </Tooltip>
         <Tooltip content="Italic">
           <Button variant="ghost" size="sm" aria-label="Italic">
-            <Italic size={16} strokeWidth={1.75} aria-hidden="true" />
+            <TypeItalic size={16} strokeWidth={1.75} aria-hidden="true" />
           </Button>
         </Tooltip>
         <Tooltip content="Underline">
           <Button variant="ghost" size="sm" aria-label="Underline">
-            <Underline size={16} strokeWidth={1.75} aria-hidden="true" />
+            <TypeUnderline size={16} strokeWidth={1.75} aria-hidden="true" />
           </Button>
         </Tooltip>
       </div>

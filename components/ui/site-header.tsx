@@ -5,7 +5,7 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, CSSProperties, HTMLAtt
 import Image from "next/image";
 import { AnimatePresence, LayoutGroup, motion, useIsPresent } from "motion/react";
 import type { Transition, Variants } from "motion/react";
-import { ArrowRight, BookOpen, Boxes, ChevronDown, History, LayoutTemplate, Menu, MessagesSquare, Palette, PanelsTopLeft, Route, X } from "lucide-react";
+import { ArrowRight, BookOpen, ChatMessages, ChevronDown, Clock3, Compass, Layout, LayoutPanelLeft, Menu, Package, Swatches, X } from "@mynaui/icons-react";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { motionTokens } from "@/lib/motion-tokens";
 import { photo } from "@/lib/media";
@@ -119,10 +119,10 @@ export const siteHeaderExampleItems: SiteHeaderItem[] = [
   {
     value: "product", label: "Product",
     links: [
-      { label: "Components", description: "140 interactive React components", icon: <Boxes {...ICON} /> },
-      { label: "Blocks", description: "Complete sections, ready to ship", icon: <PanelsTopLeft {...ICON} /> },
-      { label: "Templates", description: "Starter sites with every page", icon: <LayoutTemplate {...ICON} /> },
-      { label: "Themes", description: "Tune color, radius, and motion", icon: <Palette {...ICON} /> },
+      { label: "Components", description: "140 interactive React components", icon: <Package {...ICON} /> },
+      { label: "Blocks", description: "Complete sections, ready to ship", icon: <LayoutPanelLeft {...ICON} /> },
+      { label: "Templates", description: "Starter sites with every page", icon: <Layout {...ICON} /> },
+      { label: "Themes", description: "Tune color, radius, and motion", icon: <Swatches {...ICON} /> },
     ],
     feature: { title: "What's new in 2.4", description: "Site headers, footers, and hero sections.", image: { src: curvedFacade.src, alt: curvedFacade.alt } },
   },
@@ -130,9 +130,9 @@ export const siteHeaderExampleItems: SiteHeaderItem[] = [
     value: "resources", label: "Resources",
     links: [
       { label: "Documentation", description: "Install, theme, and compose", icon: <BookOpen {...ICON} /> },
-      { label: "Guides", description: "Patterns for real product work", icon: <Route {...ICON} /> },
-      { label: "Changelog", description: "Every release, week by week", icon: <History {...ICON} /> },
-      { label: "Community", description: "Questions, answers, and showcases", icon: <MessagesSquare {...ICON} /> },
+      { label: "Guides", description: "Patterns for real product work", icon: <Compass {...ICON} /> },
+      { label: "Changelog", description: "Every release, week by week", icon: <Clock3 {...ICON} /> },
+      { label: "Community", description: "Questions, answers, and showcases", icon: <ChatMessages {...ICON} /> },
     ],
   },
   { value: "pricing", label: "Pricing" },

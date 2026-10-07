@@ -19,7 +19,7 @@ import {
   usePresence,
   useTransform,
 } from "motion/react"
-import { X } from "lucide-react"
+import { X } from "@mynaui/icons-react"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"

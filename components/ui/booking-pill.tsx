@@ -4,7 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import type { KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useMotionValueEvent } from "motion/react"
 import type { Variants } from "motion/react"
-import { ArrowLeft, ArrowRight, CalendarDays, Check, Minus, Plus, RotateCcw } from "lucide-react"
+import { ArrowLeft, ArrowRight, Calendar, Check, Minus, Plus, Undo } from "@mynaui/icons-react"
 
 import { Button } from "@/components/ui/button"
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
@@ -621,7 +621,7 @@ export function BookingPill({
         className="flex h-[52px] cursor-pointer items-center gap-2 rounded-pill border-0 bg-transparent px-5 text-base font-medium whitespace-nowrap text-foreground outline-none [-webkit-tap-highlight-color:transparent]"
         onClick={() => go("party")}
       >
-        <CalendarDays className="size-5" aria-hidden="true" />
+        <Calendar className="size-5" aria-hidden="true" />
         {label}
       </button>
     )
@@ -781,7 +781,7 @@ export function BookingPill({
           data-autofocus
           onClick={() => go("start")}
         >
-          <RotateCcw />
+          <Undo />
         </button>
       </div>
     )

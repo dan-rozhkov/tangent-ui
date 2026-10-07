@@ -14,7 +14,7 @@ import {
   useTransform,
 } from "motion/react"
 import type { MotionValue, PanInfo, Transition, Variants } from "motion/react"
-import { ChevronDown, Pause, Play, SkipBack, SkipForward } from "lucide-react"
+import { ChevronDown, PauseSolid, PlaySolid, SkipBackSolid, SkipForwardSolid } from "@mynaui/icons-react"
 
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
@@ -453,9 +453,9 @@ export function NowPlaying({
       onClick={() => setPlaying(!playing)}
     >
       {playing ? (
-        <Pause size={big ? 24 : 18} fill="currentColor" strokeWidth={0} aria-hidden="true" />
+        <PauseSolid size={big ? 24 : 18} aria-hidden="true" />
       ) : (
-        <Play size={big ? 24 : 18} fill="currentColor" strokeWidth={0} aria-hidden="true" className="translate-x-px" />
+        <PlaySolid size={big ? 24 : 18} aria-hidden="true" className="translate-x-px" />
       )}
     </motion.button>
   )
@@ -468,7 +468,7 @@ export function NowPlaying({
       whileTap={press}
       onClick={() => goTo(index + 1, 1)}
     >
-      <SkipForward size={big ? 22 : 18} fill="currentColor" strokeWidth={1.5} aria-hidden="true" />
+      <SkipForwardSolid size={big ? 22 : 18} aria-hidden="true" />
     </motion.button>
   )
 
@@ -551,7 +551,7 @@ export function NowPlaying({
                     whileTap={press}
                     onClick={previous}
                   >
-                    <SkipBack size={22} fill="currentColor" strokeWidth={1.5} aria-hidden="true" />
+                    <SkipBackSolid size={22} aria-hidden="true" />
                   </motion.button>
                   {playButton(true)}
                   {nextButton(true)}

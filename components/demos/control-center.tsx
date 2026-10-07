@@ -1,6 +1,6 @@
 "use client"
 
-import { Headphones, Moon, Users } from "lucide-react"
+import { Headphones, Moon, Users } from "@mynaui/icons-react"
 
 import { ControlCenter } from "@/components/ui/control-center"
 import { person } from "@/lib/media"

@@ -9,7 +9,7 @@ import type {
 } from "react"
 import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue, TargetAndTransition } from "motion/react"
-import { Trash2 } from "lucide-react"
+import { Trash } from "@mynaui/icons-react"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -220,7 +220,7 @@ export function HoldToConfirm({
   confirmedLabel = "Done",
   onConfirm,
   duration = 1200,
-  icon = <Trash2 strokeWidth={1.75} />,
+  icon = <Trash strokeWidth={1.75} />,
   tone = "accent",
   confirmed,
   onHoldChange,

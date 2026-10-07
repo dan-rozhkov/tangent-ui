@@ -11,7 +11,7 @@ import {
   useTransform,
 } from "motion/react"
 import type { MotionValue } from "motion/react"
-import { Check, RotateCcw, X } from "lucide-react"
+import { Check, Undo, X } from "@mynaui/icons-react"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
@@ -623,7 +623,7 @@ export function CardStack<T>({
                 <>
                   <p className="m-0 text-base font-medium">All cards reviewed</p>
                   <button type="button" className={controlVariants()} onClick={reset}>
-                    <RotateCcw size={16} strokeWidth={1.75} aria-hidden="true" />
+                    <Undo size={16} strokeWidth={1.75} aria-hidden="true" />
                     Start over
                   </button>
                 </>
@@ -638,7 +638,7 @@ export function CardStack<T>({
           {labels.left}
         </Control>
         <Control onClick={undo} disabled={!history.length} reduced={reduced} tone="quiet">
-          <RotateCcw size={16} strokeWidth={1.75} aria-hidden="true" />
+          <Undo size={16} strokeWidth={1.75} aria-hidden="true" />
           <span className="max-[22.5rem]:sr-only">Undo</span>
         </Control>
         <Control onClick={() => decide("right")} disabled={!top} reduced={reduced} tone="primary">

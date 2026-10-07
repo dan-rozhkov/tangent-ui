@@ -5,30 +5,7 @@ import type { FocusEvent, ReactNode, UIEvent } from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
 import { AnimatePresence, LayoutGroup, motion, type Transition, type Variants } from "motion/react"
-import {
-  Archive,
-  ArchiveRestore,
-  Bell,
-  BellOff,
-  BellRing,
-  CalendarDays,
-  Check,
-  ChevronRight,
-  Circle,
-  CircleAlert,
-  CircleCheck,
-  CircleDashed,
-  Ellipsis,
-  FileSpreadsheet,
-  FileText,
-  Film,
-  Link2,
-  Megaphone,
-  PenTool,
-  Plus,
-  Presentation,
-  type LucideIcon,
-} from "lucide-react"
+import { Archive, Bell, BellOff, BellOn, Calendar, Check, CheckCircle, ChevronRight, Circle, CircleDashed, DangerCircle, Dots, FileText, Film, InboxUp, type Icon as IconComponent, Link, Pen, Plus, Presentation, Send, Table } from "@mynaui/icons-react"
 
 import { AnimatedCounter } from "@/components/ui/animated-counter"
 import { Avatar } from "@/components/ui/avatar"
@@ -127,18 +104,18 @@ const draftUpdates = [
   "Declined card copy is final and with support for review. No change to the October 14 rollout.",
 ]
 
-const files: { name: string; kind: string; size: string; owner: PersonId; date: string; icon: LucideIcon }[] = [
-  { name: "Checkout flows v3", kind: "Design file", size: "18.4 MB", owner: "emma", date: "Sep 20", icon: PenTool },
+const files: { name: string; kind: string; size: string; owner: PersonId; date: string; icon: IconComponent }[] = [
+  { name: "Checkout flows v3", kind: "Design file", size: "18.4 MB", owner: "emma", date: "Sep 20", icon: Pen },
   { name: "Review step walkthrough", kind: "Video", size: "46 MB", owner: "emma", date: "Sep 18", icon: Film },
   { name: "Payments API notes", kind: "Document", size: "96 KB", owner: "marcus", date: "Sep 16", icon: FileText },
   { name: "Usability findings, round two", kind: "PDF", size: "2.1 MB", owner: "ava", date: "Sep 13", icon: FileText },
   { name: "Rollout plan", kind: "Slides", size: "4.8 MB", owner: "sofia", date: "Sep 11", icon: Presentation },
-  { name: "Conversion baseline", kind: "Spreadsheet", size: "640 KB", owner: "ava", date: "Sep 9", icon: FileSpreadsheet },
-  { name: "Empty and error states", kind: "Design file", size: "9.2 MB", owner: "emma", date: "Sep 6", icon: PenTool },
+  { name: "Conversion baseline", kind: "Spreadsheet", size: "640 KB", owner: "ava", date: "Sep 9", icon: Table },
+  { name: "Empty and error states", kind: "Design file", size: "9.2 MB", owner: "emma", date: "Sep 6", icon: Pen },
   { name: "Launch checklist", kind: "Document", size: "54 KB", owner: "sofia", date: "Sep 2", icon: FileText },
 ]
 
-const milestoneIcons = { done: CircleCheck, active: CircleDashed, planned: Circle }
+const milestoneIcons = { done: CheckCircle, active: CircleDashed, planned: Circle }
 const milestones: { name: string; note: string; state: keyof typeof milestoneIcons }[] = [
   { name: "Saved payment methods", note: "Shipped Sep 18", state: "done" },
   { name: "Single review step", note: "In progress, due Oct 1", state: "active" },
@@ -256,7 +233,7 @@ function OverflowMenu({ actions, reduce }: { actions: MenuAction[]; reduce: bool
       <MenuPrimitive.Trigger
         render={
           <Button variant="secondary" size="sm" className="w-control-sm px-0" aria-label="More actions">
-            <Ellipsis size={17} strokeWidth={1.75} aria-hidden="true" />
+            <Dots size={17} strokeWidth={1.75} aria-hidden="true" />
           </Button>
         }
       />
@@ -411,7 +388,7 @@ function IssuesPanel({
                         exit={{ opacity: 0, scale: reduce ? 1 : 0.5, transition: quick }}
                         transition={reduce ? still : motionTokens.spring.snappy}
                       >
-                        {isClosing ? <CircleCheck size={18} strokeWidth={1.75} aria-hidden="true" /> : <Circle size={18} strokeWidth={1.75} aria-hidden="true" />}
+                        {isClosing ? <CheckCircle size={18} strokeWidth={1.75} aria-hidden="true" /> : <Circle size={18} strokeWidth={1.75} aria-hidden="true" />}
                       </motion.span>
                     </AnimatePresence>
                   </button>
@@ -443,7 +420,7 @@ function IssuesPanel({
           animate={{ opacity: 1, y: 0 }}
           transition={reduce ? { duration: motionTokens.duration.instant } : motionTokens.spring.smooth}
         >
-          <CircleCheck className="mb-2 text-success" size={24} strokeWidth={1.75} aria-hidden="true" />
+          <CheckCircle className="mb-2 text-success" size={24} strokeWidth={1.75} aria-hidden="true" />
           <p className="m-0 text-base font-medium">No open issues</p>
           <span>Everything in this project is done.</span>
           <Button variant="secondary" size="sm" onClick={onReset}>
@@ -700,14 +677,14 @@ export function PageHeader() {
     ...(layout.collapsed
       ? [
           { key: "follow", label: following ? "Unfollow" : "Follow", icon: following ? <BellOff {...icon} /> : <Bell {...icon} />, onSelect: toggleFollow },
-          { key: "share", label: "Share update", icon: <Megaphone {...icon} />, onSelect: shareUpdate, disabled: archived || sharing !== "idle" },
+          { key: "share", label: "Share update", icon: <Send {...icon} />, onSelect: shareUpdate, disabled: archived || sharing !== "idle" },
         ]
       : []),
-    { key: "copy", label: "Copy link", icon: <Link2 {...icon} />, onSelect: copyLink, separatorBefore: layout.collapsed },
+    { key: "copy", label: "Copy link", icon: <Link {...icon} />, onSelect: copyLink, separatorBefore: layout.collapsed },
     {
       key: "archive",
       label: archived ? "Restore project" : "Archive project",
-      icon: archived ? <ArchiveRestore {...icon} /> : <Archive {...icon} />,
+      icon: archived ? <InboxUp {...icon} /> : <Archive {...icon} />,
       onSelect: toggleArchive,
     },
   ]
@@ -812,7 +789,7 @@ export function PageHeader() {
                 <Button variant="secondary" size="sm" onClick={toggleFollow}>
                   {following ? (
                     <>
-                      <BellRing {...icon} /> Following
+                      <BellOn {...icon} /> Following
                     </>
                   ) : (
                     <>
@@ -827,7 +804,7 @@ export function PageHeader() {
                     </>
                   ) : (
                     <>
-                      <Megaphone {...icon} /> Share update
+                      <Send {...icon} /> Share update
                     </>
                   )}
                 </Button>
@@ -878,7 +855,7 @@ export function PageHeader() {
                   Led by <strong>Emma Collins</strong>
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <CalendarDays size={14} strokeWidth={1.75} aria-hidden="true" />
+                  <Calendar size={14} strokeWidth={1.75} aria-hidden="true" />
                   Target Oct 14
                 </span>
               </div>
@@ -985,7 +962,7 @@ export function PageHeader() {
                     }
               }
             >
-              {notice.tone === "success" ? <Check {...icon} /> : notice.tone === "error" ? <CircleAlert {...icon} /> : null}
+              {notice.tone === "success" ? <Check {...icon} /> : notice.tone === "error" ? <DangerCircle {...icon} /> : null}
               <span>{notice.text}</span>
             </motion.div>
           )}

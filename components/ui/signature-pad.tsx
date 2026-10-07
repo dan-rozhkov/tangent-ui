@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore }
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion } from "motion/react"
 import type { Transition } from "motion/react"
-import { Check, Download, Eraser, Play, Redo2, Square, Undo2, X } from "lucide-react"
+import { Check, Download, Play, Redo, Square, Trash, Undo, X } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -740,10 +740,10 @@ export function SignaturePad({
         </div>
         <div className="flex items-center gap-0.5">
           <IconButton label="Undo" onClick={undo} disabled={!history.past.length || wiping}>
-            <Undo2 size={18} strokeWidth={1.75} aria-hidden="true" />
+            <Undo size={18} strokeWidth={1.75} aria-hidden="true" />
           </IconButton>
           <IconButton label="Redo" onClick={redo} disabled={!history.future.length || wiping}>
-            <Redo2 size={18} strokeWidth={1.75} aria-hidden="true" />
+            <Redo size={18} strokeWidth={1.75} aria-hidden="true" />
           </IconButton>
           <IconButton
             label={replaying ? "Stop replay" : "Replay signature"}
@@ -769,7 +769,7 @@ export function SignaturePad({
             </AnimatePresence>
           </IconButton>
           <IconButton label="Clear signature" onClick={clear} disabled={empty || wiping}>
-            <Eraser size={18} strokeWidth={1.75} aria-hidden="true" />
+            <Trash size={18} strokeWidth={1.75} aria-hidden="true" />
           </IconButton>
         </div>
       </div>

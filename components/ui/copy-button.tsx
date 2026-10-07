@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva } from "class-variance-authority"
 import { AnimatePresence, motion, type TargetAndTransition, type Transition } from "motion/react"
-import { CircleAlert, Copy } from "lucide-react"
+import { Copy, DangerCircle } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { useCopyFeedback } from "@/lib/use-copy-feedback"
@@ -201,7 +201,7 @@ export function CopyButton({
               {state === "copied" ? (
                 <DrawnCheck reduced={reduced} />
               ) : state === "error" ? (
-                <CircleAlert size={16} strokeWidth={1.75} />
+                <DangerCircle size={16} strokeWidth={1.75} />
               ) : (
                 <Copy size={16} strokeWidth={1.75} />
               )}

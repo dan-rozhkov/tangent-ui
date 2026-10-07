@@ -22,7 +22,7 @@ import {
   useTransform,
 } from "motion/react"
 import type { HTMLMotionProps, MotionProps, TargetAndTransition, Transition } from "motion/react"
-import { CircleCheck, CircleX, Info, TriangleAlert, X } from "lucide-react"
+import { CheckCircle, DangerTriangle, Info, X, XCircle } from "@mynaui/icons-react"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -123,10 +123,10 @@ const typeLabels: Record<ToastType, string> = {
   loading: "In progress",
 }
 const icons = {
-  success: CircleCheck,
+  success: CheckCircle,
   info: Info,
-  warning: TriangleAlert,
-  error: CircleX,
+  warning: DangerTriangle,
+  error: XCircle,
 }
 
 /** Every motion preset the toast reads, derived from the tokens so a live override reaches it. */

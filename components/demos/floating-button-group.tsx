@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Image as ImageIcon, Link2, MessageCircle, MousePointer2, Play, Redo2, Square, Type, Undo2, ZoomIn, ZoomOut } from "lucide-react"
+import { Image as ImageIcon, Link, Message, MousePointer, Play, Redo, SearchMinus, SearchPlus, Square, TypeText, Undo } from "@mynaui/icons-react"
 
 import { FloatingButtonGroup } from "@/components/ui/floating-button-group"
 
@@ -27,7 +27,7 @@ export default function Demo() {
           {
             id: "undo",
             label: "Undo",
-            icon: <Undo2 />,
+            icon: <Undo />,
             iconOnly: true,
             shortcut: "⌘Z",
             disabled: history.past === 0,
@@ -36,15 +36,15 @@ export default function Demo() {
           {
             id: "redo",
             label: "Redo",
-            icon: <Redo2 />,
+            icon: <Redo />,
             iconOnly: true,
             shortcut: "⇧⌘Z",
             disabled: history.future === 0,
             onSelect: () => setHistory(h => ({ past: h.past + 1, future: h.future - 1 })),
           },
           { type: "separator" },
-          { id: "comment", label: "Comment", icon: <MessageCircle />, shortcut: "C" },
-          { id: "share", label: copied ? "Copied" : "Share", reserveLabels: ["Share", "Copied"], icon: <Link2 />, onSelect: copyLink },
+          { id: "comment", label: "Comment", icon: <Message />, shortcut: "C" },
+          { id: "share", label: copied ? "Copied" : "Share", reserveLabels: ["Share", "Copied"], icon: <Link />, onSelect: copyLink },
           { type: "separator" },
           {
             id: "present",
@@ -63,13 +63,13 @@ export default function Demo() {
         size="sm"
         iconOnly
         items={[
-          { id: "select", label: "Select", icon: <MousePointer2 />, shortcut: "V" },
+          { id: "select", label: "Select", icon: <MousePointer />, shortcut: "V" },
           { id: "shape", label: "Shape", icon: <Square />, shortcut: "R" },
-          { id: "text", label: "Text", icon: <Type />, shortcut: "T" },
+          { id: "text", label: "Text", icon: <TypeText />, shortcut: "T" },
           { id: "image", label: "Image", icon: <ImageIcon /> },
           { type: "separator" },
-          { id: "zoom-in", label: "Zoom in", icon: <ZoomIn />, shortcut: "⌘+" },
-          { id: "zoom-out", label: "Zoom out", icon: <ZoomOut />, shortcut: "⌘−" },
+          { id: "zoom-in", label: "Zoom in", icon: <SearchPlus />, shortcut: "⌘+" },
+          { id: "zoom-out", label: "Zoom out", icon: <SearchMinus />, shortcut: "⌘−" },
         ]}
       />
     </div>

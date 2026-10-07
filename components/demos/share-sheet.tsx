@@ -1,6 +1,6 @@
 "use client"
 
-import { Building2, FileText, Globe, Lock, Mail, MessageSquare, Send } from "lucide-react"
+import { Building, FileText, Globe, Lock, Mail, Message, Send } from "@mynaui/icons-react"
 
 import { ShareSheet } from "@/components/ui/share-sheet"
 import { people as media } from "@/lib/media"
@@ -23,12 +23,12 @@ export default function Demo() {
           people={people}
           access={[
             { value: "invited", label: "Only invited people", description: "Only people you add can open", icon: <Lock size={16} /> },
-            { value: "org", label: "Anyone at Northwind", description: "Can view and comment", icon: <Building2 size={16} /> },
+            { value: "org", label: "Anyone at Northwind", description: "Can view and comment", icon: <Building size={16} /> },
             { value: "public", label: "Anyone with the link", description: "Can view", icon: <Globe size={16} /> },
           ]}
           defaultAccess="org"
           channels={[
-            { id: "slack", label: "Slack", doneLabel: "Posted", icon: <MessageSquare size={16} /> },
+            { id: "slack", label: "Slack", doneLabel: "Posted", icon: <Message size={16} /> },
             { id: "email", label: "Email", doneLabel: "Sent", icon: <Mail size={16} /> },
             { id: "telegram", label: "Message", doneLabel: "Sent", icon: <Send size={16} /> },
           ]}

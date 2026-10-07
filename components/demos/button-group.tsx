@@ -1,20 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import {
-  AlignCenter,
-  AlignLeft,
-  AlignRight,
-  Archive,
-  ArchiveRestore,
-  Check,
-  CopyPlus,
-  Link,
-  Minus,
-  Pin,
-  Plus,
-  Trash2,
-} from "lucide-react"
+import { AlignLeft, AlignRight, Archive, Check, Copy, InboxUp, Link, Minus, Pin, Plus, TextAlignCenter, Trash } from "@mynaui/icons-react"
 
 import { ButtonGroup } from "@/components/ui/button-group"
 
@@ -52,14 +39,14 @@ export default function Demo() {
             id: "duplicate",
             label: duplicated ? "Duplicated" : "Duplicate",
             reserve: ["Duplicate", "Duplicated"],
-            icon: duplicated ? <Check /> : <CopyPlus />,
+            icon: duplicated ? <Check /> : <Copy />,
             onSelect: flashDuplicated,
           },
           {
             id: "archive",
             label: archived ? "Restore" : "Archive",
             reserve: ["Archive", "Restore"],
-            icon: archived ? <ArchiveRestore /> : <Archive />,
+            icon: archived ? <InboxUp /> : <Archive />,
             onSelect: () => setArchived(value => !value),
           },
         ]}
@@ -67,7 +54,7 @@ export default function Demo() {
           label: "More actions",
           items: [
             { id: "pin", label: "Pin to sidebar", icon: <Pin /> },
-            { id: "delete", label: "Delete", icon: <Trash2 />, destructive: true },
+            { id: "delete", label: "Delete", icon: <Trash />, destructive: true },
           ],
         }}
       />
@@ -87,7 +74,7 @@ export default function Demo() {
           size="sm"
           items={[
             { id: "left", label: "Align left", icon: <AlignLeft />, iconOnly: true },
-            { id: "center", label: "Align center", icon: <AlignCenter />, iconOnly: true },
+            { id: "center", label: "Align center", icon: <TextAlignCenter />, iconOnly: true },
             { id: "right", label: "Align right", icon: <AlignRight />, iconOnly: true },
           ]}
         />

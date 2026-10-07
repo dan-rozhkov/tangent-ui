@@ -6,8 +6,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { KeyboardEvent, PointerEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue, Transition } from "motion/react"
-import { Bell, BellOff, ChevronRight, Headphones, Presentation, Type, Volume1, Volume2, VolumeX, X } from "lucide-react"
-import type { LucideIcon } from "lucide-react"
+import { Bell, BellOff, ChevronRight, Headphones, type Icon as IconComponent, Presentation, TypeText, VolumeHigh, VolumeLow, VolumeX, X } from "@mynaui/icons-react"
 
 import { Switch } from "@/components/ui/switch"
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
@@ -18,7 +17,7 @@ import { ReducedMotionConfig, useReducedMotion } from "@/lib/reduced-motion"
 export interface ControlCenterFocusMode {
   id: string
   label: string
-  icon: LucideIcon
+  icon: IconComponent
   description: string
   /** Seeds the session dial when this mode is picked. */
   defaultMinutes: number
@@ -183,7 +182,7 @@ const hoverFill = "outline-none focus-visible:bg-foreground/[0.06] pointer-fine:
 interface TileProps {
   label: string
   status: string
-  icon: LucideIcon
+  icon: IconComponent
   iconKey: string
   on: boolean
   wide?: boolean
@@ -649,7 +648,7 @@ function DurationDial({
 }
 
 /** The detail's header: the tile's icon on the accent disc, the title, and a close button. It rides on the surface from the first frame. */
-function DetailHead({ titleId, title, icon: Icon, onClose }: { titleId: string; title: string; icon: LucideIcon; onClose: () => void }) {
+function DetailHead({ titleId, title, icon: Icon, onClose }: { titleId: string; title: string; icon: IconComponent; onClose: () => void }) {
   return (
     <div className="flex h-[52px] flex-none items-center gap-3 pr-3 pl-3.5">
       <span className="grid size-9 flex-none place-items-center rounded-full bg-accent text-accent-foreground [&_svg]:size-[18px]">
@@ -1226,7 +1225,7 @@ export function ControlCenter({
               max={100}
               step={1}
               defaultValue={initialVolume}
-              icon={value => (value === 0 ? <VolumeX /> : value < 34 ? <Volume1 /> : <Volume2 />)}
+              icon={value => (value === 0 ? <VolumeX /> : value < 34 ? <VolumeLow /> : <VolumeHigh />)}
               onChange={value => {
                 levels.current.volume = value
                 emit()
@@ -1239,7 +1238,7 @@ export function ControlCenter({
               max={130}
               step={5}
               defaultValue={initialTextSize}
-              icon={() => <Type />}
+              icon={() => <TypeText />}
               preview={value => (
                 <span className="grid h-[18px] w-[26px] flex-none place-items-center overflow-visible" aria-hidden="true">
                   <span className="leading-none font-medium" style={{ fontSize: `${(15 * value) / 100}px` }}>

@@ -4,23 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } fr
 import type { CSSProperties, ReactNode } from "react"
 import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
-import {
-  ArrowRight,
-  ArrowUpRight,
-  BarChart3,
-  BookOpen,
-  Check,
-  ChevronsUpDown,
-  Database,
-  Gauge,
-  LineChart as LineIcon,
-  Minus,
-  Search,
-  Settings,
-  Sparkles,
-  Split,
-  Users,
-} from "lucide-react"
+import { Activity, ArrowRight, ArrowUpRight, BookOpen, ChartBar, ChartLine, Check, ChevronsUpDown, Cog, Database, GitBranch, Minus, Search, Sparkles, Users } from "@mynaui/icons-react"
 
 import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -730,10 +714,10 @@ const LUMEN_MESH: HeroMeshPoint[] = [
 ]
 
 const NAV = [
-  { label: "Overview", icon: Gauge, active: true },
-  { label: "Revenue", icon: LineIcon },
+  { label: "Overview", icon: Activity, active: true },
+  { label: "Revenue", icon: ChartLine },
   { label: "Customers", icon: Users },
-  { label: "Cohorts", icon: BarChart3 },
+  { label: "Cohorts", icon: ChartBar },
   { label: "Forecasts", icon: Sparkles },
   { label: "Reports", icon: BookOpen },
 ]
@@ -931,7 +915,7 @@ function LumenDashboard({ narrow }: { narrow: boolean }) {
                 <strong className="font-medium">Chloe Nguyen</strong>
                 <small className="text-xs text-text-muted">Data analyst</small>
               </span>
-              <Settings size={15} strokeWidth={1.75} className="text-text-muted" />
+              <Cog size={15} strokeWidth={1.75} className="text-text-muted" />
             </div>
           </aside>
         )}
@@ -1295,7 +1279,7 @@ export function HeroRelay({
                 <RelayNode
                   box={layout.nodes.branch}
                   status={status("branch")}
-                  icon={<Split size={17} strokeWidth={1.75} className={glyph} aria-hidden="true" />}
+                  icon={<GitBranch size={17} strokeWidth={1.75} className={glyph} aria-hidden="true" />}
                   title="Amount over $1,000"
                   sub={status("branch") === "done" ? (event.routed ? "Yes, alert the team" : "No, record only") : "Condition"}
                   meta={`${event.ms.branch} ms`}

@@ -1,7 +1,7 @@
 "use client"
 
 import { useLayoutEffect, useRef, useState } from "react"
-import { ChevronLeft as NavArrowLeft, ChevronRight as NavArrowRight } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "@mynaui/icons-react"
 import { AnimatePresence, animate, motion, useMotionValue, type Variants } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
@@ -99,7 +99,7 @@ export function Pagination({ page, pageCount, onPageChange, label = "Pagination"
   return (
     <nav ref={navRef} className={nav} aria-label={label}>
       <button type="button" className={cn(button, step)} onClick={() => onPageChange(currentPage - 1)} disabled={currentPage <= 1} aria-label="Previous page">
-        <NavArrowLeft width={16} height={16} aria-hidden="true" />
+        <ChevronLeft width={16} height={16} aria-hidden="true" />
       </button>
       <motion.span
         aria-hidden="true"
@@ -133,7 +133,7 @@ export function Pagination({ page, pageCount, onPageChange, label = "Pagination"
         ))}
       </AnimatePresence>
       <button type="button" className={cn(button, step)} onClick={() => onPageChange(currentPage + 1)} disabled={currentPage >= safePageCount} aria-label="Next page">
-        <NavArrowRight width={16} height={16} aria-hidden="true" />
+        <ChevronRight width={16} height={16} aria-hidden="true" />
       </button>
     </nav>
   )

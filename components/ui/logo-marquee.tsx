@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useId, useRef, useState } from "react"
-import { Pause, Play } from "lucide-react"
+import { Pause, Play } from "@mynaui/icons-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"

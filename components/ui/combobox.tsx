@@ -1,7 +1,7 @@
 "use client"
 
 import { animate, AnimatePresence, motion } from "motion/react"
-import { Check, ChevronDown, Search, X } from "lucide-react"
+import { Check, ChevronDown, Search, X } from "@mynaui/icons-react"
 import { forwardRef, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from "react"
 import type { InputHTMLAttributes, KeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode } from "react"
 import { motionTokens } from "@/lib/motion-tokens"

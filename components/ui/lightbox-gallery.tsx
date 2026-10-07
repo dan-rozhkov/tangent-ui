@@ -6,7 +6,7 @@ import Image from "next/image"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import { animate, motion, useMotionValue, useMotionValueEvent, useTransform } from "motion/react"
 import type { MotionValue } from "motion/react"
-import { ChevronLeft, ChevronRight, X, ZoomIn, ZoomOut } from "lucide-react"
+import { ChevronLeft, ChevronRight, SearchMinus, SearchPlus, X } from "@mynaui/icons-react"
 
 import { motionTokens as presets } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
@@ -737,7 +737,7 @@ function Viewer({
               className={iconButton}
               onClick={() => zoomTo(zoomed ? 1 : fillZoom())}
             >
-              {zoomed ? <ZoomOut size={20} strokeWidth={1.75} aria-hidden="true" /> : <ZoomIn size={20} strokeWidth={1.75} aria-hidden="true" />}
+              {zoomed ? <SearchMinus size={20} strokeWidth={1.75} aria-hidden="true" /> : <SearchPlus size={20} strokeWidth={1.75} aria-hidden="true" />}
             </button>
             <button type="button" aria-label="Close viewer" data-lightbox-close="" className={iconButton} onClick={() => close()}>
               <X size={20} strokeWidth={1.75} aria-hidden="true" />

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import type { ReactNode } from "react"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight } from "@mynaui/icons-react"
 
 import { Avatar } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"

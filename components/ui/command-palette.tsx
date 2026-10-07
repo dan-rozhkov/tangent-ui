@@ -4,7 +4,7 @@ import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "re
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react"
 import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { Transition, ValueAnimationTransition, Variants } from "motion/react"
-import { Command as CommandIcon, Search, X } from "lucide-react"
+import { Command, Search, X } from "@mynaui/icons-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
@@ -358,7 +358,7 @@ export function CommandPalette({
                                 )}
                                 aria-hidden="true"
                               >
-                                {item.icon ?? <CommandIcon width={16} height={16} />}
+                                {item.icon ?? <Command width={16} height={16} />}
                               </span>
                               <span className="flex min-w-0 flex-1 items-baseline gap-2">
                                 <strong className="block max-w-full flex-none truncate text-(length:--text-sm) font-medium">{item.label}</strong>

@@ -1,35 +1,35 @@
 "use client"
 
 import { useState } from "react"
-import { Briefcase, Heart, House, IdCard, Lightbulb, LogOut, NotebookTabs, Paintbrush, Search, SlidersHorizontal, Sparkles, User, UserPlus } from "lucide-react"
+import { Book, Briefcase, Filter, Heart, Home, Logout, Paint, Search, Sparkles, User, UserCircle, UserPlus } from "@mynaui/icons-react"
 
 import { ToolbarMenu, type ToolbarMenuItem } from "@/components/ui/toolbar-menu"
 
 const items: ToolbarMenuItem[] = [
-  { id: "home", label: "Home", icon: <House /> },
+  { id: "home", label: "Home", icon: <Home /> },
   { id: "discover", label: "Discover", icon: <Search /> },
   { id: "favorites", label: "Favorites", icon: <Heart /> },
   {
     id: "notebooks",
     label: "Notebooks",
-    icon: <NotebookTabs />,
+    icon: <Book />,
     items: [
       { id: "personal", label: "Personal", icon: <User /> },
       { id: "work", label: "Work", icon: <Briefcase /> },
-      { id: "ideas", label: "Ideas", icon: <Lightbulb /> },
+      { id: "ideas", label: "Ideas", icon: <Sparkles /> },
     ],
   },
   {
     id: "settings",
     label: "Settings",
-    icon: <SlidersHorizontal />,
+    icon: <Filter />,
     inBar: false,
     items: [
-      { id: "profile", label: "Profile", icon: <IdCard /> },
-      { id: "appearance", label: "Appearance", icon: <Paintbrush /> },
+      { id: "profile", label: "Profile", icon: <UserCircle /> },
+      { id: "appearance", label: "Appearance", icon: <Paint /> },
       { id: "upgrade", label: "Upgrade", icon: <Sparkles /> },
       { id: "invite", label: "Invite a friend", icon: <UserPlus /> },
-      { id: "sign-out", label: "Sign out", icon: <LogOut /> },
+      { id: "sign-out", label: "Sign out", icon: <Logout /> },
     ],
   },
 ]

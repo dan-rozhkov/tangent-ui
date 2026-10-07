@@ -13,7 +13,7 @@ import {
   type Transition,
   type Variants,
 } from "motion/react"
-import { Bell, Check, CheckCheck, CircleCheck, CircleDot, MessageCircle, TriangleAlert, X } from "lucide-react"
+import { Bell, Check, CheckCircle, DangerTriangle, Message, Record, X } from "@mynaui/icons-react"
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
 
 import { Avatar } from "@/components/ui/avatar"
@@ -195,11 +195,11 @@ function NotificationVisual({ item }: { item: NotificationItem }) {
       aria-hidden="true"
     >
       {item.tone === "warning" ? (
-        <TriangleAlert size={18} strokeWidth={1.7} />
+        <DangerTriangle size={18} strokeWidth={1.7} />
       ) : item.tone === "success" ? (
-        <CircleCheck size={18} strokeWidth={1.7} />
+        <CheckCircle size={18} strokeWidth={1.7} />
       ) : (
-        <MessageCircle size={18} strokeWidth={1.7} />
+        <Message size={18} strokeWidth={1.7} />
       )}
     </span>
   )
@@ -390,7 +390,7 @@ export function NotificationCenter({
                     exit={reduce ? fadeOut : { opacity: 0, filter: `blur(${motionTokens.blur.subtle}px)`, transition: exitFast }}
                     transition={reduce ? instant : enter}
                   >
-                    <CheckCheck size={15} strokeWidth={1.75} aria-hidden="true" />
+                    <Check size={15} strokeWidth={1.75} aria-hidden="true" />
                     <span>Mark all read</span>
                   </motion.button>
                 )}
@@ -524,7 +524,7 @@ export function NotificationCenter({
                                           transition={reduce ? instant : motionTokens.spring.snappy}
                                         >
                                           {item.read ? (
-                                            <CircleDot size={14} strokeWidth={1.75} aria-hidden="true" />
+                                            <Record size={14} strokeWidth={1.75} aria-hidden="true" />
                                           ) : (
                                             <Check size={14} strokeWidth={1.75} aria-hidden="true" />
                                           )}
@@ -569,7 +569,7 @@ export function NotificationCenter({
                       animate={{ y: 0 }}
                       transition={reduce ? instant : { ...enter, delay: motionTokens.duration.fast }}
                     >
-                      <CircleCheck className="mb-[13px] text-text-muted" size={24} strokeWidth={1.5} aria-hidden="true" />
+                      <CheckCircle className="mb-[13px] text-text-muted" size={24} strokeWidth={1.5} aria-hidden="true" />
                       <strong className="text-(length:--text-sm) font-medium">
                         <SwapText reduce={reduce}>{view === "unread" ? "Nothing unread" : "All clear"}</SwapText>
                       </strong>
