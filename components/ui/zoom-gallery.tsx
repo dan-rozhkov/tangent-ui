@@ -12,6 +12,7 @@ import { motionTokens as presets } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
+import { clamp, pointerVelocity, rubberBand, type Sample } from "@/lib/gesture"
 
 export interface ZoomShot {
   src: string
@@ -67,9 +68,8 @@ const outCubic = [0.33, 1, 0.68, 1] as [number, number, number, number]
 /** Grid and placeholder share one sizes string, so the viewer's placeholder is the grid file the browser already has. */
 const GRID_SIZES = "(min-width: 900px) 260px, (min-width: 600px) 34vw, 50vw"
 
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
-/** Past an edge, travel approaches `limit` px instead of following the pointer. */
-const rubber = (distance: number, limit = 120) => (1 - 1 / ((distance * 0.55) / limit + 1)) * limit
+/** Past an edge, the track stretches toward this many px instead of following the pointer. */
+const EDGE_STRETCH = 120
 const fade = { duration: 0.1, ease: [...presets.ease.standard] as [number, number, number, number] }
 
 const nameOf = (image: ZoomShot) => image.name ?? image.alt
@@ -231,17 +231,8 @@ interface Rect {
 }
 
 type Gesture =
-  | { kind: "pending" | "swipe" | "dismiss" | "pan"; id: number; x: number; y: number; track: number; px: number; py: number; samples: { x: number; y: number; t: number }[] }
+  | { kind: "pending" | "swipe" | "dismiss" | "pan"; id: number; x: number; y: number; track: number; px: number; py: number; samples: Sample[] }
   | { kind: "pinch"; distance: number; mid: { x: number; y: number }; zoom: number; px: number; py: number }
-
-function velocityOf(samples: { x: number; y: number; t: number }[], now: number) {
-  const recent = samples.filter(sample => now - sample.t <= 100)
-  const first = recent[0]
-  const last = recent[recent.length - 1]
-  if (!first || !last || first === last || now - last.t > 60) return { x: 0, y: 0 }
-  const seconds = Math.max(0.008, (last.t - first.t) / 1000)
-  return { x: (last.x - first.x) / seconds, y: (last.y - first.y) / seconds }
-}
 
 function Viewer({
   shots,
@@ -592,7 +583,7 @@ function Viewer({
       const distance = Math.hypot(a.x - b.x, a.y - b.y)
       const raw = (state.zoom * distance) / state.distance
       // Past either limit the pinch resists, then settles back on release.
-      const next = raw < 1 ? 1 - rubber(1 - raw, 0.3) : raw > MAX_ZOOM ? MAX_ZOOM + rubber(raw - MAX_ZOOM, 0.6) : raw
+      const next = raw < 1 ? 1 - rubberBand(1 - raw, 0.3) : raw > MAX_ZOOM ? MAX_ZOOM + rubberBand(raw - MAX_ZOOM, 0.6) : raw
       const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }
       const cx = fit.x + fit.w / 2
       const cy = fit.y + fit.h / 2
@@ -621,13 +612,13 @@ function Viewer({
       const rest = -at * step
       let next = state.track + deltaX
       // Past the first or last photo the track stretches like rubber.
-      if (next > 0) next = rubber(next)
-      if (next < -(count - 1) * step) next = -(count - 1) * step - rubber(-(count - 1) * step - next)
+      if (next > 0) next = rubberBand(next, EDGE_STRETCH)
+      if (next < -(count - 1) * step) next = -(count - 1) * step - rubberBand(-(count - 1) * step - next, EDGE_STRETCH)
       track.set(Number.isFinite(next) ? next : rest)
       return
     }
     if (state.kind === "dismiss") {
-      const down = deltaY >= 0 ? deltaY : -rubber(-deltaY, 60)
+      const down = deltaY >= 0 ? deltaY : -rubberBand(-deltaY, 60)
       dy.set(down)
       dx.set(deltaX)
       // Scale (in `shrink`), veil and chrome are straight lines in the distance, the chrome going first.
@@ -639,7 +630,7 @@ function Viewer({
     // Pan: free inside the bounds, rubber beyond them.
     const bounds = panBounds(z.get())
     const bend = (value: number, [low, high]: Range) =>
-      value > high ? high + rubber(value - high, 80) : value < low ? low - rubber(low - value, 80) : value
+      value > high ? high + rubberBand(value - high, 80) : value < low ? low - rubberBand(low - value, 80) : value
     px.set(bend(state.px + deltaX, bounds.x))
     py.set(bend(state.py + deltaY, bounds.y))
   }
@@ -657,7 +648,7 @@ function Viewer({
     }
     if (event.pointerId !== state.id) return
     gesture.current = null
-    const velocity = velocityOf(state.samples, event.timeStamp)
+    const velocity = pointerVelocity(state.samples, event.timeStamp, { window: 100 })
     const { index: at, pitch: step, reduced: still } = stateRef.current
     const spring = (velocityValue: number) => (still ? { duration: 0 } : { ...motionTokens.spring.smooth, velocity: velocityValue })
 

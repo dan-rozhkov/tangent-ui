@@ -23,6 +23,7 @@ import { DotsThreeIcon } from "@phosphor-icons/react"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
+import { clampUnit, axisVelocity, resistPast } from "@/lib/gesture"
 
 export interface SwipeAction {
   label: string
@@ -71,7 +72,7 @@ type Drag = {
   startY: number
   origin: number
   locked: "x" | "y" | null
-  samples: [number, number][]
+  samples: { t: number; x: number }[]
 }
 
 /* The surface clips every row, so revealed actions never spill past its rounded corners. It hides once the last row has left.
@@ -152,9 +153,6 @@ const DIVIDER_FADE = SLOP
 const PROJECTION = 0.1
 /** Release speed in px/s that counts as a flick. */
 const FLICK = 900
-const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
-/** Past its last stop the row still follows, but every pixel costs more, like pulling against elastic. */
-const rubberBand = (overshoot: number, dimension: number) => (1 - 1 / ((overshoot * 0.55) / dimension + 1)) * dimension
 const sideOf = (value: number): Side | null => (value > 0 ? "leading" : value < 0 ? "trailing" : null)
 
 const GroupContext = createContext<Group>({
@@ -200,11 +198,10 @@ export function SwipeActions({ label, children, className }: SwipeActionsProps) 
   )
 }
 
-function velocityOf(samples: [number, number][]) {
+/** The release speed measured up to the last sample: nothing to go stale, since the release is the last move. */
+function velocityOf(samples: Drag["samples"]) {
   const last = samples[samples.length - 1]
-  const first = samples.find((sample) => last[0] - sample[0] <= 80) ?? last
-  const elapsed = (last[0] - first[0]) / 1000
-  return elapsed > 0 ? (last[1] - first[1]) / elapsed : 0
+  return last ? axisVelocity(samples, last.t, (sample) => sample.x, { stale: Infinity }) : 0
 }
 
 export function SwipeActionsRow({
@@ -224,10 +221,10 @@ export function SwipeActionsRow({
   const x = useMotionValue(0)
   const cover = useMotionValue(0)
   // Only the edge facing the revealed actions rounds off, growing with the distance travelled.
-  const radiusTrailing = useTransform(x, (value) => `calc(var(--radius-panel) * ${clamp01(-value / RADIUS_TRAVEL)})`)
-  const radiusLeading = useTransform(x, (value) => `calc(var(--radius-panel) * ${clamp01(value / RADIUS_TRAVEL)})`)
+  const radiusTrailing = useTransform(x, (value) => `calc(var(--radius-panel) * ${clampUnit(-value / RADIUS_TRAVEL)})`)
+  const radiusLeading = useTransform(x, (value) => `calc(var(--radius-panel) * ${clampUnit(value / RADIUS_TRAVEL)})`)
   // The divider would poke past the rounded corner, so it fades as soon as the row leaves home.
-  const dividerOpacity = useTransform(x, (value) => 1 - clamp01(Math.abs(value) / DIVIDER_FADE))
+  const dividerOpacity = useTransform(x, (value) => 1 - clampUnit(Math.abs(value) / DIVIDER_FADE))
   const [covering, setCovering] = useState<{
     side: Side
     index: number
@@ -346,8 +343,8 @@ export function SwipeActionsRow({
     if (!side) return 0
     const dimension = width.current || 320
     const limit = actionsOf(side).length === 0 ? 0 : canCommit(side) ? dimension : openWidth(side)
-    const distance = Math.abs(raw)
-    return Math.sign(raw) * (distance <= limit ? distance : limit + rubberBand(distance - limit, dimension))
+    // Past its last stop the row still follows, but every pixel costs more, like pulling against elastic.
+    return resistPast(raw, limit, dimension)
   }
 
   function release(velocity: number) {
@@ -383,7 +380,7 @@ export function SwipeActionsRow({
       startY: event.clientY,
       origin: x.get(),
       locked: null,
-      samples: [[event.timeStamp, event.clientX]],
+      samples: [{ t: event.timeStamp, x: event.clientX }],
     }
   }
 
@@ -407,7 +404,7 @@ export function SwipeActionsRow({
     }
     const value = constrain(current.origin + event.clientX - current.startX)
     x.set(value)
-    current.samples.push([event.timeStamp, event.clientX])
+    current.samples.push({ t: event.timeStamp, x: event.clientX })
     if (current.samples.length > 12) current.samples.shift()
     arm(value, current.type)
   }
@@ -419,7 +416,7 @@ export function SwipeActionsRow({
     if (current.locked === "x") {
       swallowClick.current = true
       if (rowRef.current) delete rowRef.current.dataset.dragging
-      current.samples.push([event.timeStamp, event.clientX])
+      current.samples.push({ t: event.timeStamp, x: event.clientX })
       release(event.type === "pointercancel" ? 0 : velocityOf(current.samples))
       return
     }
@@ -671,12 +668,12 @@ function ActionLayer({ action, side, rank, count, coverRank, x, cover, onPress }
     ([share, progress]: number[]) => -direction * (covers ? share / 2 + progress * (ACTION / 2 - share / 2) : share / 2)
   )
   const iconReveal = useTransform([pillW, cover], ([width, progress]: number[]) => {
-    const own = clamp01((width - ICON_FROM) / ICON_SPAN)
+    const own = clampUnit((width - ICON_FROM) / ICON_SPAN)
     if (covers) return Math.max(own, progress)
     return coverRank === null ? own : own * (1 - progress)
   })
   const labelReveal = useTransform([slot, cover], ([share, progress]: number[]) => {
-    const own = clamp01((share - ACTION * 0.72) / (ACTION * 0.24))
+    const own = clampUnit((share - ACTION * 0.72) / (ACTION * 0.24))
     if (covers) return Math.max(own, progress)
     return coverRank === null ? own : own * (1 - progress)
   })

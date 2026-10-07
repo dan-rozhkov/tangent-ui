@@ -8,6 +8,7 @@ import type { MotionValue, Transition } from "motion/react"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
+import { axisVelocity, clamp, rubberBand } from "@/lib/gesture"
 
 export interface DepthRailItem {
   id: string
@@ -91,18 +92,8 @@ const CAPTION_SHIFT = 18
 const TICK = 16
 const THUMB = 12
 
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
-
 /** iOS reciprocal resistance: the first pixels follow almost 1:1, and the band tends to `limit` however far you pull. */
-const band = (overshoot: number, limit: number) => (limit * overshoot * RUBBER) / (overshoot * RUBBER + limit)
-
-function velocityOf(samples: { t: number; x: number }[], now: number) {
-  const recent = samples.filter((sample) => now - sample.t <= 90)
-  const first = recent[0]
-  const last = recent[recent.length - 1]
-  if (!first || !last || first === last || now - last.t > 70) return 0
-  return (last.x - first.x) / ((last.t - first.t) / 1000)
-}
+const band = (overshoot: number, limit: number) => rubberBand(overshoot, limit, RUBBER)
 
 /** Sideways spacings in px for a card width and stage width. Narrow stages squeeze every step by the same share. */
 function steps(w: number, stage: number) {
@@ -413,7 +404,7 @@ export function DepthRail<T extends DepthRailItem>({
       if (Math.abs(dx) > REDUCED_STEP) go(state.from - Math.sign(dx))
       return
     }
-    const velocity = velocityOf(state.samples, event.timeStamp)
+    const velocity = axisVelocity(state.samples, event.timeStamp, (sample) => sample.x, { window: 90, stale: 70 })
     const unit = -velocity / pitch()
     let next = Math.round(pos.get() + unit * PROJECTION)
     // A quick flick always moves at least one card, even when it would round back.
@@ -479,10 +470,8 @@ export function DepthRail<T extends DepthRailItem>({
         interacting.current = false
         if (reduced) return
         // Settle on the card the swipe's momentum reaches.
-        const recent = samples.filter((sample) => samples[samples.length - 1].t - sample.t <= 100)
-        const first = recent[0]
-        const end = recent[recent.length - 1]
-        const velocity = first && end && end.t > first.t ? (end.x - first.x) / ((end.t - first.t) / 1000) : 0
+        const newest = samples[samples.length - 1]
+        const velocity = newest ? axisVelocity(samples, newest.t, (sample) => sample.x, { window: 100, stale: Infinity }) : 0
         goRef.current(Math.round(pos.get() + velocity * PROJECTION), velocity)
       }, WHEEL_IDLE)
     }

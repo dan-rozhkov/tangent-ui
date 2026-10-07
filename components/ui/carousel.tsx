@@ -8,6 +8,7 @@ import { CaretLeftIcon, CaretRightIcon, PauseIcon, PlayIcon } from "@phosphor-ic
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";
+import { axisVelocity, clamp, rubberBand, unRubberBand } from "@/lib/gesture";
 
 /**
  * A row of slides people browse by dragging, flicking, a trackpad swipe, the arrow keys, or the controls below it. Use it for a short,
@@ -35,7 +36,7 @@ export interface CarouselProps {
   className?: string;
 }
 
-type Drag = { pointer: number; startX: number; startY: number; origin: number; from: number; locked: "x" | "y" | null; caught: boolean; samples: [number, number][] };
+type Drag = { pointer: number; startX: number; startY: number; origin: number; from: number; locked: "x" | "y" | null; caught: boolean; samples: { t: number; x: number }[] };
 
 /** Movement before a press is read as a drag or handed to the page as a vertical scroll. */
 const SLOP = 6;
@@ -45,12 +46,8 @@ const FLICK = 360;
 const DOT = 6, PILL = 22;
 /** Scale and opacity of a slide one full step from the center. */
 const SCALE = .9, DIM = .5;
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 /** Momentum projection with a paging deceleration rate: where a flick would come to rest. */
 const project = (velocity: number, rate = .995) => velocity / 1000 * rate / (1 - rate);
-/** Past an edge every pixel costs more, like pulling against elastic. */
-const rubber = (overshoot: number, dimension: number) => overshoot * dimension * .55 / (dimension + .55 * overshoot);
-const unrubber = (distance: number, dimension: number) => distance * dimension / (.55 * Math.max(1, dimension - distance));
 const defaultSlideLabel = (index: number, count: number) => `${index + 1} of ${count}`;
 const subscribeNothing = () => () => {};
 
@@ -65,11 +62,8 @@ function iconMotion(motionTokens: MotionTokens) {
 }
 const iconRest: TargetAndTransition = { opacity: 1, scale: 1, filter: "blur(0px)" };
 
-function velocityOf(samples: [number, number][], now: number) {
-  const recent = samples.filter(([time]) => now - time <= 90);
-  if (recent.length < 2 || now - recent[recent.length - 1][0] > 50) return 0;
-  const [firstTime, firstX] = recent[0], [lastTime, lastX] = recent[recent.length - 1];
-  return lastTime > firstTime ? (lastX - firstX) / ((lastTime - firstTime) / 1000) : 0;
+function velocityOf(samples: Drag["samples"], now: number) {
+  return axisVelocity(samples, now, sample => sample.x, { window: 90, stale: 50 });
 }
 
 export function Carousel({ label, children, index: controlledIndex, defaultIndex = 0, onIndexChange, slideSize = "min(80cqw, 340px)", slideLabel = defaultSlideLabel, interval, autoplay = false, className }: CarouselProps) {
@@ -112,11 +106,11 @@ export function Carousel({ label, children, index: controlledIndex, defaultIndex
   const bounds = () => ({ min: -last * metrics.current.step, max: 0 });
   const band = (raw: number) => {
     const { min, max } = bounds(), size = metrics.current.width || 1;
-    return raw > max ? max + rubber(raw - max, size) : raw < min ? min - rubber(min - raw, size) : raw;
+    return raw > max ? max + rubberBand(raw - max, size) : raw < min ? min - rubberBand(min - raw, size) : raw;
   };
   const unband = (shown: number) => {
     const { min, max } = bounds(), size = metrics.current.width || 1;
-    return shown > max ? max + unrubber(shown - max, size) : shown < min ? min - unrubber(min - shown, size) : shown;
+    return shown > max ? max + unRubberBand(shown - max, size) : shown < min ? min - unRubberBand(min - shown, size) : shown;
   };
 
   /** Springs the track to a slide from wherever it is, carrying any velocity it already has. */
@@ -246,7 +240,7 @@ export function Carousel({ label, children, index: controlledIndex, defaultIndex
     }
     if (current.locked !== "x") return;
     x.set(band(current.origin + event.clientX - current.startX));
-    current.samples.push([event.timeStamp, event.clientX]);
+    current.samples.push({ t: event.timeStamp, x: event.clientX });
     if (current.samples.length > 16) current.samples.shift();
   }
 

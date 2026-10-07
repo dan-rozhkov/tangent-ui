@@ -8,6 +8,7 @@ import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react"
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";
+import { axisVelocity, clamp, rubberBand } from "@/lib/gesture";
 
 /** One pane of a `ResizablePanels` group. It only carries configuration; the group renders it. */
 export interface ResizablePanelProps {
@@ -44,7 +45,7 @@ export interface ResizablePanelsProps {
 }
 
 type Mode = "open" | "before" | "after";
-type Drag = { handle: number; pointer: number; startX: number; a0: number; b0: number; pair: number; lo: number; hi: number; mode: Mode; startMode: Mode; moved: boolean; catching: boolean; samples: [number, number][] };
+type Drag = { handle: number; pointer: number; startX: number; a0: number; b0: number; pair: number; lo: number; hi: number; mode: Mode; startMode: Mode; moved: boolean; catching: boolean; samples: { t: number; x: number }[] };
 
 /* Panes share the width through flex-grow factors, so the layout is right on the server and stays proportional as the group resizes.
    The group is a size container, so each pane's floor can scale with the group when it is too narrow for every minimum (see --panel-min).
@@ -70,9 +71,8 @@ const DEFAULT_MIN = 80;
 const STRETCH = 44;
 /** Keyboard steps in px; Shift takes the larger one. */
 const STEP = 16, BIG_STEP = 64;
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 /** Past a limit every pixel costs more, like pulling against elastic. */
-const rubber = (overshoot: number) => overshoot * STRETCH * .55 / (STRETCH + .55 * overshoot);
+const rubber = (overshoot: number) => rubberBand(overshoot, STRETCH);
 const band = (value: number, lo: number, hi: number) => value < lo ? lo - rubber(lo - value) : value > hi ? hi + rubber(value - hi) : value;
 /** A collapsible pane snaps closed once the pointer is this far below its minimum. */
 const collapseAt = (min: number) => min - Math.max(min * .5, 40);
@@ -85,11 +85,8 @@ const tabRest: TargetAndTransition = { opacity: 1, scale: 1, filter: "blur(0px)"
 const tabOut: TargetAndTransition = { ...tabIn, transition: { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] } };
 const tabEnter = { ...motionTokens.spring.snappy, opacity: { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.enter] }, filter: { duration: motionTokens.duration.fast, ease: [...motionTokens.ease.enter] } } as const;
 
-function velocityOf(samples: [number, number][], now: number) {
-  const recent = samples.filter(([time]) => now - time <= 90);
-  if (recent.length < 2 || now - recent[recent.length - 1][0] > 50) return 0;
-  const [firstTime, firstX] = recent[0], [lastTime, lastX] = recent[recent.length - 1];
-  return lastTime > firstTime ? (lastX - firstX) / ((lastTime - firstTime) / 1000) : 0;
+function velocityOf(samples: Drag["samples"], now: number) {
+  return axisVelocity(samples, now, sample => sample.x, { window: 90, stale: 50 });
 }
 
 /** Carries a pane's configuration into `ResizablePanels`. Rendered on its own it shows its children unchanged. */
@@ -226,7 +223,7 @@ export function ResizablePanels({ label, children, onLayoutChange, className }: 
     const { pair, lo, hi } = limits(handle, values[handle], values[handle + 1]);
     event.currentTarget.setPointerCapture(event.pointerId);
     const mode = modeOf(handle);
-    drag.current = { handle, pointer: event.pointerId, startX: event.clientX, a0: values[handle], b0: values[handle + 1], pair, lo, hi, mode, startMode: mode, moved: false, catching: false, samples: [[event.timeStamp, event.clientX]] };
+    drag.current = { handle, pointer: event.pointerId, startX: event.clientX, a0: values[handle], b0: values[handle + 1], pair, lo, hi, mode, startMode: mode, moved: false, catching: false, samples: [{ t: event.timeStamp, x: event.clientX }] };
   }
 
   function onPointerMove(event: ReactPointerEvent<HTMLDivElement>) {
@@ -237,7 +234,7 @@ export function ResizablePanels({ label, children, onLayoutChange, className }: 
     const next = resolve(current.handle, current.a0 + dx, current.pair, current.lo, current.hi);
     if (next.mode !== current.mode) { current.mode = next.mode; current.catching = true; }
     moveBoundary(current, next.size);
-    current.samples.push([event.timeStamp, event.clientX]);
+    current.samples.push({ t: event.timeStamp, x: event.clientX });
     if (current.samples.length > 16) current.samples.shift();
   }
 

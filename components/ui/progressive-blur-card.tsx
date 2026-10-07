@@ -19,6 +19,7 @@ import { CheckIcon, StarIcon } from "@phosphor-icons/react"
 
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { useReducedMotion } from "@/lib/reduced-motion"
+import { clamp, pointerVelocity, resistPast, throwSpring, unresistPast, type Sample } from "@/lib/gesture"
 import { cn } from "@/lib/utils"
 
 type Bezier = [number, number, number, number]
@@ -501,46 +502,10 @@ const TAP_SLOP = 4
 const FREE_Y = 48
 const STRETCH_Y = 140
 
-const resistY = (raw: number) => {
-  const distance = Math.abs(raw)
-  return distance <= FREE_Y
-    ? raw
-    : Math.sign(raw) *
-        (FREE_Y +
-          (1 - 1 / (((distance - FREE_Y) * 0.55) / STRETCH_Y + 1)) * STRETCH_Y)
-}
-const unresistY = (shown: number) => {
-  const distance = Math.abs(shown)
-  if (distance <= FREE_Y) return shown
-  const stretch = Math.min(distance - FREE_Y, STRETCH_Y - 1)
-  return (
-    Math.sign(shown) *
-    (FREE_Y + ((1 / (1 - stretch / STRETCH_Y) - 1) * STRETCH_Y) / 0.55)
-  )
-}
-const clamp = (value: number, min: number, max: number) =>
-  Math.min(max, Math.max(min, value))
+const resistY = (raw: number) => resistPast(raw, FREE_Y, STRETCH_Y)
+const unresistY = (shown: number) => unresistPast(shown, FREE_Y, STRETCH_Y)
 
 const dimFor = (slot: number) => Math.min(0.34, 0.14 + slot * 0.06)
-
-interface Sample {
-  t: number
-  x: number
-  y: number
-}
-
-function velocityOf(samples: Sample[], now: number) {
-  const recent = samples.filter((sample) => now - sample.t <= 80)
-  const first = recent[0]
-  const last = recent[recent.length - 1]
-  if (!first || !last || first === last || now - last.t > 60)
-    return { x: 0, y: 0 }
-  const seconds = Math.max(0.008, (last.t - first.t) / 1000)
-  return {
-    x: (last.x - first.x) / seconds,
-    y: (last.y - first.y) / seconds,
-  }
-}
 
 interface StackSlotProps {
   item: ProgressiveBlurCardStackItem
@@ -785,7 +750,7 @@ function StackSlot({
     }, 80)
     const velocity = cancelled
       ? { x: 0, y: 0 }
-      : velocityOf(state.samples, event.timeStamp)
+      : pointerVelocity(state.samples, event.timeStamp)
     const offset = x.get()
     const direction = Math.sign(offset)
     const flick =
@@ -856,7 +821,7 @@ function StackSlot({
       return
     }
     const reach = width + (count - 1) * STEP + 60
-    const exit = { type: "spring", visualDuration: 0.5, bounce: 0 } as const
+    const exit = throwSpring
     const fromY = y.get()
     const throwY = y.getVelocity()
     const outX = animate(x, direction * reach, { ...exit, velocity: velocity.x })

@@ -23,6 +23,7 @@ import { XIcon } from "@phosphor-icons/react"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
+import { axisVelocity, clamp, rubberBand, unRubberBand } from "@/lib/gesture"
 
 /**
  * A sheet that rises from the bottom edge and rests at one or more heights (detents).
@@ -96,20 +97,6 @@ const FLICK = 320
 const STRETCH = 120
 /** How much of the full dim remains at the smallest detent. */
 const LOW_DIM = 0.78
-
-/** iOS-style resistance: follows the finger at first, then approaches STRETCH. */
-const rubber = (distance: number) => (1 - 1 / ((distance * 0.55) / STRETCH + 1)) * STRETCH
-const unrubber = (stretch: number) => ((1 / (1 - Math.min(stretch, STRETCH - 1) / STRETCH) - 1) * STRETCH) / 0.55
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
-
-function velocityOf(samples: Drag["samples"], now: number) {
-  const recent = samples.filter((sample) => now - sample.t <= 80)
-  const first = recent[0],
-    last = recent[recent.length - 1]
-  // A pause before letting go drops the momentum, so a slow, deliberate release settles where it is.
-  if (!first || !last || last === first || now - last.t > 60) return 0
-  return (last.y - first.y) / ((last.t - first.t) / 1000)
-}
 
 export function BottomSheet({
   trigger,
@@ -349,7 +336,7 @@ function Sheet({
       const current = y.get()
       drag.current = {
         startY: clientY,
-        origin: current < 0 ? -unrubber(-current) : current,
+        origin: current < 0 ? -unRubberBand(-current, STRETCH) : current,
         from: detentRef.current,
         moved: false,
         samples: [{ t: time, y: clientY }],
@@ -370,7 +357,7 @@ function Sheet({
       }
       const raw = state.origin + delta
       // Down follows the finger 1:1 so it can dismiss; up past the tallest detent resists like a rubber band.
-      y.set(raw < 0 ? -rubber(-raw) : raw)
+      y.set(raw < 0 ? -rubberBand(-raw, STRETCH) : raw)
       state.samples.push({ t: time, y: clientY })
       if (state.samples.length > 12) state.samples.shift()
     },
@@ -391,7 +378,8 @@ function Sheet({
       suppressClick.current = true
       const current = y.get()
       // A stretched sheet springs back without the finger's speed, so it never launches past the stretch.
-      const velocity = current < 0 ? 0 : velocityOf(state.samples, time)
+      // A pause before letting go drops the momentum (the 60ms staleness cut-off), so a slow, deliberate release settles where it is.
+      const velocity = current < 0 ? 0 : axisVelocity(state.samples, time, (sample) => sample.y)
       const projected = current + velocity * PROJECTION
       const candidates: Stop[] = [...stops.map((_, index) => index), "closed"]
       let target = candidates.reduce((best, stop) =>
