@@ -44,7 +44,7 @@ export default function Demo() {
               </MorphBlock>
             </div>
           </div>
-          <MorphBlock lines={3} lineHeight={20}>
+          <MorphBlock lines={2} lineHeight={20}>
             <p className="m-0 text-sm leading-[20px] text-text-secondary">
               Shapes calm interfaces for home goods. This month: a quieter checkout and a lamp that keeps turning up in every moodboard.
             </p>

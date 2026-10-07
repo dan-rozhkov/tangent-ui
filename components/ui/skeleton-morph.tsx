@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { createContext, useContext, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { CSSProperties, ElementType, ReactNode } from "react"
 import { animate, motion, useMotionValue } from "motion/react"
 import type { AnimationPlaybackControls } from "motion/react"
@@ -18,7 +18,7 @@ export interface SkeletonMorphProps {
   stagger?: number
   /** Status text read by screen readers while loading. */
   loadingLabel?: string
-  /** The root element. Style it as the card so its border follows the eased height. */
+  /** The root element. Style it as the card; it takes the content's height at once. */
   as?: ElementType
   className?: string
   style?: CSSProperties
@@ -50,10 +50,6 @@ interface RegionContext {
   stagger: number
   reduce: boolean
   root: React.RefObject<HTMLElement | null>
-  /** Pins the shell at its current height before a block changes size. */
-  hold: () => void
-  /** Springs the pinned shell to its new natural height. */
-  release: () => void
 }
 
 const Region = createContext<RegionContext | null>(null)
@@ -66,95 +62,23 @@ const barTone = "bg-surface-muted"
 /** Text bars are this tall, centred in a box of the text's own line height so the skeleton keeps the loaded line boxes. */
 const BAR = 12
 
-/** The shell eases to its new height on a medium critically damped spring; blocks only fade, on these tweens. */
-const SHELL = { type: "spring", stiffness: 256, damping: 32 } as const
 /** Seconds: the skeleton fades in and out a little faster than the content arrives; reduced motion shortens both. */
 const SKELETON_FADE = 0.24
 const CONTENT_FADE = 0.32
 const REDUCED_FADE = 0.12
 
-/** Pins the shell's height while blocks resolve and springs it to the new natural height, clipping while it moves so the card border never jumps. */
-function useShellHeight(reduce: boolean) {
-  const root = useRef<HTMLElement | null>(null)
-  const height = useMotionValue(0)
-  const controls = useRef<AnimationPlaybackControls | undefined>(undefined)
-  const pinned = useRef(false)
-  const target = useRef(0)
-
-  const settle = useCallback(() => {
-    pinned.current = false
-    const node = root.current
-    if (node) Object.assign(node.style, { height: "", overflow: "" })
-  }, [])
-
-  const hold = useCallback(() => {
-    const node = root.current
-    if (!node || reduce) return
-    if (pinned.current) return
-    pinned.current = true
-    height.jump(node.getBoundingClientRect().height)
-    Object.assign(node.style, { height: `${height.get()}px`, overflow: "hidden" })
-  }, [height, reduce])
-
-  const release = useCallback(() => {
-    const node = root.current
-    if (!node || !pinned.current) return
-    // Read the natural height with the pin lifted, then pin again before this frame paints.
-    const current = height.get()
-    node.style.height = ""
-    const next = node.getBoundingClientRect().height
-    node.style.height = `${current}px`
-    // Every block lands in the same commit, so later calls see the same target; leave a running ease alone.
-    if (controls.current && Math.abs(target.current - next) < 0.5) return
-    controls.current?.stop()
-    if (Math.abs(next - current) < 0.5) {
-      // Nothing to ease; later blocks may still change the height, so let go after this frame.
-      controls.current = undefined
-      requestAnimationFrame(() => {
-        if (!controls.current) settle()
-      })
-      return
-    }
-    target.current = next
-    // Keeps the velocity of a running ease, so a resize mid-flight retargets smoothly.
-    controls.current = animate(height, next, {
-      ...SHELL,
-      onUpdate: value => {
-        if (root.current) root.current.style.height = `${value}px`
-      },
-      onComplete: () => {
-        controls.current = undefined
-        settle()
-      },
-    })
-  }, [height, settle])
-
-  const reset = useCallback(() => {
-    controls.current?.stop()
-    controls.current = undefined
-    settle()
-  }, [settle])
-
-  useEffect(() => () => controls.current?.stop(), [])
-  return { root, hold, release, reset }
-}
-
 /**
  * A loading region whose skeleton blocks crossfade into the real content. Loading fades in with a slow pulse; on
  * resolve the content lands in the layout and fades in while each placeholder fades out in place, nearly together in
- * reading order, and the shell eases to its new height. Nothing is stretched or moved.
+ * reading order. Nothing is stretched or moved; the card takes the content's height at once, so size the skeletons to
+ * match the content.
  */
 export function SkeletonMorph({ loading, children, stagger = 0.02, loadingLabel = "Loading", as, className, style }: SkeletonMorphProps) {
   const Root = (as ?? "div") as ElementType
   const reduce = useReducedMotion() ?? false
-  const { root, hold, release, reset } = useShellHeight(reduce)
+  const root = useRef<HTMLElement | null>(null)
 
-  // Going back to loading is immediate, so the shell drops any running ease with it.
-  useLayoutEffect(() => {
-    if (loading) reset()
-  }, [loading, reset])
-
-  const value = useMemo<RegionContext>(() => ({ loading, stagger, reduce, root, hold, release }), [loading, stagger, reduce, root, hold, release])
+  const value = useMemo<RegionContext>(() => ({ loading, stagger, reduce, root }), [loading, stagger, reduce])
 
   return (
     <Root ref={root} className={cn("relative", className)} style={style} aria-busy={loading || undefined}>
@@ -212,7 +136,7 @@ type Phase = "skeleton" | "fading" | "done"
 /**
  * One piece of the layout. It is a size-matched skeleton while loading. On resolve the real content lands in the
  * layout at once and fades in, while the placeholder fades out where it stands, at its own size, in reading order.
- * Only opacity changes; nothing moves or resizes.
+ * Only opacity animates; the block takes its content's size at once.
  */
 export function MorphBlock({ children, width = "100%", height, radius = 6, lines, lineHeight = 20, as = "div", className, style }: MorphBlockProps) {
   const region = useContext(Region)
@@ -250,7 +174,7 @@ export function MorphBlock({ children, width = "100%", height, radius = 6, lines
     if (loading) contentOpacity.jump(0)
   }, [loading, contentOpacity])
 
-  // Every block gives way in the same commit: pin the shell at the skeleton's height, then swap in the content.
+  // Every block gives way in the same commit: measure the skeleton, then swap in the content.
   useLayoutEffect(() => {
     if (loading || phase !== "skeleton") return
     const node = block.current
@@ -258,15 +182,13 @@ export function MorphBlock({ children, width = "100%", height, radius = 6, lines
     order.current = Math.max(0, node ? all.indexOf(node) : 0)
     const box = node?.getBoundingClientRect()
     setFrom(box ? { width: box.width, height: box.height } : null)
-    region?.hold()
     setPhase("fading")
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the phase only matters at the moment loading flips
   }, [loading])
 
-  // The content is in the layout now: let the shell ease, fade the content in and the placeholder out.
+  // The content is in the layout now: fade it in and the placeholder out.
   useLayoutEffect(() => {
     if (phase !== "fading") return
-    region?.release()
     const ease = [...motionTokens.ease.standard] as [number, number, number, number]
     overlayOpacity.jump(1)
     contentOpacity.jump(0)
