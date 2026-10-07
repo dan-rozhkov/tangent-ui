@@ -14,7 +14,7 @@ export function OpenMenuButton() {
         returnFocusRef.current = event.currentTarget
         setOpen(true)
       }}
-      className="inline-flex h-control-md cursor-pointer items-center rounded-control bg-foreground px-5 text-sm font-medium text-background transition-opacity duration-160 [-webkit-tap-highlight-color:transparent] hover:opacity-90"
+      className="inline-flex h-control-md cursor-pointer items-center rounded-pill bg-foreground px-5 text-sm font-medium text-background transition-opacity duration-160 [-webkit-tap-highlight-color:transparent] hover:opacity-90"
     >
       Browse components
     </button>

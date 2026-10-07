@@ -13,7 +13,7 @@ export default function Home() {
           <h1 className="font-display text-4xl leading-display font-medium tracking-display text-balance">
             React components with calm, physical motion
           </h1>
-          <p className="text-lg text-text-secondary">
+          <p className="max-w-xl text-lg text-pretty text-text-secondary">
             {catalog.length} components and blocks built on Base UI, Tailwind and Motion. Every demo is live: press, drag and scroll them.
           </p>
           <div>
