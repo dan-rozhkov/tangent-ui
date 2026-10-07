@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { ChatCircleIcon, CircleIcon, ClipboardIcon, CursorIcon, DiamondIcon, HandIcon, SquareIcon, TextTIcon, TriangleIcon } from "@phosphor-icons/react"
+import { ChatCircleIcon, CircleIcon, ClipboardIcon, DiamondIcon, HandIcon, NavigationArrowIcon, SquareIcon, TextTIcon, TriangleIcon } from "@phosphor-icons/react"
 
 import { Dock, type DockItem } from "@/components/ui/dock"
 
 const initialItems: DockItem[] = [
-  { id: "move", label: "Move", icon: <CursorIcon size={24} />, shortcut: "V" },
+  { id: "move", label: "Move", icon: <NavigationArrowIcon size={24} />, shortcut: "V" },
   { id: "hand", label: "Hand", icon: <HandIcon size={24} />, shortcut: "H" },
   {
     id: "shapes",
