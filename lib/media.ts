@@ -38,33 +38,33 @@ export const people = [
 ] as const satisfies readonly MediaPerson[];
 
 export const photos = [
-  { id: "lounge-chair", alt: "A woven oak lounge chair with a sheepskin and linen cushion on a concrete floor", src: "/media/photos/lounge-chair.jpg", width: 1280, height: 1600 },
-  { id: "table-lamp", alt: "A white mushroom table lamp glowing beside books and a small vase", src: "/media/photos/table-lamp.jpg", width: 1600, height: 900 },
-  { id: "linen-throw", alt: "Folded natural linen throws with fringed edges in soft window light", src: "/media/photos/linen-throw.jpg", width: 1067, height: 1600 },
-  { id: "glass-carafe", alt: "A hand pouring water from a ribbed glass carafe into tumblers", src: "/media/photos/glass-carafe.jpg", width: 1280, height: 1600 },
-  { id: "stoneware-cups", alt: "Two speckled stoneware cups with a lid on a pale table", src: "/media/photos/stoneware-cups.jpg", width: 1067, height: 1600 },
-  { id: "stacked-bowls", alt: "Two stacked speckled ceramic bowls against a dark wall", src: "/media/photos/stacked-bowls.jpg", width: 1600, height: 1067 },
-  { id: "ceramic-lamp", alt: "A sculptural ceramic lamp with a linen shade on a walnut sideboard", src: "/media/photos/ceramic-lamp.jpg", width: 1067, height: 1600 },
-  { id: "living-room", alt: "A bright living room with timber beams, arched windows, and cream sofas", src: "/media/photos/living-room.jpg", width: 1200, height: 1600 },
-  { id: "sunroom", alt: "A sunroom with a round dining table, plants, and windows on three sides", src: "/media/photos/sunroom.jpg", width: 1600, height: 1067 },
-  { id: "home-office", alt: "A home office with a wooden desk and deep green walls", src: "/media/photos/home-office.jpg", width: 1600, height: 1200 },
-  { id: "reading-chair", alt: "A grey armchair and ottoman with a knit throw in a dark green room", src: "/media/photos/reading-chair.jpg", width: 1600, height: 900 },
-  { id: "bedroom", alt: "A made bed with striped linen pillows against an oak headboard", src: "/media/photos/bedroom.jpg", width: 1067, height: 1600 },
-  { id: "restaurant", alt: "A warm restaurant dining room with woven pendant lights and a tree", src: "/media/photos/restaurant.jpg", width: 1067, height: 1600 },
-  { id: "wine-bar", alt: "A glass carafe of red wine on a bar table in low evening light", src: "/media/photos/wine-bar.jpg", width: 1600, height: 1067 },
-  { id: "concert-hall", alt: "Curved stainless steel panels of the Walt Disney Concert Hall against a blue sky", src: "/media/photos/concert-hall.jpg", width: 1600, height: 1143 },
-  { id: "curved-facade", alt: "A white tiled building facade with curved balconies", src: "/media/photos/curved-facade.jpg", width: 1600, height: 1067 },
-  { id: "pool-house", alt: "A modern glass house beside a long pool under a clear sky", src: "/media/photos/pool-house.jpg", width: 1600, height: 900 },
-  { id: "terracotta-waves", alt: "Wavy terracotta walls rising toward a blue sky", src: "/media/photos/terracotta-waves.jpg", width: 1067, height: 1600 },
-  { id: "mountain-ridges", alt: "Layered mountain ridges under a warm evening sky", src: "/media/photos/mountain-ridges.jpg", width: 1600, height: 1068 },
-  { id: "alpine-lake", alt: "A calm alpine lake reflecting a rocky peak at golden hour", src: "/media/photos/alpine-lake.jpg", width: 1067, height: 1600 },
-  { id: "coastline", alt: "A long coastline with waves rolling onto a beach below green cliffs", src: "/media/photos/coastline.jpg", width: 1200, height: 1600 },
-  { id: "sea-at-dusk", alt: "A calm sea at dusk with a low island on the horizon", src: "/media/photos/sea-at-dusk.jpg", width: 1067, height: 1600 },
-  { id: "lisbon-tram", alt: "A yellow tram on a street lined with historic buildings in Lisbon", src: "/media/photos/lisbon-tram.jpg", width: 1600, height: 1064 },
-  { id: "lisbon-bridge", alt: "The 25 de Abril Bridge crossing the Tagus in Lisbon", src: "/media/photos/lisbon-bridge.jpg", width: 1600, height: 1166 },
-  { id: "lisbon-rooftops", alt: "Terracotta rooftops of Lisbon running down to the river", src: "/media/photos/lisbon-rooftops.jpg", width: 1280, height: 1600 },
-  { id: "salmon-dinner", alt: "Seared salmon with a bright herb salsa and a glass of red wine", src: "/media/photos/salmon-dinner.jpg", width: 1067, height: 1600 },
-  { id: "chef-plating", alt: "A chef spooning sauce onto a plated dish in a dark kitchen", src: "/media/photos/chef-plating.jpg", width: 1600, height: 1600 },
+  { id: "cane-chair", alt: "A dark wooden armchair with a woven cane back on a concrete floor against a white wall", src: "/media/photos/cane-chair.jpg", width: 1200, height: 1600 },
+  { id: "desk-lamp", alt: "A brass desk lamp with a white glass shade beside a stack of books in window light", src: "/media/photos/desk-lamp.jpg", width: 1600, height: 900 },
+  { id: "wool-blanket", alt: "Folded cream and caramel knit blankets stacked in soft light", src: "/media/photos/wool-blanket.jpg", width: 1067, height: 1600 },
+  { id: "teapot", alt: "A carved clay teapot and cup stacked on a burlap cloth", src: "/media/photos/teapot.jpg", width: 1067, height: 1600 },
+  { id: "espresso-cups", alt: "Two stoneware espresso cups on a pale stone table", src: "/media/photos/espresso-cups.jpg", width: 1067, height: 1600 },
+  { id: "clay-vases", alt: "Two textured clay vases in blush and sage against a mottled wall", src: "/media/photos/clay-vases.jpg", width: 1600, height: 1066 },
+  { id: "paper-lantern", alt: "Round white paper lanterns hanging at different heights in a dim room", src: "/media/photos/paper-lantern.jpg", width: 1067, height: 1600 },
+  { id: "loft-living", alt: "A bright loft living room with a wooden staircase, grey sofa, and woven pouf", src: "/media/photos/loft-living.jpg", width: 1200, height: 1600 },
+  { id: "plant-studio", alt: "A bright room full of trailing and potted plants beside a tall window and a leather sofa", src: "/media/photos/plant-studio.jpg", width: 1600, height: 1068 },
+  { id: "studio-desk", alt: "A bare wooden desk with a small vase of flowers against a white panelled wall", src: "/media/photos/studio-desk.jpg", width: 1600, height: 1066 },
+  { id: "window-nook", alt: "A sunlit reading corner with a wooden table, an open book, and a lamp beside tall windows", src: "/media/photos/window-nook.jpg", width: 1600, height: 1066 },
+  { id: "attic-bedroom", alt: "A made bed under the pitched wooden beams of an attic bedroom", src: "/media/photos/attic-bedroom.jpg", width: 1067, height: 1600 },
+  { id: "noodle-bar", alt: "A bowl of ramen on a mosaic-topped table in warm light", src: "/media/photos/noodle-bar.jpg", width: 1067, height: 1600 },
+  { id: "coffee-bar", alt: "A cream espresso machine and bottles on a dark marble bar counter", src: "/media/photos/coffee-bar.jpg", width: 1600, height: 1066 },
+  { id: "concrete-tower", alt: "A concrete tower with deep balconies rising into a blue sky", src: "/media/photos/concrete-tower.jpg", width: 1600, height: 1069 },
+  { id: "spiral-stair", alt: "A white spiral staircase seen from below with pendant lights", src: "/media/photos/spiral-stair.jpg", width: 1600, height: 1066 },
+  { id: "desert-house", alt: "A small modern house in front of red desert rocks and sand", src: "/media/photos/desert-house.jpg", width: 1600, height: 900 },
+  { id: "pastel-arches", alt: "A long pink arcade of arches receding into the distance", src: "/media/photos/pastel-arches.jpg", width: 1200, height: 1600 },
+  { id: "sand-dunes", alt: "Rippled sand dunes glowing under a low golden sun", src: "/media/photos/sand-dunes.jpg", width: 1600, height: 1200 },
+  { id: "pine-forest", alt: "Pine trees emerging from drifting mist on a forested hillside", src: "/media/photos/pine-forest.jpg", width: 1067, height: 1600 },
+  { id: "rocky-cove", alt: "A small sandy cove between rocky headlands under a clear sky", src: "/media/photos/rocky-cove.jpg", width: 1171, height: 1600 },
+  { id: "misty-lake", alt: "A calm lake under a pink-streaked dusk sky with low mist over the hills", src: "/media/photos/misty-lake.jpg", width: 1200, height: 1600 },
+  { id: "kyoto-street", alt: "A quiet stone-paved street lined with old wooden houses in Kyoto", src: "/media/photos/kyoto-street.jpg", width: 1600, height: 1069 },
+  { id: "kyoto-temple", alt: "A wooden temple hall above green forest with the city of Kyoto beyond", src: "/media/photos/kyoto-temple.jpg", width: 1600, height: 900 },
+  { id: "kyoto-rooftops", alt: "A five-storey pagoda rising above tiled rooftops in Kyoto", src: "/media/photos/kyoto-rooftops.jpg", width: 1201, height: 1600 },
+  { id: "ramen-bowl", alt: "A bowl of noodles with halved eggs and chopsticks on a white table", src: "/media/photos/ramen-bowl.jpg", width: 1067, height: 1600 },
+  { id: "sushi-counter", alt: "Gloved hands setting salmon rolls on a plate at a pale wooden counter", src: "/media/photos/sushi-counter.jpg", width: 1334, height: 1334 },
 ] as const satisfies readonly MediaPhoto[];
 
 export type PersonId = (typeof people)[number]["id"];
@@ -82,9 +82,6 @@ export function photo(id: PhotoId): MediaPhoto {
 
 /** Square 400 px avatar path for a person id, for `src` props. */
 export const avatar = (id: PersonId) => person(id).src;
-
-/** 800 × 1000 portrait crop of the same photo, for image-led layouts. */
-export const portrait = (id: PersonId) => `/media/people/portrait/${id}.jpg`;
 
 /** The first `count` people, for avatar stacks and lists. */
 export const peopleSample = (count: number) => people.slice(0, count);

@@ -10,30 +10,30 @@ const destinations: {
   photo: PhotoId
 }[] = [
   {
-    id: "lisbon",
-    name: "Lisbon",
-    region: "Portugal",
-    photo: "lisbon-rooftops",
+    id: "kyoto",
+    name: "Kyoto",
+    region: "Japan",
+    photo: "kyoto-rooftops",
   },
   {
-    id: "alps",
-    name: "Lake Oeschinen",
-    region: "Switzerland",
-    photo: "alpine-lake",
+    id: "black-forest",
+    name: "Black Forest",
+    region: "Germany",
+    photo: "pine-forest",
   },
-  { id: "big-sur", name: "Big Sur", region: "California", photo: "coastline" },
+  { id: "cannon-beach", name: "Cannon Beach", region: "Oregon", photo: "rocky-cove" },
   {
-    id: "dolomites",
-    name: "Dolomites",
-    region: "Italy",
-    photo: "mountain-ridges",
+    id: "erg-chebbi",
+    name: "Erg Chebbi",
+    region: "Morocco",
+    photo: "sand-dunes",
   },
-  { id: "hvar", name: "Hvar", region: "Croatia", photo: "sea-at-dusk" },
+  { id: "bled", name: "Lake Bled", region: "Slovenia", photo: "misty-lake" },
   {
-    id: "los-angeles",
-    name: "Los Angeles",
-    region: "California",
-    photo: "concert-hall",
+    id: "new-delhi",
+    name: "New Delhi",
+    region: "India",
+    photo: "concrete-tower",
   },
 ]
 

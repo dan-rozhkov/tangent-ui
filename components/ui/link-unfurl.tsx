@@ -327,8 +327,8 @@ function PreviewCard({
  * card up to fold it back into the text; remove it to take the link out of the message.
  */
 export function LinkUnfurl({
-  label = "Message #lisbon-offsite",
-  placeholder = "Message #lisbon-offsite",
+  label = "Message #kyoto-offsite",
+  placeholder = "Message #kyoto-offsite",
   defaultValue = "Found a place for the offsite, take a look",
   samples = [],
   resolve,

@@ -3,7 +3,7 @@
 import { ImageCompare } from "@/components/ui/image-compare"
 import { photo } from "@/lib/media"
 
-const ridges = photo("mountain-ridges")
+const dunes = photo("sand-dunes")
 
 export default function Demo() {
   return (
@@ -11,13 +11,13 @@ export default function Demo() {
       <ImageCompare
         before={
           // eslint-disable-next-line @next/next/no-img-element -- plain img keeps the demo framework agnostic
-          <img src={ridges.src} alt="Unedited photo of layered mountain ridges" className="grayscale" />
+          <img src={dunes.src} alt="Unedited photo of rippled sand dunes" className="grayscale" />
         }
         after={
           // eslint-disable-next-line @next/next/no-img-element -- plain img keeps the demo framework agnostic
-          <img src={ridges.src} alt="Colour graded photo of layered mountain ridges" />
+          <img src={dunes.src} alt="Colour graded photo of rippled sand dunes" />
         }
-        aspectRatio="3 / 2"
+        aspectRatio="4 / 3"
       />
     </div>
   )

@@ -23,13 +23,13 @@ const place = (id: PhotoId, title: string, subtitle: string, meta: string, seaso
 })
 
 const places: Place[] = [
-  place("mountain-ridges", "Ridge walk", "Dolomites", "12 km", "Best in October"),
-  place("alpine-lake", "Lake loop", "Bernese Alps", "8 km", "Best in September"),
-  place("coastline", "Cliff path", "Algarve", "14 km", "Best in November"),
-  place("sea-at-dusk", "Evening shore", "Menorca", "5 km", "Best in October"),
-  place("lisbon-rooftops", "Old town stairs", "Lisbon", "6 km", "Best in October"),
-  place("lisbon-tram", "Tram 28 line", "Lisbon", "7 km", "Best in November"),
-  place("terracotta-waves", "Red walls", "Marrakech", "4 km", "Best in December"),
+  place("sand-dunes", "Dune ridge", "Erg Chebbi", "12 km", "Best in October"),
+  place("pine-forest", "Forest loop", "Black Forest", "8 km", "Best in September"),
+  place("rocky-cove", "Cove path", "Cannon Beach", "14 km", "Best in November"),
+  place("misty-lake", "Evening shore", "Lake Bled", "5 km", "Best in October"),
+  place("kyoto-rooftops", "Old town stairs", "Kyoto", "6 km", "Best in October"),
+  place("kyoto-street", "Higashiyama lanes", "Kyoto", "7 km", "Best in November"),
+  place("pastel-arches", "Pink arcade", "Rajasthan", "4 km", "Best in December"),
 ]
 
 export default function Demo() {

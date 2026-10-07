@@ -515,13 +515,12 @@ const CADENCE_MESH: HeroMeshPoint[] = [
 
 /** Sample customers. The marks are the brands' own icons, drawn in the text color. */
 const BRANDS = [
-  { name: "Linear", logo: "/block-logos/linear.svg" },
-  { name: "Vercel", logo: "/block-logos/vercel.svg" },
-  { name: "Raycast", logo: "/block-logos/raycast.svg" },
-  { name: "Notion", logo: "/block-logos/notion.svg" },
-  { name: "Figma", logo: "/block-logos/figma.svg" },
-  { name: "Stripe", logo: "/block-logos/stripe.svg" },
-  { name: "Loom", logo: "/block-logos/loom.svg" },
+  { name: "Asana", logo: "/logos/asana.svg" },
+  { name: "Netlify", logo: "/logos/netlify.svg" },
+  { name: "Trello", logo: "/logos/trello.svg" },
+  { name: "Airtable", logo: "/logos/airtable.svg" },
+  { name: "Dropbox", logo: "/logos/dropbox.svg" },
+  { name: "Shopify", logo: "/logos/shopify.svg" },
 ]
 
 const fadeText = (percent: number) => `text-[color:color-mix(in_oklab,var(--foreground)_${percent}%,transparent)]`
@@ -689,16 +688,16 @@ interface LumenMover {
 }
 
 const lumenMovers: LumenMover[] = [
-  { name: "Linear", logo: "/block-logos/linear-color.svg", change: "Moved to Enterprise", amount: 4_200 },
-  { name: "Raycast", logo: "/block-logos/raycast-color.svg", change: "Added 120 seats", amount: 2_850 },
-  { name: "Vercel", logo: "/block-logos/vercel.svg", mono: true, change: "Annual prepay", amount: 1_900 },
-  { name: "Loom", logo: "/block-logos/loom-color.svg", change: "Removed 40 seats", amount: -1_240 },
-  { name: "Supabase", logo: "/block-logos/supabase-color.svg", change: "Added forecasting", amount: 980 },
-  { name: "Framer", logo: "/block-logos/framer.svg", mono: true, change: "Upgraded to Scale", amount: 760 },
+  { name: "Webflow", logo: "/logos/webflow-color.svg", change: "Moved to Enterprise", amount: 4_200 },
+  { name: "Postman", logo: "/logos/postman-color.svg", change: "Added 120 seats", amount: 2_850 },
+  { name: "Sentry", logo: "/logos/sentry.svg", mono: true, change: "Annual prepay", amount: 1_900 },
+  { name: "Docker", logo: "/logos/docker-color.svg", change: "Removed 40 seats", amount: -1_240 },
+  { name: "Twilio", logo: "/logos/twilio-color.svg", change: "Added forecasting", amount: 980 },
+  { name: "Miro", logo: "/logos/miro.svg", mono: true, change: "Upgraded to Scale", amount: 760 },
 ];
 
 const lumenInsight: Record<LumenRange, { lead: string; rest: string }> = {
-  "30d": { lead: "MRR grew $36.4K this month.", rest: "62% came from 14 expansions on the Scale plan, led by Linear." },
+  "30d": { lead: "MRR grew $36.4K this month.", rest: "62% came from 14 expansions on the Scale plan, led by Webflow." },
   "90d": { lead: "MRR grew $80.6K this quarter.", rest: "Expansion outpaced new business for the first time since March." },
   "12m": { lead: "MRR grew $164.5K in twelve months.", rest: "Net retention above 110% did more than new logos did." },
 };
@@ -804,7 +803,7 @@ export function HeroLumen({
             See every dollar of revenue move
           </motion.h1>
           <motion.p variants={item} className={cn(shell.description, "max-w-[590px]")}>
-            Lumen connects Stripe, HubSpot and your warehouse, then explains each change in MRR the moment it happens. No SQL, no stale spreadsheets.
+            Lumen connects Shopify, Airtable and your warehouse, then explains each change in MRR the moment it happens. No SQL, no stale spreadsheets.
           </motion.p>
           <motion.div variants={item} className="mt-3 flex flex-wrap justify-center gap-3 @max-[560px]/hero:mt-2 @max-[560px]/hero:w-full @max-[560px]/hero:*:flex-auto">
             <ActionLink action={primaryAction} kind="primary" />
@@ -923,7 +922,7 @@ function LumenDashboard({ narrow }: { narrow: boolean }) {
           <header className="flex items-center justify-between gap-4">
             <div>
               <h2 className="m-0 text-lg font-medium tracking-body">Revenue overview</h2>
-              <p className="m-0 mt-0.5 text-xs text-text-muted">Synced with Stripe 2 minutes ago</p>
+              <p className="m-0 mt-0.5 text-xs text-text-muted">Synced with Shopify 2 minutes ago</p>
             </div>
             <SegmentedControl label="Date range" options={lumenRanges} value={range} onValueChange={value => setRange(value as LumenRange)} className="flex-none" />
           </header>
@@ -1013,14 +1012,14 @@ function LumenDashboard({ narrow }: { narrow: boolean }) {
    Workflow (split): a live workflow graph that routes sample events
    ------------------------------------------------------------------------------------------------------------------ */
 
-type NodeId = "trigger" | "lookup" | "branch" | "slack" | "linear" | "warehouse"
+type NodeId = "trigger" | "lookup" | "branch" | "discord" | "asana" | "warehouse"
 type Status = "idle" | "running" | "done" | "skipped"
 
 /** Sample events. Each one runs the same workflow; the branch decides which actions it reaches. */
 const EVENTS = [
-  { customer: "Northwind Labs", amount: "$4,800", plan: "Enterprise, 212 seats", routed: true, issue: "ONB-482", total: 412, ms: { lookup: 118, branch: 2, slack: 164, linear: 231, warehouse: 58 } },
-  { customer: "Tidepool", amount: "$240", plan: "Team, 9 seats", routed: false, issue: "", total: 171, ms: { lookup: 96, branch: 1, slack: 0, linear: 0, warehouse: 61 } },
-  { customer: "Halcyon Health", amount: "$12,600", plan: "Enterprise, 540 seats", routed: true, issue: "ONB-483", total: 436, ms: { lookup: 131, branch: 2, slack: 149, linear: 244, warehouse: 66 } },
+  { customer: "Northwind Labs", amount: "$4,800", plan: "Enterprise, 212 seats", routed: true, task: "ONB-482", total: 412, ms: { lookup: 118, branch: 2, discord: 164, asana: 231, warehouse: 58 } },
+  { customer: "Tidepool", amount: "$240", plan: "Team, 9 seats", routed: false, task: "", total: 171, ms: { lookup: 96, branch: 1, discord: 0, asana: 0, warehouse: 61 } },
+  { customer: "Halcyon Health", amount: "$12,600", plan: "Enterprise, 540 seats", routed: true, task: "ONB-483", total: 436, ms: { lookup: 131, branch: 2, discord: 149, asana: 244, warehouse: 66 } },
 ] as const
 type RelayEvent = (typeof EVENTS)[number]
 
@@ -1030,12 +1029,12 @@ type RelayEvent = (typeof EVENTS)[number]
  */
 const PHASES = [900, 420, 380, 640, 380, 360, 440, 760, 2800]
 const DONE = PHASES.length - 1
-const STEPS: Record<NodeId, [start: number, end: number]> = { trigger: [1, 2], lookup: [3, 4], branch: [5, 6], slack: [7, 8], linear: [7, 8], warehouse: [7, 8] }
-const ACTIONS = ["slack", "linear", "warehouse"] as const
+const STEPS: Record<NodeId, [start: number, end: number]> = { trigger: [1, 2], lookup: [3, 4], branch: [5, 6], discord: [7, 8], asana: [7, 8], warehouse: [7, 8] }
+const ACTIONS = ["discord", "asana", "warehouse"] as const
 
 function statusOf(id: NodeId, phase: number, event: RelayEvent): Status {
   const [start, end] = STEPS[id]
-  if ((id === "slack" || id === "linear") && !event.routed && phase >= 6) return "skipped"
+  if ((id === "discord" || id === "asana") && !event.routed && phase >= 6) return "skipped"
   return phase < start ? "idle" : phase < end ? "running" : "done"
 }
 
@@ -1050,8 +1049,8 @@ const LAYOUTS = {
       trigger: { x: 170, y: 0, w: 300, h: 60 },
       lookup: { x: 170, y: 112, w: 300, h: 60 },
       branch: { x: 170, y: 224, w: 300, h: 60 },
-      slack: { x: 0, y: 356, w: 200, h: 84 },
-      linear: { x: 220, y: 356, w: 200, h: 84 },
+      discord: { x: 0, y: 356, w: 200, h: 84 },
+      asana: { x: 220, y: 356, w: 200, h: 84 },
       warehouse: { x: 440, y: 356, w: 200, h: 84 },
     } as Record<NodeId, Box>,
   },
@@ -1063,8 +1062,8 @@ const LAYOUTS = {
       trigger: { x: 0, y: 0, w: 344, h: 52 },
       lookup: { x: 0, y: 78, w: 344, h: 52 },
       branch: { x: 0, y: 156, w: 344, h: 52 },
-      slack: { x: 0, y: 244, w: 108, h: 72 },
-      linear: { x: 118, y: 244, w: 108, h: 72 },
+      discord: { x: 0, y: 244, w: 108, h: 72 },
+      asana: { x: 118, y: 244, w: 108, h: 72 },
       warehouse: { x: 236, y: 244, w: 108, h: 72 },
     } as Record<NodeId, Box>,
   },
@@ -1074,8 +1073,8 @@ type Layout = (typeof LAYOUTS)[keyof typeof LAYOUTS]
 const EDGES: { from: NodeId; to: NodeId; phase: number }[] = [
   { from: "trigger", to: "lookup", phase: 2 },
   { from: "lookup", to: "branch", phase: 4 },
-  { from: "branch", to: "slack", phase: 6 },
-  { from: "branch", to: "linear", phase: 6 },
+  { from: "branch", to: "discord", phase: 6 },
+  { from: "branch", to: "asana", phase: 6 },
   { from: "branch", to: "warehouse", phase: 6 },
 ]
 
@@ -1091,8 +1090,8 @@ function edgePath(layout: Layout, from: NodeId, to: NodeId) {
 }
 
 const RESULTS: Record<(typeof ACTIONS)[number], (event: RelayEvent) => string> = {
-  slack: event => `Sent in ${event.ms.slack} ms`,
-  linear: event => `${event.issue} in ${event.ms.linear} ms`,
+  discord: event => `Sent in ${event.ms.discord} ms`,
+  asana: event => `${event.task} in ${event.ms.asana} ms`,
   warehouse: event => `Saved in ${event.ms.warehouse} ms`,
 }
 
@@ -1100,7 +1099,7 @@ const glyph = "text-text-secondary"
 const spinner =
   "block size-[13px] flex-none animate-spin rounded-full border-[1.5px] border-[color-mix(in_oklab,var(--accent)_22%,transparent)] border-t-accent [animation-duration:.7s] motion-reduce:animate-none"
 const logo = (name: string) => (
-  <span className="size-[18px] bg-center bg-contain bg-no-repeat" style={{ backgroundImage: `url(/block-logos/${name}.svg)` }} aria-hidden="true" />
+  <span className="size-[18px] bg-center bg-contain bg-no-repeat" style={{ backgroundImage: `url(/logos/${name}.svg)` }} aria-hidden="true" />
 )
 
 export interface HeroRelayProps {
@@ -1111,7 +1110,7 @@ export interface HeroRelayProps {
 }
 
 /**
- * Split hero, one full screen: the copy beside a live workflow graph on a dotted canvas. Sample Stripe events arrive on their
+ * Split hero, one full screen: the copy beside a live workflow graph on a dotted canvas. Sample Shopify events arrive on their
  * own and run the workflow node by node; the data draws along each edge, the branch decides which actions run, and every step
  * reports its time. "Send test event" runs the next sample at once. The run pauses off screen, and under reduced motion each
  * event shows its finished run without playing.
@@ -1209,7 +1208,7 @@ export function HeroRelay({
               Every event, handled in milliseconds
             </motion.h1>
             <motion.p variants={item} className={cn(shell.description, "max-w-[500px]")}>
-              Relay turns webhooks from Stripe, GitHub and Postgres into typed workflows with retries, branches and a trace of every run. Write steps in TypeScript, or wire them on the canvas.
+              Relay turns webhooks from Shopify, GitLab and Postgres into typed workflows with retries, branches and a trace of every run. Write steps in TypeScript, or wire them on the canvas.
             </motion.p>
             <motion.div variants={item} className="mt-3 flex flex-wrap gap-3 @max-[560px]/hero:mt-1 @max-[560px]/hero:w-full @max-[560px]/hero:*:flex-auto">
               <ActionLink action={primaryAction} kind="primary" />
@@ -1234,7 +1233,7 @@ export function HeroRelay({
                   data-on={visible || reduced || undefined}
                   aria-hidden="true"
                 />
-                on-invoice-paid.ts
+                on-order-paid.ts
               </span>
               <Button variant="secondary" size="sm" onClick={sendTest}>
                 Send test event
@@ -1267,12 +1266,12 @@ export function HeroRelay({
                   })}
                 </svg>
 
-                <RelayNode box={layout.nodes.trigger} status={status("trigger")} icon={logo("stripe-color")} title="Invoice paid" sub={`${event.customer}, ${event.amount}`} />
+                <RelayNode box={layout.nodes.trigger} status={status("trigger")} icon={logo("shopify-color")} title="Order paid" sub={`${event.customer}, ${event.amount}`} />
                 <RelayNode
                   box={layout.nodes.lookup}
                   status={status("lookup")}
-                  icon={logo("hubspot-color")}
-                  title="Find account in HubSpot"
+                  icon={logo("airtable-color")}
+                  title="Update Airtable base"
                   sub={status("lookup") === "done" ? event.plan : "Plan, seats and owner"}
                   meta={`${event.ms.lookup} ms`}
                 />
@@ -1287,8 +1286,8 @@ export function HeroRelay({
                 {ACTIONS.map(id => {
                   const s = status(id)
                   const copy = {
-                    slack: { icon: logo("slack-color"), title: narrow ? "Slack" : "Post to #revenue", waiting: "Slack" },
-                    linear: { icon: logo("linear-color"), title: narrow ? "Linear" : "Create Linear issue", waiting: "Onboarding team" },
+                    discord: { icon: logo("discord-color"), title: narrow ? "Discord" : "Post to #orders", waiting: "Discord" },
+                    asana: { icon: logo("asana-color"), title: narrow ? "Asana" : "Create Asana task", waiting: "Onboarding team" },
                     warehouse: { icon: <DatabaseIcon size={16} className={glyph} aria-hidden="true" />, title: narrow ? "Warehouse" : "Save to warehouse", waiting: "Postgres" },
                   }[id]
                   const sub =
@@ -1302,7 +1301,7 @@ export function HeroRelay({
                     style={{ top: layout.summary, width: layout.width }}
                   >
                     <span className="inline-flex items-center gap-3">
-                      <code className={cn("rounded-md border border-border-subtle bg-surface px-[7px] py-px text-xs text-text-secondary", mono)}>invoice.paid</code>
+                      <code className={cn("rounded-md border border-border-subtle bg-surface px-[7px] py-px text-xs text-text-secondary", mono)}>order.paid</code>
                       <span>
                         Run <span className="tabular-nums">{run.count.toLocaleString("en-US")}</span>
                       </span>

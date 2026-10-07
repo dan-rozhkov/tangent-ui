@@ -15,7 +15,7 @@ const activity = Array.from({ length: 24 }, (_, index) => ({
   ][index % 6],
 }))
 
-const templates: PhotoId[] = ["lounge-chair", "table-lamp", "stacked-bowls", "ceramic-lamp", "sunroom", "wine-bar"]
+const templates: PhotoId[] = ["cane-chair", "desk-lamp", "clay-vases", "paper-lantern", "plant-studio", "coffee-bar"]
 
 export default function Demo() {
   return (

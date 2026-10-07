@@ -113,7 +113,7 @@ export function TangentMark(props: { className?: string }) {
 }
 
 const ICON = { size: 16, "aria-hidden": true } as const;
-const curvedFacade = photo("curved-facade");
+const spiralStair = photo("spiral-stair");
 
 export const siteHeaderExampleItems: SiteHeaderItem[] = [
   {
@@ -124,7 +124,7 @@ export const siteHeaderExampleItems: SiteHeaderItem[] = [
       { label: "Templates", description: "Starter sites with every page", icon: <LayoutIcon {...ICON} /> },
       { label: "Themes", description: "Tune color, radius, and motion", icon: <SwatchesIcon {...ICON} /> },
     ],
-    feature: { title: "What's new in 2.4", description: "Site headers, footers, and hero sections.", image: { src: curvedFacade.src, alt: curvedFacade.alt } },
+    feature: { title: "What's new in 2.4", description: "Site headers, footers, and hero sections.", image: { src: spiralStair.src, alt: spiralStair.alt } },
   },
   {
     value: "resources", label: "Resources",

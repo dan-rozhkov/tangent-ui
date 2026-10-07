@@ -5,20 +5,20 @@ import type { LightboxImage } from "@/components/ui/lightbox-gallery"
 import { photo } from "@/lib/media"
 import type { PhotoId } from "@/lib/media"
 
-/** A week in Lisbon and along the coast: mixed portrait and landscape shots keep their own shapes. */
+/** A week in Kyoto and a few places further out: mixed portrait and landscape shots keep their own shapes. */
 const trip: { id: PhotoId; title: string; caption?: string }[] = [
-  { id: "lisbon-tram", title: "Tram 28", caption: "Graça, Monday morning" },
-  { id: "lisbon-rooftops", title: "Alfama rooftops", caption: "From the Santa Luzia lookout" },
-  { id: "chef-plating", title: "The pass at Prado", caption: "Baixa, a little after eight" },
-  { id: "lisbon-bridge", title: "25 de Abril Bridge", caption: "Crossing to Almada" },
-  { id: "terracotta-waves", title: "Terracotta walls", caption: "Comporta" },
-  { id: "restaurant", title: "Under the pendant lights", caption: "Príncipe Real" },
-  { id: "coastline", title: "Ursa beach", caption: "A steep path down from Cabo da Roca" },
-  { id: "wine-bar", title: "A carafe of red", caption: "Bairro Alto" },
-  { id: "curved-facade", title: "Curved balconies", caption: "Parque das Nações" },
-  { id: "salmon-dinner", title: "Dinner at Prado" },
-  { id: "pool-house", title: "A house by the pool", caption: "Melides" },
-  { id: "sea-at-dusk", title: "Last light", caption: "Ericeira, Thursday" },
+  { id: "kyoto-street", title: "Ninenzaka", caption: "Before the crowds arrive" },
+  { id: "kyoto-rooftops", title: "Yasaka Pagoda", caption: "Between the tiled roofs" },
+  { id: "sushi-counter", title: "Rolls at the counter", caption: "Gion, a little after eight" },
+  { id: "kyoto-temple", title: "Kiyomizu-dera", caption: "Above the green hills" },
+  { id: "pastel-arches", title: "Pink arcade", caption: "A long, quiet corridor" },
+  { id: "noodle-bar", title: "Noodles after dark", caption: "A small table by the window" },
+  { id: "rocky-cove", title: "A hidden cove", caption: "A steep path down the cliff" },
+  { id: "coffee-bar", title: "Espresso at the bar", caption: "Open until late" },
+  { id: "spiral-stair", title: "Looking up", caption: "Five floors, no lift" },
+  { id: "ramen-bowl", title: "A bowl of ramen" },
+  { id: "desert-house", title: "A house in the desert", caption: "Midday heat" },
+  { id: "misty-lake", title: "Last light", caption: "Thursday, before the mist" },
 ]
 
 const images: LightboxImage[] = trip.map(({ id, title, caption }) => {
@@ -29,7 +29,7 @@ const images: LightboxImage[] = trip.map(({ id, title, caption }) => {
 export default function Demo() {
   return (
     <div className="w-full max-w-[522px]">
-      <LightboxGallery images={images} label="Lisbon photos" minColumnWidth={160} gap={8} />
+      <LightboxGallery images={images} label="Kyoto photos" minColumnWidth={160} gap={8} />
     </div>
   )
 }

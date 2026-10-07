@@ -4,17 +4,17 @@ import { Carousel } from "@/components/ui/carousel"
 import { photo, type PhotoId } from "@/lib/media"
 
 const suites: { id: PhotoId; name: string; detail: string }[] = [
-  { id: "sunroom", name: "Garden suite", detail: "Sunroom with a round dining table" },
-  { id: "living-room", name: "Beam suite", detail: "Timber beams and arched windows" },
-  { id: "home-office", name: "Study suite", detail: "Wooden desk, deep green walls" },
-  { id: "bedroom", name: "Linen suite", detail: "Oak headboard and striped linen" },
-  { id: "reading-chair", name: "Reading suite", detail: "Armchair, ottoman, and a knit throw" },
+  { id: "plant-studio", name: "Garden suite", detail: "Plants, a tall window, a leather sofa" },
+  { id: "loft-living", name: "Loft suite", detail: "A timber stair and a grey sofa" },
+  { id: "studio-desk", name: "Study suite", detail: "Pale desk, white panelled wall" },
+  { id: "attic-bedroom", name: "Attic suite", detail: "Pitched pine beams and white linen" },
+  { id: "window-nook", name: "Window suite", detail: "A sunlit corner, a lamp, and a book" },
 ]
 
 export default function Demo() {
   return (
     <div className="w-full max-w-xl">
-      <Carousel label="Harbour suites" interval={5000}>
+      <Carousel label="Guest suites" interval={5000}>
         {suites.map(suite => {
           const image = photo(suite.id)
           return (

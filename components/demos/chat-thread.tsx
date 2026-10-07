@@ -22,8 +22,8 @@ const replies = [
 function seedMessages(): ChatMessage[] {
   const now = Date.now()
   const at = (minutesAgo: number) => new Date(now - minutesAgo * 60_000)
-  const lamp = photo("table-lamp")
-  const chair = photo("lounge-chair")
+  const lamp = photo("desk-lamp")
+  const chair = photo("cane-chair")
   return [
     { id: "m1", authorId: "marcus", text: "Morning! Did the new product shots come back?", createdAt: at(26 * 60) },
     {
@@ -37,8 +37,8 @@ function seedMessages(): ChatMessage[] {
       authorId: "jasmine",
       createdAt: at(26 * 60 - 1),
       attachments: [
-        { id: "a1", kind: "image", name: "table-lamp.jpg", url: lamp.src, alt: lamp.alt, width: lamp.width, height: lamp.height },
-        { id: "a2", kind: "image", name: "lounge-chair.jpg", url: chair.src, alt: chair.alt },
+        { id: "a1", kind: "image", name: "desk-lamp.jpg", url: lamp.src, alt: lamp.alt, width: lamp.width, height: lamp.height },
+        { id: "a2", kind: "image", name: "cane-chair.jpg", url: chair.src, alt: chair.alt },
       ],
       reactions: [{ emoji: "😍", count: 2 }],
     },

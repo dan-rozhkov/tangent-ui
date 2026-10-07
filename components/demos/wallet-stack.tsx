@@ -65,7 +65,7 @@ const cards: WalletCard[] = [
     lastFour: "3304",
     holder: "Jordan Hayes",
     variant: "glass",
-    image: photo("sea-at-dusk").src,
+    image: photo("misty-lake").src,
     balance: 9150,
     balanceLabel: "Saved",
     transactions: [],

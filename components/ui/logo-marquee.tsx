@@ -28,13 +28,13 @@ export interface LogoMarqueeProps {
 }
 
 const exampleBrands: LogoMarqueeBrand[] = [
-  { name: "Figma", icon: "/block-logos/figma.svg", colorIcon: "/block-logos/figma-color.svg" },
-  { name: "Linear", icon: "/block-logos/linear.svg", color: "#5E6AD2" },
-  { name: "Notion", icon: "/block-logos/notion.svg" },
-  { name: "Slack", icon: "/block-logos/slack.svg", colorIcon: "/block-logos/slack-color.svg" },
-  { name: "GitHub", icon: "/block-logos/github.svg" },
-  { name: "Stripe", icon: "/block-logos/stripe.svg", color: "#635BFF" },
-  { name: "Vercel", icon: "/block-logos/vercel.svg" },
+  { name: "Dropbox", icon: "/logos/dropbox.svg", color: "#0061FF" },
+  { name: "Asana", icon: "/logos/asana.svg", color: "#F06A6A" },
+  { name: "Airtable", icon: "/logos/airtable.svg", color: "#18BFFF" },
+  { name: "Discord", icon: "/logos/discord.svg", color: "#5865F2" },
+  { name: "GitLab", icon: "/logos/gitlab.svg", color: "#FC6D26" },
+  { name: "Shopify", icon: "/logos/shopify.svg", color: "#7AB55C" },
+  { name: "Netlify", icon: "/logos/netlify.svg", color: "#00C7B7" },
 ]
 
 const markClass =

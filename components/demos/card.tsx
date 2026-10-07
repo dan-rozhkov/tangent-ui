@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { avatar, photo } from "@/lib/media"
 
-const room = photo("living-room")
-const sunroom = photo("sunroom")
+const room = photo("loft-living")
+const gardenRoom = photo("plant-studio")
 const updates = ["Updated just now", "Updated 1 minute ago", "Updated 2 minutes ago"]
 
 export default function Demo() {
@@ -37,9 +37,9 @@ export default function Demo() {
         }
       />
       <Card
-        title="Sunroom launch"
+        title="Garden room launch"
         description="Spring campaign for the garden suites."
-        media={<Image src={sunroom.src} alt="" width={sunroom.width} height={sunroom.height} className="aspect-[4/3] w-full object-cover" />}
+        media={<Image src={gardenRoom.src} alt="" width={gardenRoom.width} height={gardenRoom.height} className="aspect-[4/3] w-full object-cover" />}
         avatar={<Avatar name="Marcus Johnson" src={avatar("marcus-johnson")} size="sm" />}
         meta="Marcus Johnson"
         status="Due in 3 days"

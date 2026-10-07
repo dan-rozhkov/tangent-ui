@@ -49,9 +49,9 @@ export const newsletterPublication: NewsletterPublication = {
     date: "Friday, October 2",
     subject: "Designing for the second visit, not the first",
     stories: [
-      story("Empty states that invite a first step", "reading-chair", 5),
-      story("Texture without noise, from a ceramics studio", "stacked-bowls", 4),
-      story("How a concert hall seats two thousand people", "concert-hall", 7),
+      story("Empty states that invite a first step", "window-nook", 5),
+      story("Texture without noise, from a ceramics studio", "clay-vases", 4),
+      story("How a concrete tower holds a thousand rooms", "concrete-tower", 7),
     ],
   },
   recent: [
@@ -60,9 +60,9 @@ export const newsletterPublication: NewsletterPublication = {
       date: "Friday, September 25",
       subject: "Why the best settings pages feel quiet",
       stories: [
-        story("What a sunroom teaches about contrast", "sunroom", 4),
-        story("The case for a single accent color", "ceramic-lamp", 3),
-        story("Lisbon tram signs and wayfinding at scale", "lisbon-tram", 6),
+        story("What a plant studio teaches about contrast", "plant-studio", 4),
+        story("The case for a single accent color", "paper-lantern", 3),
+        story("Kyoto street signs and wayfinding at scale", "kyoto-street", 6),
       ],
     },
     {
@@ -70,9 +70,9 @@ export const newsletterPublication: NewsletterPublication = {
       date: "Friday, September 18",
       subject: "Springs that settle instead of bounce",
       stories: [
-        story("Reading the ridge line of an animation curve", "mountain-ridges", 5),
-        story("A table lamp and the warmth of dark mode", "table-lamp", 3),
-        story("Curves in architecture and in corners", "curved-facade", 4),
+        story("Reading the ridge line of an animation curve", "sand-dunes", 5),
+        story("A desk lamp and the warmth of dark mode", "desk-lamp", 3),
+        story("Curves in architecture and in corners", "spiral-stair", 4),
       ],
     },
     {
@@ -80,9 +80,9 @@ export const newsletterPublication: NewsletterPublication = {
       date: "Friday, September 11",
       subject: "Copy that sounds like a person",
       stories: [
-        story("Error messages that take the blame", "glass-carafe", 4),
-        story("Writing buttons as verbs", "home-office", 3),
-        story("Tone of voice at the dinner table", "salmon-dinner", 5),
+        story("Error messages that take the blame", "teapot", 4),
+        story("Writing buttons as verbs", "studio-desk", 3),
+        story("Tone of voice at the dinner table", "ramen-bowl", 5),
       ],
     },
   ],

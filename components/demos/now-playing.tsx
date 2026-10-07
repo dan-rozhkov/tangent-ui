@@ -4,10 +4,10 @@ import { NowPlaying } from "@/components/ui/now-playing"
 import { photo } from "@/lib/media"
 
 const tracks = [
-  { id: "undertow", title: "Undertow", artist: "Hollis Reed", duration: 214, artwork: photo("sea-at-dusk").src },
-  { id: "dune-light", title: "Dune light", artist: "The Meridian Line", duration: 197, artwork: photo("terracotta-waves").src },
-  { id: "low-tide", title: "Low tide", artist: "Harbor", duration: 185, artwork: photo("alpine-lake").src },
-  { id: "ridge-line", title: "Ridge line", artist: "Northfield", duration: 238, artwork: photo("mountain-ridges").src },
+  { id: "still-water", title: "Still water", artist: "Hollis Reed", duration: 214, artwork: photo("misty-lake").src },
+  { id: "rose-arcade", title: "Rose arcade", artist: "The Meridian Line", duration: 197, artwork: photo("pastel-arches").src },
+  { id: "fog-line", title: "Fog line", artist: "Harbor", duration: 185, artwork: photo("pine-forest").src },
+  { id: "dune-light", title: "Dune light", artist: "Northfield", duration: 238, artwork: photo("sand-dunes").src },
 ]
 
 export default function Demo() {

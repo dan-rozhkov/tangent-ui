@@ -1,60 +1,60 @@
 # Shared demo media
 
-Every file in `people/` and `photos/` is a photograph from [Unsplash](https://unsplash.com), used under the [Unsplash License](https://unsplash.com/license). Portraits in `people/` are square 400 px crops around the face, and `people/portrait/` holds 800 × 1000 crops of the same photos for image-led layouts. Photos are resized to 1600 px on the long side at JPEG quality 80. The typed catalog lives in `lib/media.ts`.
+All media are photographs from [Pexels](https://www.pexels.com), used under the [Pexels License](https://www.pexels.com/license/). Portraits in `people/` are square 400 px crops around the face. Photos are resized to 1600 px on the long side at JPEG quality 80, and some are cropped to fit. The typed catalog lives in `lib/media.ts`.
 
 The names and roles shown with the portraits are fictional sample content. The people pictured have no connection to them and do not endorse this project.
 
 ## People
 
-Selected for sharp, high-resolution sources (every original is at least 2000 px, the face at least 470 px wide) and a balanced mix of ages and backgrounds.
+The portraits are photographs from [Pexels](https://www.pexels.com), used under the [Pexels License](https://www.pexels.com/license/). Each is a square 400 px crop around the face, taken from a sharp, high-resolution original, with a balanced mix of ages and backgrounds.
 
 | File | Photographer | Source |
 | --- | --- | --- |
-| `people/emma-collins.jpg`, `people/portrait/emma-collins.jpg` | Brooke Balentine | [Unsplash](https://unsplash.com/photos/cdZcNIca4w0) |
-| `people/olivia-bennett.jpg`, `people/portrait/olivia-bennett.jpg` | Giorgio Trovato | [Unsplash](https://unsplash.com/photos/VzusBjHlKM8) |
-| `people/hannah-walsh.jpg`, `people/portrait/hannah-walsh.jpg` | Beatriz Cattel | [Unsplash](https://unsplash.com/photos/-UQ85UBIfwo) |
-| `people/diane-foster.jpg`, `people/portrait/diane-foster.jpg` | Nickolas Nikolic | [Unsplash](https://unsplash.com/photos/87d56FlCOyI) |
-| `people/ava-mitchell.jpg`, `people/portrait/ava-mitchell.jpg` | Clay Elliot | [Unsplash](https://unsplash.com/photos/mpDV4xaFP8c) |
-| `people/jasmine-brooks.jpg`, `people/portrait/jasmine-brooks.jpg` | alex starnes | [Unsplash](https://unsplash.com/photos/WYE2UhXsU1Y) |
-| `people/sofia-ramirez.jpg`, `people/portrait/sofia-ramirez.jpg` | Christina @ wocintechchat.com | [Unsplash](https://unsplash.com/photos/SJvDxw0azqw) |
-| `people/chloe-nguyen.jpg`, `people/portrait/chloe-nguyen.jpg` | Vitaly Gariev | [Unsplash](https://unsplash.com/photos/qhrhmDZ6DTY) |
-| `people/marcus-johnson.jpg`, `people/portrait/marcus-johnson.jpg` | Christoph Aigner | [Unsplash](https://unsplash.com/photos/vhj1DvszLZU) |
-| `people/ryan-sullivan.jpg`, `people/portrait/ryan-sullivan.jpg` | The Connected Narrative | [Unsplash](https://unsplash.com/photos/N8lRH2uxih4) |
-| `people/tyler-hayes.jpg`, `people/portrait/tyler-hayes.jpg` | sergey mikheev | [Unsplash](https://unsplash.com/photos/H982yXJ7vOk) |
-| `people/nathan-cole.jpg`, `people/portrait/nathan-cole.jpg` | PodMatch | [Unsplash](https://unsplash.com/photos/sNuQ3EhnfYQ) |
-| `people/andre-williams.jpg`, `people/portrait/andre-williams.jpg` | Olawale Munna | [Unsplash](https://unsplash.com/photos/qpyR0WKV_Cs) |
-| `people/mateo-alvarez.jpg`, `people/portrait/mateo-alvarez.jpg` | Carlos Gil | [Unsplash](https://unsplash.com/photos/S4CXgCbs9BE) |
-| `people/daniel-kim.jpg`, `people/portrait/daniel-kim.jpg` | Dylan Ferreira | [Unsplash](https://unsplash.com/photos/jIM8kVsFKlM) |
-| `people/jordan-reyes.jpg`, `people/portrait/jordan-reyes.jpg` | Josias Garibay | [Unsplash](https://unsplash.com/photos/rifCUO-4X8k) |
+| `people/emma-collins.jpg` | Augusto Carneiro Junior | [Pexels](https://www.pexels.com/photo/30479371/) |
+| `people/marcus-johnson.jpg` | August de Richelieu | [Pexels](https://www.pexels.com/photo/7432863/) |
+| `people/jasmine-brooks.jpg` | Ifeyinka Adeyemo | [Pexels](https://www.pexels.com/photo/29852895/) |
+| `people/olivia-bennett.jpg` | Kampus Production | [Pexels](https://www.pexels.com/photo/8171180/) |
+| `people/sofia-ramirez.jpg` | Eric Moura | [Pexels](https://www.pexels.com/photo/30161439/) |
+| `people/ryan-sullivan.jpg` | Karolina Grabowska (kaboompics.com) | [Pexels](https://www.pexels.com/photo/6333502/) |
+| `people/hannah-walsh.jpg` | Daniel & Hannah Snipes | [Pexels](https://www.pexels.com/photo/30004325/) |
+| `people/chloe-nguyen.jpg` | yi lu | [Pexels](https://www.pexels.com/photo/11563145/) |
+| `people/ava-mitchell.jpg` | Mikhail Nilov | [Pexels](https://www.pexels.com/photo/8872492/) |
+| `people/daniel-kim.jpg` | Pavel Danilyuk | [Pexels](https://www.pexels.com/photo/8638775/) |
+| `people/jordan-reyes.jpg` | Henlynn | [Pexels](https://www.pexels.com/photo/6102858/) |
+| `people/mateo-alvarez.jpg` | Italo Melo | [Pexels](https://www.pexels.com/photo/2379004/) |
+| `people/tyler-hayes.jpg` | Andrea Piacquadio | [Pexels](https://www.pexels.com/photo/3760046/) |
+| `people/andre-williams.jpg` | snazzy Photography | [Pexels](https://www.pexels.com/photo/40043999/) |
+| `people/nathan-cole.jpg` | Kampus Production | [Pexels](https://www.pexels.com/photo/7983622/) |
+| `people/diane-foster.jpg` | ANTONI SHKRABA production | [Pexels](https://www.pexels.com/photo/8790862/) |
 
 ## Photos
 
 | File | Photographer | Source |
 | --- | --- | --- |
-| `photos/lounge-chair.jpg` | Clay Banks | [Unsplash](https://unsplash.com/photos/Y9iAaT2my2I) |
-| `photos/table-lamp.jpg` | Andy Bob | [Unsplash](https://unsplash.com/photos/-Gem15xQAE4) |
-| `photos/linen-throw.jpg` | Maite Oñate | [Unsplash](https://unsplash.com/photos/AXWyDjC_Y3U) |
-| `photos/glass-carafe.jpg` | Elena Golubeva | [Unsplash](https://unsplash.com/photos/tU-7tQgL-eU) |
-| `photos/stoneware-cups.jpg` | Mathilde Langevin | [Unsplash](https://unsplash.com/photos/15vfRBmnpBc) |
-| `photos/stacked-bowls.jpg` | Tom Crew | [Unsplash](https://unsplash.com/photos/uDF1mW7EUwM) |
-| `photos/ceramic-lamp.jpg` | Karolina Grabowska | [Unsplash](https://unsplash.com/photos/ulh3-dLSXjI) |
-| `photos/living-room.jpg` | Collov Home Design | [Unsplash](https://unsplash.com/photos/H-1j_s0dhCw) |
-| `photos/sunroom.jpg` | Clay Banks | [Unsplash](https://unsplash.com/photos/BnDI_MVomAI) |
-| `photos/home-office.jpg` | Collov Home Design | [Unsplash](https://unsplash.com/photos/UUsQk_9bdR8) |
-| `photos/reading-chair.jpg` | Jason Wang | [Unsplash](https://unsplash.com/photos/NxAwryAbtIw) |
-| `photos/bedroom.jpg` | Aleksandra Dementeva | [Unsplash](https://unsplash.com/photos/VotK70bRo0U) |
-| `photos/restaurant.jpg` | Jelezniac Bianca | [Unsplash](https://unsplash.com/photos/3rAXuDp3pVs) |
-| `photos/wine-bar.jpg` | Fenghua | [Unsplash](https://unsplash.com/photos/tvqpWQnfvBo) |
-| `photos/concert-hall.jpg` | Tobias Keller | [Unsplash](https://unsplash.com/photos/2ecH5Lw3zSk) |
-| `photos/curved-facade.jpg` | Kimon Maritz | [Unsplash](https://unsplash.com/photos/mQiZnKwGXW0) |
-| `photos/pool-house.jpg` | Salman Saqib | [Unsplash](https://unsplash.com/photos/z6UAWpQAhXs) |
-| `photos/terracotta-waves.jpg` | Ricardo Gomez Angel | [Unsplash](https://unsplash.com/photos/PzYiCWOHtfU) |
-| `photos/mountain-ridges.jpg` | Sven Pieren | [Unsplash](https://unsplash.com/photos/ibikgDapcp4) |
-| `photos/alpine-lake.jpg` | Alessio Furlan | [Unsplash](https://unsplash.com/photos/Vw3a0HgE7AM) |
-| `photos/coastline.jpg` | Vera Lee Bird | [Unsplash](https://unsplash.com/photos/5g_A3WL_yyU) |
-| `photos/sea-at-dusk.jpg` | Hannah Reding | [Unsplash](https://unsplash.com/photos/RTVJvcyzKWw) |
-| `photos/lisbon-tram.jpg` | Aayush Gupta | [Unsplash](https://unsplash.com/photos/ljhCEaHYWJ8) |
-| `photos/lisbon-bridge.jpg` | Svetlana Gumerova | [Unsplash](https://unsplash.com/photos/gOLCAOuc7iA) |
-| `photos/lisbon-rooftops.jpg` | Tom Byrom | [Unsplash](https://unsplash.com/photos/hgFX7SydvFk) |
-| `photos/salmon-dinner.jpg` | Casey Lee | [Unsplash](https://unsplash.com/photos/awj7sRviVXo) |
-| `photos/chef-plating.jpg` | Urban Gyllström | [Unsplash](https://unsplash.com/photos/MaWMfm-HCqQ) |
+| `photos/cane-chair.jpg` | Nastia Ligrain | [Pexels](https://www.pexels.com/photo/14557507/) |
+| `photos/desk-lamp.jpg` | Yaroslav Shuraev | [Pexels](https://www.pexels.com/photo/9489902/) |
+| `photos/wool-blanket.jpg` | Nati | [Pexels](https://www.pexels.com/photo/14642652/) |
+| `photos/teapot.jpg` | Feyza Tuğba | [Pexels](https://www.pexels.com/photo/15841781/) |
+| `photos/espresso-cups.jpg` | Iulian Sandu | [Pexels](https://www.pexels.com/photo/33074054/) |
+| `photos/clay-vases.jpg` | Ivan S | [Pexels](https://www.pexels.com/photo/7119222/) |
+| `photos/paper-lantern.jpg` | Nam Nguyen | [Pexels](https://www.pexels.com/photo/36572430/) |
+| `photos/loft-living.jpg` | Andrea Davis | [Pexels](https://www.pexels.com/photo/30018180/) |
+| `photos/plant-studio.jpg` | Ksenia Chernaya | [Pexels](https://www.pexels.com/photo/4740484/) |
+| `photos/studio-desk.jpg` | Karola G | [Pexels](https://www.pexels.com/photo/8092466/) |
+| `photos/window-nook.jpg` | Chris G | [Pexels](https://www.pexels.com/photo/1648839/) |
+| `photos/attic-bedroom.jpg` | Muhammed Tarik Kahraman | [Pexels](https://www.pexels.com/photo/17395999/) |
+| `photos/noodle-bar.jpg` | Muhammad Fawdy | [Pexels](https://www.pexels.com/photo/18467147/) |
+| `photos/coffee-bar.jpg` | Gatsby Yang | [Pexels](https://www.pexels.com/photo/36573009/) |
+| `photos/concrete-tower.jpg` | Shantum Singh | [Pexels](https://www.pexels.com/photo/37266434/) |
+| `photos/spiral-stair.jpg` | frank borsato | [Pexels](https://www.pexels.com/photo/32484812/) |
+| `photos/desert-house.jpg` | Luis Quintero | [Pexels](https://www.pexels.com/photo/17647736/) |
+| `photos/pastel-arches.jpg` | Anshu Kumar | [Pexels](https://www.pexels.com/photo/34622865/) |
+| `photos/sand-dunes.jpg` | Zetong Li | [Pexels](https://www.pexels.com/photo/16656318/) |
+| `photos/pine-forest.jpg` | eberhard grossgasteiger | [Pexels](https://www.pexels.com/photo/31612235/) |
+| `photos/rocky-cove.jpg` | Landon Parenteau | [Pexels](https://www.pexels.com/photo/6631715/) |
+| `photos/misty-lake.jpg` | Connor Scott McManus | [Pexels](https://www.pexels.com/photo/11814939/) |
+| `photos/kyoto-street.jpg` | Satoshi Hirayama | [Pexels](https://www.pexels.com/photo/7526821/) |
+| `photos/kyoto-temple.jpg` | jp pasku | [Pexels](https://www.pexels.com/photo/30947495/) |
+| `photos/kyoto-rooftops.jpg` | Tien Nguyen | [Pexels](https://www.pexels.com/photo/20673684/) |
+| `photos/ramen-bowl.jpg` | alleksana | [Pexels](https://www.pexels.com/photo/4224214/) |
+| `photos/sushi-counter.jpg` | Ivan S | [Pexels](https://www.pexels.com/photo/8951181/) |
