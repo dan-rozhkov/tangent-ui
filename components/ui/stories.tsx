@@ -43,9 +43,8 @@ export interface StoriesProps {
   className?: string
 }
 
-/** Corner radius of the card in px, from 640px up. Below that the card is full-bleed. */
+/** Corner radius of the card in px, at every size: full-bleed below 640px keeps its corners too. */
 const RADIUS = 16
-const WIDE = 640
 /** A press held longer than this many ms pauses the story and hides the chrome instead of tapping. */
 const HOLD = 200
 /** A drag down past this many px, or a downward fling faster than FLING px/s, dismisses. */
@@ -74,7 +73,8 @@ const clamp = (value: number, min: number, max: number) => Math.min(max, Math.ma
 const rubber = (distance: number, limit = 120) => (1 - 1 / ((distance * 0.55) / limit + 1)) * limit
 
 const keyOf = (author: StoryAuthor, frame: number) => `${author.id}:${frame}`
-const unseenIn = (author: StoryAuthor, seen: ReadonlySet<string>) => author.frames.filter((_, at) => !seen.has(keyOf(author, at))).length
+/** One character per frame, "1" once seen: a string, so the memoized avatar re-renders only when its own ring changes. */
+const seenMaskOf = (author: StoryAuthor, seen: ReadonlySet<string>) => author.frames.map((_, at) => (seen.has(keyOf(author, at)) ? "1" : "0")).join("")
 /** Where an author's story picks up: the first frame not seen yet, or the first frame once everything has been. */
 function startOf(author: StoryAuthor, seen: ReadonlySet<string>) {
   const at = author.frames.findIndex((_, frame) => !seen.has(keyOf(author, frame)))
@@ -148,7 +148,7 @@ export function Stories({ authors: all, duration = 5, label = "Stories", classNa
             key={author.id}
             author={author}
             index={index}
-            unseen={unseenIn(author, seen)}
+            seenMask={seenMaskOf(author, seen)}
             hidden={open && index === current}
             onOpen={show}
             register={register}
@@ -196,21 +196,60 @@ export function Stories({ authors: all, duration = 5, label = "Stories", classNa
 }
 
 /** One tray avatar. Memoized so marking frames seen in the viewer re-renders only the avatars whose ring changes. */
+/** Tray ring: a 76px box, a 3px stroke, a 3px gap, then the 64px photo. */
+const RING_BOX = 76
+const RING_STROKE = 3
+const RING_R = (RING_BOX - RING_STROKE) / 2
+const RING_LENGTH = 2 * Math.PI * RING_R
+/** Visible space between two segments along the ring, in px. */
+const RING_GAP = 5
+
+/** The ring around a tray avatar: one arc per frame, starting at the top and running clockwise. */
+function SegmentRing({ seenMask }: { seenMask: string }) {
+  const count = seenMask.length
+  const share = RING_LENGTH / count
+  // Round caps reach half a stroke past each end of a dash, so the dash is shortened by a full stroke.
+  const dash = Math.max(0.01, share - RING_GAP - RING_STROKE)
+  return (
+    <svg aria-hidden="true" viewBox={`0 0 ${RING_BOX} ${RING_BOX}`} className="absolute inset-0 size-full -rotate-90 overflow-visible">
+      {[...seenMask].map((flag, at) => (
+        <circle
+          key={at}
+          cx={RING_BOX / 2}
+          cy={RING_BOX / 2}
+          r={RING_R}
+          fill="none"
+          strokeWidth={RING_STROKE}
+          strokeLinecap={count > 1 ? "round" : "butt"}
+          strokeDasharray={count > 1 ? `${dash} ${RING_LENGTH}` : undefined}
+          // Each dash is centered in its share of the ring, so the gaps sit evenly around the top.
+          strokeDashoffset={count > 1 ? -(at * share + (RING_GAP + RING_STROKE) / 2) : undefined}
+          className={cn(
+            "transition-[stroke] duration-240 ease-standard motion-reduce:transition-none",
+            flag === "1" ? "stroke-border-strong" : "stroke-primary",
+          )}
+        />
+      ))}
+    </svg>
+  )
+}
+
 const Avatar = memo(function Avatar({
   author,
   index,
-  unseen,
+  seenMask,
   hidden,
   onOpen,
   register,
 }: {
   author: StoryAuthor
   index: number
-  unseen: number
+  seenMask: string
   hidden: boolean
   onOpen: (index: number) => void
   register: (index: number, node: HTMLButtonElement | null) => void
 }) {
+  const unseen = [...seenMask].filter(flag => flag === "0").length
   const fresh = unseen > 0
   return (
     <button
@@ -218,27 +257,12 @@ const Avatar = memo(function Avatar({
       type="button"
       aria-label={`Open stories by ${author.name}, ${fresh ? `${unseen} new` : "all seen"}`}
       aria-haspopup="dialog"
-      className="group flex w-[72px] shrink-0 cursor-pointer flex-col items-center gap-1.5 outline-none transition-transform duration-160 ease-standard [-webkit-tap-highlight-color:transparent] active:scale-95 motion-reduce:transition-none"
+      className="group flex w-[76px] shrink-0 cursor-pointer flex-col items-center gap-1.5 outline-none transition-transform duration-160 ease-standard [-webkit-tap-highlight-color:transparent] active:scale-95 motion-reduce:transition-none"
       onClick={() => onOpen(index)}
     >
-      {/* Ring 2px, gap 2px, photo 64px. A seen ring is a 1px hairline on the gap's edge, so the swap is a soft cross-fade. */}
-      <span className="relative block size-[72px] rounded-full" style={{ opacity: hidden ? 0 : 1 }}>
-        <span
-          aria-hidden="true"
-          className={cn("absolute inset-0 rounded-full transition-opacity duration-240 ease-standard motion-reduce:transition-none", fresh ? "opacity-100" : "opacity-0")}
-          style={{
-            backgroundImage:
-              "conic-gradient(from 200deg, var(--color-series-3), var(--color-series-2), var(--color-series-1), var(--color-series-3))",
-          }}
-        />
-        <span
-          aria-hidden="true"
-          className={cn(
-            "absolute inset-[2px] rounded-full border bg-background transition-colors duration-240 ease-standard motion-reduce:transition-none",
-            fresh ? "border-transparent" : "border-border-strong",
-          )}
-        />
-        <span data-avatar="" className="absolute inset-1 overflow-hidden rounded-full bg-surface-muted">
+      <span className="relative block size-[76px] rounded-full" style={{ opacity: hidden ? 0 : 1 }}>
+        <SegmentRing seenMask={seenMask} />
+        <span data-avatar="" className="absolute inset-1.5 overflow-hidden rounded-full bg-surface-muted">
           <Image
             src={author.avatar}
             alt=""
@@ -251,7 +275,7 @@ const Avatar = memo(function Avatar({
       </span>
       <span
         className={cn(
-          "max-w-[72px] truncate text-xs leading-tight transition-colors duration-240 ease-standard motion-reduce:transition-none",
+          "max-w-[76px] truncate text-xs leading-tight transition-colors duration-240 ease-standard motion-reduce:transition-none",
           fresh ? "text-foreground" : "text-text-secondary",
           "group-focus-visible:text-foreground",
         )}
@@ -318,7 +342,7 @@ function Viewer({
   const reduced = useReducedMotion() ?? false
   const frameRef = useRef<HTMLDivElement>(null)
   const cardRef = useRef<HTMLDivElement>(null)
-  const [size, setSize] = useState({ w: 0, h: 0, wide: false })
+  const [size, setSize] = useState({ w: 0, h: 0 })
   const [frame, setFrame] = useState(() => startOf(authors[index], seen))
   /** Frames the neighbouring faces show while a programmatic change turns toward them. */
   const [targets, setTargets] = useState<Record<number, number>>({})
@@ -351,7 +375,7 @@ function Viewer({
   const x = useTransform(() => fx.get() + dx.get())
   const y = useTransform(() => fy.get() + dy.get())
   const scale = useTransform(() => fs.get() * shrink.get())
-  const radius = useTransform(() => (sizeRef.current.wide ? RADIUS : 0) / Math.max(0.05, scale.get()))
+  const radius = useTransform(() => RADIUS / Math.max(0.05, scale.get()))
   /** How far open the card is: 0 on the avatar, 1 at its resting rect. The clip, the corners and the avatar veil all follow it. */
   const open = useTransform(() => {
     const from = start.get()
@@ -360,12 +384,12 @@ function Viewer({
   // A square crop with fully round corners at the start, opening to the whole card with its own radius.
   const clipPath = useTransform(() => {
     if (!flying.get()) return "none"
-    const { w, h, wide } = sizeRef.current
+    const { w, h } = sizeRef.current
     const t = open.get()
     const side = Math.min(w, h)
     const inX = ((w - side) / 2) * (1 - t)
     const inY = ((h - side) / 2) * (1 - t)
-    const end = (wide ? RADIUS : 0) / Math.max(0.05, scale.get())
+    const end = RADIUS / Math.max(0.05, scale.get())
     return `inset(${inY}px ${inX}px ${inY}px ${inX}px round ${(side / 2) * (1 - t) + end * t}px)`
   })
   const veil = useTransform(() => clamp(1 - open.get() * 3.5, 0, 1))
@@ -391,8 +415,7 @@ function Viewer({
     const node = frameRef.current
     if (!node) return
     const measure = () => {
-      const wide = window.innerWidth >= WIDE
-      setSize(previous => (previous.w === node.offsetWidth && previous.h === node.offsetHeight && previous.wide === wide ? previous : { w: node.offsetWidth, h: node.offsetHeight, wide }))
+      setSize(previous => (previous.w === node.offsetWidth && previous.h === node.offsetHeight ? previous : { w: node.offsetWidth, h: node.offsetHeight }))
     }
     measure()
     window.addEventListener("resize", measure)
