@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react"
 import Image from "next/image"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
@@ -26,7 +26,7 @@ export interface LightboxImage {
 }
 
 export interface LightboxGalleryProps {
-  /** Photos in reading order. */
+  /** Photos in reading order. Keep the array and its items stable between renders, so grid tiles skip re-rendering. */
   images: LightboxImage[]
   /** Columns are added while each stays at least this wide, in px. There are always at least two. */
   minColumnWidth?: number
@@ -121,10 +121,14 @@ export function LightboxGallery({ images, minColumnWidth = 150, gap = 8, label =
     return lists
   }, [gap, images, minColumnWidth, width])
 
-  const show = (index: number) => {
+  // Stable, so the memoized tiles skip every re-render caused by the viewer changing `current`.
+  const show = useCallback((index: number) => {
     setCurrent(index)
     setOpen(true)
-  }
+  }, [])
+  const register = useCallback((index: number, node: HTMLButtonElement | null) => {
+    slots.current[index] = node
+  }, [])
 
   return (
     <section ref={rootRef} aria-label={label} className={cn("w-full", className)}>
@@ -134,23 +138,15 @@ export function LightboxGallery({ images, minColumnWidth = 150, gap = 8, label =
             {list.map(index => {
               const image = images[index]
               return (
-                <button
+                <GridTile
                   key={`${image.src}-${index}`}
-                  ref={node => {
-                    slots.current[index] = node
-                  }}
-                  type="button"
-                  aria-label={`Open ${nameOf(image)}, photo ${index + 1} of ${images.length}`}
-                  aria-haspopup="dialog"
-                  className={cn(
-                    "relative block w-full cursor-zoom-in overflow-hidden bg-surface-muted outline-none [-webkit-tap-highlight-color:transparent]",
-                    "transition-[filter,scale] duration-160 ease-standard pointer-fine:hover:brightness-[.94] focus-visible:scale-[.97] motion-reduce:transition-none",
-                  )}
-                  style={{ aspectRatio: `${image.width} / ${image.height}`, borderRadius: RADIUS, opacity: open && index === current ? 0 : 1 }}
-                  onClick={() => show(index)}
-                >
-                  <Image src={image.src} alt="" fill sizes={GRID_SIZES} className="object-cover" draggable={false} />
-                </button>
+                  image={image}
+                  index={index}
+                  total={images.length}
+                  hidden={open && index === current}
+                  onOpen={show}
+                  register={register}
+                />
               )
             })}
           </div>
@@ -190,6 +186,40 @@ export function LightboxGallery({ images, minColumnWidth = 150, gap = 8, label =
     </section>
   )
 }
+
+/** One grid photo. Memoized so a swipe in the viewer, which changes `current`, re-renders only the tile that hides or reveals. */
+const GridTile = memo(function GridTile({
+  image,
+  index,
+  total,
+  hidden,
+  onOpen,
+  register,
+}: {
+  image: LightboxImage
+  index: number
+  total: number
+  hidden: boolean
+  onOpen: (index: number) => void
+  register: (index: number, node: HTMLButtonElement | null) => void
+}) {
+  return (
+    <button
+      ref={node => register(index, node)}
+      type="button"
+      aria-label={`Open ${nameOf(image)}, photo ${index + 1} of ${total}`}
+      aria-haspopup="dialog"
+      className={cn(
+        "relative block w-full cursor-zoom-in overflow-hidden bg-surface-muted outline-none [-webkit-tap-highlight-color:transparent]",
+        "transition-[filter,scale] duration-160 ease-standard pointer-fine:hover:brightness-[.94] focus-visible:scale-[.97] motion-reduce:transition-none",
+      )}
+      style={{ aspectRatio: `${image.width} / ${image.height}`, borderRadius: RADIUS, opacity: hidden ? 0 : 1 }}
+      onClick={() => onOpen(index)}
+    >
+      <Image src={image.src} alt="" fill sizes={GRID_SIZES} className="object-cover" draggable={false} />
+    </button>
+  )
+})
 
 type Range = readonly [number, number]
 
@@ -266,7 +296,14 @@ function Viewer({
   const y = useTransform(() => fy.get() + dy.get() + py.get())
   const scale = useTransform(() => fs.get() * shrink.get() * z.get())
   const radius = useTransform(() => RADIUS / Math.max(0.05, scale.get()))
-  useMotionValueEvent(z, "change", value => setZoomed(value > 1.01))
+  // Zoom changes every frame; only the flip across 1.01 needs a render.
+  const zoomedRef = useRef(false)
+  useMotionValueEvent(z, "change", value => {
+    const next = value > 1.01
+    if (zoomedRef.current === next) return
+    zoomedRef.current = next
+    setZoomed(next)
+  })
 
   const stateRef = useRef({ index, stage, pitch, viewport, reduced, closing: false })
   useLayoutEffect(() => {
@@ -686,7 +723,7 @@ function Viewer({
   return (
     <div className="absolute inset-0">
       <h2 className="sr-only">{image?.title ? `${label}: ${image.title}` : label}</h2>
-      <motion.div aria-hidden="true" className="absolute inset-0 bg-background" style={{ opacity: shade }} />
+      <motion.div aria-hidden="true" className="absolute inset-0 bg-background will-change-[opacity]" style={{ opacity: shade }} />
       {/* The stage is laid out in CSS so chrome sizes and breakpoints stay in one place; slides are placed from its box. */}
       <div ref={stageRef} aria-hidden="true" className="pointer-events-none absolute inset-x-3 top-[68px] bottom-[140px] sm:inset-x-[72px] sm:top-[72px] sm:bottom-[148px]" />
       <div
@@ -711,6 +748,7 @@ function Viewer({
                   key={`${slide.src}-${at}`}
                   image={slide}
                   current={isCurrent}
+                  eager={Math.abs(at - index) <= 1}
                   left={fit.x + at * pitch}
                   top={fit.y}
                   width={fit.w}
@@ -725,7 +763,7 @@ function Viewer({
         ) : null}
       </div>
 
-      <motion.div className={cn("pointer-events-none absolute inset-0", closing && "[&_*]:pointer-events-none!")} style={{ opacity: chrome }}>
+      <motion.div className={cn("pointer-events-none absolute inset-0 will-change-[opacity]", closing && "[&_*]:pointer-events-none!")} style={{ opacity: chrome }}>
         <div className="pointer-events-auto absolute inset-x-0 top-0 flex h-14 items-center justify-between gap-3 pr-3 pl-[22px] sm:h-16">
           <p aria-live="polite" aria-atomic="true" className="m-0 min-w-16 text-sm tabular-nums text-text-secondary">
             {index + 1} of {count}
@@ -815,6 +853,7 @@ const navButton = [
 function Slide({
   image,
   current,
+  eager,
   left,
   top,
   width,
@@ -825,6 +864,8 @@ function Slide({
 }: {
   image: LightboxImage
   current: boolean
+  /** Within one of the current slide: loads now, so a swipe lands on a sharp photo. */
+  eager: boolean
   left: number
   top: number
   width: number
@@ -834,6 +875,11 @@ function Slide({
   className?: string
 }) {
   const [loaded, setLoaded] = useState(false)
+  // A full-size file that is already complete when the slide mounts skips the fade; the placeholder stays under it until it decodes.
+  const [instant, setInstant] = useState(false)
+  const fullRef = useCallback((node: HTMLImageElement | null) => {
+    if (node && node.complete && node.naturalWidth > 0) setInstant(true)
+  }, [])
   return (
     <motion.div
       ref={photoRef}
@@ -842,18 +888,25 @@ function Slide({
       className={cn("absolute overflow-hidden bg-surface-muted will-change-transform", className)}
       style={{ left, top, width, height, borderRadius: transform?.radius ?? RADIUS, x: transform?.x, y: transform?.y, scale: transform?.scale }}
     >
-      {/* The grid's file is already cached, so the photo is never blank while the full size loads over it. */}
-      <Image src={image.src} alt="" fill sizes={GRID_SIZES} className="object-cover" draggable={false} aria-hidden="true" />
-      <Image
-        src={image.src}
-        alt={current ? image.alt : ""}
-        fill
-        sizes="100vw"
-        loading={current ? "eager" : "lazy"}
-        className={cn("object-cover transition-opacity duration-240 ease-standard motion-reduce:transition-none", loaded ? "opacity-100" : "opacity-0")}
-        draggable={false}
-        onLoad={() => setLoaded(true)}
-      />
+      {/* One compositing layer for both photos: the wrapper's radius changes every frame of a flight, drag or zoom, and would otherwise re-raster them. */}
+      <div className="absolute inset-0 will-change-transform">
+        {/* The grid's file is usually cached, so the photo is never blank while the full size loads over it. */}
+        <Image src={image.src} alt="" fill sizes={GRID_SIZES} className="object-cover" draggable={false} aria-hidden="true" />
+        <Image
+          ref={fullRef}
+          src={image.src}
+          alt={current ? image.alt : ""}
+          fill
+          sizes="100vw"
+          loading={current || eager ? "eager" : "lazy"}
+          className={cn(
+            "object-cover",
+            instant ? "opacity-100" : cn("transition-opacity duration-240 ease-standard motion-reduce:transition-none", loaded ? "opacity-100" : "opacity-0"),
+          )}
+          draggable={false}
+          onLoad={() => setLoaded(true)}
+        />
+      </div>
     </motion.div>
   )
 }
