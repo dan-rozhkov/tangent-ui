@@ -1,7 +1,6 @@
 "use client"
 
-import { useState, type CSSProperties } from "react"
-import { useDialKit } from "dialkit"
+import { useState } from "react"
 import { Archive, Clock, MailOpen, RotateCcw } from "lucide-react"
 
 import { Avatar } from "@/components/ui/avatar"
@@ -45,15 +44,6 @@ const inbox: Message[] = [
 export default function Demo() {
   const [messages, setMessages] = useState(inbox)
   const [unread, setUnread] = useState<Set<string>>(() => new Set(["m1", "m3"]))
-  const dials = useDialKit(
-    "Swipe actions",
-    {
-      fullSwipe: true,
-      inset: [4, 0, 6, 0.25],
-      restore: { type: "action", label: "Restore messages" },
-    },
-    { id: "swipe-actions", onAction: () => setMessages(inbox) },
-  )
   const remove = (id: string) => setMessages((current) => current.filter((message) => message.id !== id))
   const toggleUnread = (id: string) =>
     setUnread((current) => {
@@ -65,8 +55,7 @@ export default function Demo() {
 
   return (
     <div className="grid w-full max-w-md gap-3">
-      <div style={{ "--swipe-actions-inset": `${dials.inset}rem` } as CSSProperties}>
-      <SwipeActions label="Inbox">
+      <SwipeActions label="Inbox" className="[--swipe-actions-inset:4rem]">
         {messages.map((message) => {
           const sender = person(message.from)
           const isUnread = unread.has(message.id)
@@ -74,7 +63,6 @@ export default function Demo() {
             <SwipeActionsRow
               key={message.id}
               label={message.subject}
-              fullSwipe={dials.fullSwipe}
               leading={[
                 {
                   label: isUnread ? "Read" : "Unread",
@@ -112,7 +100,6 @@ export default function Demo() {
           )
         })}
       </SwipeActions>
-      </div>
       {messages.length < inbox.length && (
         <Button variant="ghost" size="sm" className="justify-self-center" onClick={() => setMessages(inbox)}>
           <RotateCcw size={16} strokeWidth={1.75} aria-hidden="true" />

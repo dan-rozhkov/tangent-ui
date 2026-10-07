@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useId, useRef, useState, useSyncExternalStore } from "react"
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
-import { AnimatePresence, animate, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion } from "motion/react"
 import type { Transition } from "motion/react"
 import { Check, Download, Eraser, Play, Redo2, Square, Undo2, X } from "lucide-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /** A sampled point: position in pad units, pen pressure between 0 and 1 (or -1 when the device has none), and ms since the stroke began. */
 export interface InkPoint {

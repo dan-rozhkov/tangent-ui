@@ -2,11 +2,12 @@
 
 import { forwardRef, useCallback, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode, UIEvent } from "react";
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react";
+import { AnimatePresence, animate, motion, useMotionValue } from "motion/react";
 import type { Transition } from "motion/react";
 import { Hash } from "lucide-react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 /* The mirror and the textarea share every metric so tokens sit exactly under their characters. */
 const metrics = "box-border m-0 w-full border-0 px-3.5 py-[11px] text-(length:--text-base) leading-6 tracking-body wrap-break-word whitespace-pre-wrap [word-break:break-word] [tab-size:4]";

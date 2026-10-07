@@ -4,11 +4,12 @@ import { forwardRef, isValidElement, useCallback, useEffect, useLayoutEffect, us
 import type { ComponentProps, ReactNode, Ref, RefObject } from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva, type VariantProps } from "class-variance-authority"
-import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useIsPresent, useMotionValue } from "motion/react"
 import type { TargetAndTransition, Variants } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /* Press scale is driven by Motion (whileTap) alone, so transform never gets a CSS transition here.
    Anchors of floating layers never scale: the layer would measure a shrunken trigger. */

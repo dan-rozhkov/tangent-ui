@@ -13,7 +13,6 @@ import {
   useDragControls,
   useIsPresent,
   useMotionValue,
-  useReducedMotion,
   useTransform,
 } from "motion/react"
 import type { Transition, Variants } from "motion/react"
@@ -23,6 +22,7 @@ import { Button } from "@/components/ui/button"
 import { motionTokens as defaults } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface SharePerson {
   id: string

@@ -18,11 +18,11 @@ import {
   motion,
   useInView,
   useMotionValue,
-  useReducedMotion,
   useSpring,
 } from "motion/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface RidgelineSeries {
   /** Stable identity. A ridge that survives a data change morphs into its new shape. */

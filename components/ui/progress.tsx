@@ -7,7 +7,6 @@ import {
   motion,
   useIsPresent,
   useMotionValue,
-  useReducedMotion,
   useTransform,
   type HTMLMotionProps,
   type TargetAndTransition,
@@ -17,6 +16,7 @@ import { Check } from "lucide-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface ProgressProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "children"> {
   value?: number

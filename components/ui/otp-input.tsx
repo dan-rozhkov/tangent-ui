@@ -2,11 +2,12 @@
 
 import { useEffect, useId, useRef, useState } from "react"
 import type { ChangeEvent, ClipboardEvent, FocusEvent, KeyboardEvent } from "react"
-import { AnimatePresence, motion, useAnimate, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion, useAnimate } from "motion/react"
 import type { Transition } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface OtpInputProps {
   length?: number

@@ -8,12 +8,12 @@ import {
   useInView,
   useMotionValue,
   useMotionValueEvent,
-  useReducedMotion,
   useTransform,
   type Variants,
 } from "motion/react"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 type GaugeTone = "accent" | "success" | "warning" | "danger"
 /** A band that starts at `from`: the highest band the value reaches sets the tone and names the state, so it never rests on color alone. */

@@ -2,13 +2,14 @@
 
 import { useEffect, useEffectEvent, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react"
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react"
-import { AnimatePresence, Reorder, animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react"
+import { AnimatePresence, Reorder, animate, motion, useMotionValue, useTransform } from "motion/react"
 import type { Transition } from "motion/react"
 import { Check, Pipette, Plus } from "lucide-react"
 
 import { TextMorph } from "@/components/ui/text-morph"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type ColorFormat = "hex" | "rgb" | "hsl" | "oklch"
 export interface ColorSwatch {

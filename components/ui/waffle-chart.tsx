@@ -18,12 +18,12 @@ import {
   motion,
   useInView,
   useMotionValue,
-  useReducedMotion,
   useSpring,
   useTransform,
 } from "motion/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface WaffleCategory {
   /** Stable identity. Cells keep following their category when the data changes, so a new dataset flows instead of repainting. */

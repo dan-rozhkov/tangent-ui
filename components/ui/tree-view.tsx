@@ -3,9 +3,10 @@
 import { useId, useRef, useState } from "react";
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import { ChevronRight, File, Folder, FolderOpen } from "lucide-react";
-import { AnimatePresence, motion, useIsPresent, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useIsPresent } from "motion/react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 export interface TreeNode {
   id: string;

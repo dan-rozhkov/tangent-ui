@@ -1,7 +1,5 @@
 "use client"
 
-import { useDialKit } from "dialkit"
-
 import { CardStack } from "@/components/ui/card-stack"
 import { photo, type PhotoId } from "@/lib/media"
 
@@ -40,22 +38,13 @@ const destinations: {
 ]
 
 export default function Demo() {
-  const dial = useDialKit(
-    "Card stack",
-    {
-      label: "Destinations",
-      leftLabel: "Skip",
-      rightLabel: "Shortlist",
-    },
-    { id: "card-stack" }
-  )
   return (
     <CardStack
       items={destinations}
       getKey={(place) => place.id}
       getLabel={(place) => place.name}
-      label={dial.label}
-      labels={{ left: dial.leftLabel, right: dial.rightLabel }}
+      label="Destinations"
+      labels={{ left: "Skip", right: "Shortlist" }}
       outcomes={{ left: "skipped", right: "shortlisted" }}
       renderCard={(place) => {
         const image = photo(place.photo)

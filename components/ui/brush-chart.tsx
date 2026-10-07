@@ -18,11 +18,11 @@ import {
   motion,
   useInView,
   useMotionValue,
-  useReducedMotion,
   useSpring,
 } from "motion/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 const tipText =
   "text-[length:var(--text-xs)] leading-[var(--leading-body)] tabular-nums"

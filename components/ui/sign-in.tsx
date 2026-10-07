@@ -7,7 +7,6 @@ import {
   animate,
   motion,
   useMotionValue,
-  useReducedMotion,
   type Transition,
   type Variants,
 } from "motion/react"
@@ -20,6 +19,7 @@ import { OtpInput } from "@/components/ui/otp-input"
 import { avatar } from "@/lib/media"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 type Step = "email" | "code" | "done"
 type Provider = "Google" | "Apple" | "GitHub"

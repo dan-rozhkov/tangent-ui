@@ -1,11 +1,12 @@
 "use client"
 
-import { animate, AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { animate, AnimatePresence, motion } from "motion/react"
 import { Check, ChevronDown, Search, X } from "lucide-react"
 import { forwardRef, useEffect, useId, useImperativeHandle, useMemo, useRef, useState } from "react"
 import type { InputHTMLAttributes, KeyboardEvent, MouseEvent as ReactMouseEvent, ReactNode } from "react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface ComboboxOption {
   value: string

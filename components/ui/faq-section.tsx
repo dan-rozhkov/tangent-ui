@@ -2,13 +2,14 @@
 
 import { forwardRef, useId, useMemo, useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import type { Variants } from "motion/react";
 import { ArrowRight, Plus } from "lucide-react";
 import { SearchField } from "@/components/ui/search-field";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 export type FaqSectionVariant = "accordion" | "columns" | "search";
 

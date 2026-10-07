@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono, Inter } from "next/font/google"
 
 import "./globals.css"
+import { MotionSettingsRoot } from "@/components/gallery/motion-settings"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 
@@ -18,7 +19,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" data-accent="neutral" suppressHydrationWarning className={cn(geist.variable, inter.variable, geistMono.variable)}>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <MotionSettingsRoot>{children}</MotionSettingsRoot>
+        </ThemeProvider>
       </body>
     </html>
   )

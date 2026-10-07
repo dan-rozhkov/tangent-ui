@@ -17,12 +17,12 @@ import {
   motion,
   useMotionValue,
   usePresence,
-  useReducedMotion,
   useTransform,
 } from "motion/react"
 import { X } from "lucide-react"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /**
  * A sheet that rises from the bottom edge and rests at one or more heights (detents).

@@ -1,6 +1,5 @@
 "use client"
 
-import { useDialKit } from "dialkit"
 import { Building2, FileText, Globe, Lock, Mail, MessageSquare, Send } from "lucide-react"
 
 import { ShareSheet } from "@/components/ui/share-sheet"
@@ -11,29 +10,15 @@ const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 const people = media.slice(0, 5).map(person => ({ id: person.id, name: person.name, avatar: person.src }))
 
 export default function Demo() {
-  const values = useDialKit(
-    "Share sheet",
-    {
-      label: "Share",
-      title: "Q3 launch plan",
-      align: { type: "select", options: ["start", "center", "end"], default: "end" },
-      sheetOnPhones: true,
-    },
-    { id: "share-sheet" },
-  )
-
   return (
     <div className="relative h-[400px] w-full max-w-[680px] rounded-surface border border-border bg-surface">
       <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
         <span className="inline-flex min-w-0 items-center gap-2 text-sm font-medium">
           <FileText className="size-4 flex-none text-text-muted" aria-hidden="true" />
-          <span className="truncate">{values.title}</span>
+          <span className="truncate">Q3 launch plan</span>
         </span>
         <ShareSheet
-          title={values.title}
-          label={values.label}
-          align={values.align as "start" | "center" | "end"}
-          sheetOnPhones={values.sheetOnPhones}
+          title="Q3 launch plan"
           link="https://example.com/d/q3-launch-plan"
           people={people}
           access={[

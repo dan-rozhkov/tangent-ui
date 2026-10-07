@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { CSSProperties, KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { AnimationPlaybackControls, Transition } from "motion/react"
 import { ArrowUpRight, ChevronLeft, ChevronRight } from "lucide-react"
 
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface PageCurlProps {
   /** Page contents in reading order. Page one is the cover and sits alone on the right. */

@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode, type Ref } from "react";
-import { AnimatePresence, animate, motion, useInView, useMotionValue, useReducedMotion, useTransform, type MotionValue } from "motion/react";
+import { AnimatePresence, animate, motion, useInView, useMotionValue, useTransform, type MotionValue } from "motion/react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 export type CountdownUnit = "days" | "hours" | "minutes" | "seconds";
 

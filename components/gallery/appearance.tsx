@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 
 import { useThemeTransition } from "@/components/demos/theme-switch"
+import { MotionSettings } from "@/components/gallery/motion-settings"
 import { MorphSelect } from "@/components/ui/morph-select"
 import { ThemeSwitch } from "@/components/ui/theme-switch"
 
@@ -26,7 +27,7 @@ const accentItems = accents.map(name => ({
   icon: <span className="size-3 rounded-full" data-accent-swatch={name} style={{ background: swatch[name] }} />,
 }))
 
-/** Theme and accent switches for the gallery. The foundation reads both from attributes on <html>. */
+/** Motion, accent and theme settings for the gallery. The foundation reads them from attributes on <html>. */
 export function Appearance() {
   const { theme, onThemeChange } = useThemeTransition()
   const [accent, setAccent] = useState<string>("neutral")
@@ -37,6 +38,7 @@ export function Appearance() {
 
   return (
     <div className="flex items-center gap-2">
+      <MotionSettings />
       <MorphSelect
         label="Accent"
         hideLabel

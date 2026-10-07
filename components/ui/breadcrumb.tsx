@@ -3,10 +3,11 @@
 import Link from "next/link"
 import type { MouseEvent } from "react"
 import { ChevronRight as NavArrowRight } from "lucide-react"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface BreadcrumbItem {
   label: string

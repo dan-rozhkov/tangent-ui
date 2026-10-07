@@ -3,13 +3,14 @@
 import { forwardRef, useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, CSSProperties, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent, ReactNode, RefObject } from "react";
 import Image from "next/image";
-import { AnimatePresence, LayoutGroup, motion, useIsPresent, useReducedMotion } from "motion/react";
+import { AnimatePresence, LayoutGroup, motion, useIsPresent } from "motion/react";
 import type { Transition, Variants } from "motion/react";
 import { ArrowRight, BookOpen, Boxes, ChevronDown, History, LayoutTemplate, Menu, MessagesSquare, Palette, PanelsTopLeft, Route, X } from "lucide-react";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { motionTokens } from "@/lib/motion-tokens";
 import { photo } from "@/lib/media";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 export type SiteHeaderVariant = "simple" | "centered" | "mega";
 

@@ -2,12 +2,13 @@
 
 import { Fragment, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { KeyboardEvent, PointerEvent, Ref } from "react"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "motion/react"
 import type { MotionValue, Variants } from "motion/react"
 import { Minus, Plus } from "lucide-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /** Text shown beside the number. A function receives the value, so a unit can follow it: `n => n === 1 ? " seat" : " seats"`. */
 export type NumberFieldAffix = string | ((value: number) => string)

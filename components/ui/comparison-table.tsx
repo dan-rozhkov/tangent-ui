@@ -2,12 +2,13 @@
 
 import { useEffect, useId, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { Check, Minus } from "lucide-react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { comparisonColumns, comparisonSections } from "@/components/ui/comparison-table-data";
 import type { ComparisonColumn, ComparisonSection, ComparisonValue } from "@/components/ui/comparison-table-data";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 export type { ComparisonColumn, ComparisonRow, ComparisonSection, ComparisonValue } from "@/components/ui/comparison-table-data";
 

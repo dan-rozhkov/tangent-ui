@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useDialKit } from "dialkit"
 
 import { Button } from "@/components/ui/button"
 import { TextMorph } from "@/components/ui/text-morph"
@@ -22,21 +21,6 @@ function Label({ text }: { text: string }) {
 export default function Demo() {
   const [state, setState] = useState<PublishState>("idle")
   const [following, setFollowing] = useState(false)
-  // TextMorph has no tunable props of its own; the panel only offers triggers for the two morphs.
-  useDialKit(
-    "Text morph",
-    {
-      publish: { type: "action", label: "Publish" },
-      follow: { type: "action", label: "Follow / unfollow" },
-    },
-    {
-      id: "text-morph",
-      onAction: (action) => {
-        if (action === "publish") setState((current) => (current === "idle" ? "busy" : current))
-        else setFollowing((value) => !value)
-      },
-    },
-  )
 
   // Publishing settles on its own, then the label returns to idle so the morph can be replayed.
   useEffect(() => {

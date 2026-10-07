@@ -2,8 +2,9 @@
 
 import { useLayoutEffect, useRef, useState, useSyncExternalStore } from "react";
 import type { CSSProperties } from "react";
-import { AnimatePresence, animate, motion, useMotionValue, usePresence, useReducedMotion, useTransform, useVelocity } from "motion/react";
+import { AnimatePresence, animate, motion, useMotionValue, usePresence, useTransform, useVelocity } from "motion/react";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 /**
  * Text and numbers that spin into their new value like slot machine reels. Every character is a reel; digits count through

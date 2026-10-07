@@ -5,6 +5,27 @@
 
 /* The theme switches with data-theme on <html>, not a .dark class. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+/* Reduced motion follows the system unless <html data-motion> forces it, see lib/reduced-motion. */
+@custom-variant motion-reduce {
+  &:where([data-motion="reduce"] *) {
+    @slot;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &:where(:not([data-motion="full"] *)) {
+      @slot;
+    }
+  }
+}
+@custom-variant motion-safe {
+  &:where([data-motion="full"] *) {
+    @slot;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    &:where(:not([data-motion="reduce"] *)) {
+      @slot;
+    }
+  }
+}
 
 /* Foundation tokens exposed as Tailwind utilities: bg-surface, text-text-secondary, rounded-control, h-control-md, shadow-raised, ease-enter… */
 @theme inline {
@@ -97,13 +118,4 @@
     line-height: var(--leading-body);
     -webkit-font-smoothing: antialiased;
   }
-}
-
-/* The gallery's DialKit tuning panel sits in a page panel: no root title, and its surfaces come from the foundation. */
-[data-tune] .dialkit-folder-root > .dialkit-panel-header {
-  display: none;
-}
-[data-tune] .dialkit-root.dialkit-root {
-  --dial-glass-bg: var(--surface);
-  --dial-dropdown-bg: var(--surface-raised);
 }

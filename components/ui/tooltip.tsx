@@ -3,9 +3,10 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react"
 import type { ReactElement, ReactNode } from "react"
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface TooltipProps {
   content: ReactNode

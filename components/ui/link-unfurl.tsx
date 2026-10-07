@@ -5,13 +5,14 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react"
 import type { CSSProperties, ClipboardEvent, FormEvent, KeyboardEvent, PointerEvent } from "react"
 import { createPortal } from "react-dom"
-import { AnimatePresence, animate, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion } from "motion/react"
 import type { AnimationPlaybackControls, Transition } from "motion/react"
 import { ArrowUp, Check, ChevronUp, Globe, Link2, X } from "lucide-react"
 
 import { motionTokens as presets } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface LinkUnfurlPreview {
   url: string

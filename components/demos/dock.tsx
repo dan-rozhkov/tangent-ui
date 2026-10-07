@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useDialKit } from "dialkit"
 import { Circle, Diamond, Hand, MessageCircle, MousePointer2, Square, StickyNote, Triangle, Type } from "lucide-react"
 
 import { Dock, type DockItem } from "@/components/ui/dock"
@@ -26,11 +25,6 @@ const initialItems: DockItem[] = [
 ]
 
 export default function Demo() {
-  const props = useDialKit(
-    "Dock",
-    { label: { type: "text", default: "Board tools", placeholder: "Accessible name" } },
-    { id: "dock" },
-  )
   const [tool, setTool] = useState("move")
   const [items, setItems] = useState(initialItems)
 
@@ -40,7 +34,7 @@ export default function Demo() {
         Drag a tool, or hold Alt with the arrow keys, to reorder. Comments clear their badge when opened.
       </p>
       <Dock
-        label={props.label}
+        label="Board tools"
         items={items}
         value={tool}
         onValueChange={(id) => {

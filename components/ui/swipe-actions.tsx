@@ -16,13 +16,13 @@ import {
   motion,
   useIsPresent,
   useMotionValue,
-  useReducedMotion,
   useTransform,
 } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue } from "motion/react"
 import { MoreHorizontal } from "lucide-react"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface SwipeAction {
   label: string

@@ -19,11 +19,11 @@ import {
   motion,
   useInView,
   useMotionValue,
-  useReducedMotion,
   useSpring,
 } from "motion/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface TreemapNode {
   /** Stable identity, unique in the tree. A tile that survives a data change morphs to its new size. */

@@ -2,10 +2,11 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { KeyboardEvent, ReactNode } from "react"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type StepperOrientation = "horizontal" | "vertical"
 export type StepperStatus = "complete" | "current" | "upcoming" | "error"

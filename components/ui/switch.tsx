@@ -2,11 +2,12 @@
 
 import { forwardRef, useEffect, useRef, useState } from "react"
 import { Switch as SwitchPrimitive } from "@base-ui/react/switch"
-import { animate, motion, useMotionValue, useReducedMotion } from "motion/react"
+import { animate, motion, useMotionValue } from "motion/react"
 import type { Transition } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface SwitchProps
   extends Omit<SwitchPrimitive.Root.Props, "className" | "render" | "nativeButton" | "onCheckedChange"> {

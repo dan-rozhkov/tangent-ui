@@ -3,12 +3,13 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react"
 import type { ReactNode, RefObject } from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { PanInfo, Transition } from "motion/react"
 import { X } from "lucide-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /** Mirrors the open state so the panel can stay mounted while it slides out, retarget mid-flight, and close itself after a drag. */
 const DrawerContext = createContext<{

@@ -2,12 +2,13 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent, PointerEvent } from "react";
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react";
+import { AnimatePresence, animate, motion, useMotionValue } from "motion/react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FRAMES, KINDS, VIEW, shapePath } from "@/components/ui/empty-states-art";
 import type { Frame, Phase, SceneId } from "@/components/ui/empty-states-art";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 /**
  * One product illustration for four empty states. The tabs pick a state; every shape in the drawing travels to its new

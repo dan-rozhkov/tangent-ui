@@ -3,12 +3,13 @@
 import { Dialog } from "@base-ui/react/dialog"
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react"
 import type { CSSProperties, HTMLAttributes, ReactNode } from "react"
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, LayoutGroup, motion } from "motion/react"
 import type { HTMLMotionProps, MotionProps, Transition, Variants } from "motion/react"
 import { X } from "lucide-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface CardProps extends HTMLAttributes<HTMLElement> {
   title: string

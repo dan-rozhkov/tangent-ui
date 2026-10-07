@@ -3,7 +3,7 @@
 import { forwardRef, useEffect, useId, useRef, useState } from "react";
 import type { FormEvent, ReactNode } from "react";
 import Image from "next/image";
-import { AnimatePresence, motion, useAnimate, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion, useAnimate } from "motion/react";
 import type { Variants } from "motion/react";
 import { ArrowRight } from "lucide-react";
 import AnimatedCounter from "@/components/ui/animated-counter";
@@ -13,6 +13,7 @@ import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { newsletterCopy, newsletterPublication, newsletterReaders } from "./newsletter-signup-data";
 import type { NewsletterIssue, NewsletterPublication } from "./newsletter-signup-data";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 export type { NewsletterIssue, NewsletterPublication, NewsletterStory } from "./newsletter-signup-data";
 

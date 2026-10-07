@@ -3,12 +3,13 @@
 import { Fragment, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { CSSProperties, FocusEvent, KeyboardEvent, ReactElement, ReactNode } from "react"
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
-import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useIsPresent, useMotionValue } from "motion/react"
 import type { TargetAndTransition } from "motion/react"
 
 import { Tooltip } from "@/components/ui/tooltip"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type FloatingButtonGroupVariant = "muted" | "floating"
 export type FloatingButtonGroupSize = "sm" | "md"

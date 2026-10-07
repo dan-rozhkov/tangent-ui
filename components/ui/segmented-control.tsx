@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useId, useLayoutEffect, useRef, type KeyboardEvent, type ReactNode } from "react"
-import { LayoutGroup, motion, useReducedMotion } from "motion/react"
+import { LayoutGroup, motion } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface Segment {
   value: string

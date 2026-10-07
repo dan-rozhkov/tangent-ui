@@ -7,12 +7,12 @@ import {
   motion,
   useInView,
   useMotionValue,
-  useReducedMotion,
   useTransform,
 } from "motion/react"
 import type { MotionValue, Transition, Variants } from "motion/react"
 
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface AnimatedCounterProps {
   value: number

@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import type { ReactNode } from "react"
-import { useDialKit } from "dialkit"
 import { ChevronRight } from "lucide-react"
 
 import { Avatar } from "@/components/ui/avatar"
@@ -69,27 +68,19 @@ function Blocked() {
 
 export default function Demo() {
   const [mode, setMode] = useState<SheetStackMode>("auto")
-  const values = useDialKit(
-    "Sheet stack",
-    {
-      breakpoint: [640, 320, 960, 10],
-      dismissible: true,
-    },
-    { id: "sheet-stack" },
-  )
 
   return (
     <div className="grid w-full max-w-[46rem] gap-4">
       <SegmentedControl label="Presentation" options={modes} value={mode} onValueChange={value => setMode(value as SheetStackMode)} className="justify-self-center" />
       {/* The stack fills this stage instead of the page, and switches to dialogs when the stage is wide. */}
       <div className="relative h-[36rem] overflow-hidden supports-[overflow:clip]:overflow-clip rounded-surface bg-surface-muted">
-        <SheetStack contained mode={mode} breakpoint={values.breakpoint}>
+        <SheetStack contained mode={mode}>
           <div className="grid h-full place-items-center content-center gap-3 p-6 text-center">
             <p className="m-0 max-w-xs text-sm text-text-secondary">Drill into settings. Each level keeps its parent in view; drag a sheet down to go back.</p>
             <SheetTrigger sheet="settings">Settings</SheetTrigger>
           </div>
 
-          <Sheet id="settings" title="Settings" dismissible={values.dismissible}>
+          <Sheet id="settings" title="Settings">
             <DrillRow sheet="profile">
               <Avatar src={avatar("emma-collins")} name="Emma Collins" className="size-11" />
               <span className="grid min-w-0 flex-1">
@@ -115,7 +106,7 @@ export default function Demo() {
             </ul>
           </Sheet>
 
-          <Sheet id="profile" title="Edit profile" footer={<SaveButton />} dismissible={values.dismissible}>
+          <Sheet id="profile" title="Edit profile" footer={<SaveButton />}>
             <div className="grid justify-items-center gap-2 py-2">
               <Avatar src={avatar("emma-collins")} name="Emma Collins" size="xl" />
             </div>
@@ -126,7 +117,7 @@ export default function Demo() {
             </DrillRow>
           </Sheet>
 
-          <Sheet id="blocked" title="Blocked people" dismissible={values.dismissible}>
+          <Sheet id="blocked" title="Blocked people">
             <Blocked />
           </Sheet>
         </SheetStack>

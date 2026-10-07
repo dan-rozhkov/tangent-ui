@@ -1,11 +1,12 @@
 "use client"
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
 import { ChevronDown, X } from "lucide-react"
 import { useEffect, useId, useMemo, useRef, useState } from "react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface MultiSelectOption {
   value: string

@@ -9,7 +9,6 @@ import {
   useIsPresent,
   useMotionValue,
   useMotionValueEvent,
-  useReducedMotion,
   useTransform,
   type HTMLMotionProps,
   type MotionProps,
@@ -20,6 +19,7 @@ import { File, FileArchive, FileImage, FileText, RotateCw, UploadCloud, X } from
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type FileUploadItem = { id: string; file: File; error?: string }
 

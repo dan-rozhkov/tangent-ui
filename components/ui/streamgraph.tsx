@@ -19,11 +19,11 @@ import {
   motion,
   useInView,
   useMotionValue,
-  useReducedMotion,
   useSpring,
 } from "motion/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface StreamgraphSeries {
   /** Stable identity. A layer keeps its place and color across data changes, so switching datasets morphs it. */

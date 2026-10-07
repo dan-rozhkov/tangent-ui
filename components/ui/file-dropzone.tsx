@@ -11,13 +11,13 @@ import {
   useMotionTemplate,
   useMotionValue,
   useMotionValueEvent,
-  useReducedMotion,
   useSpring,
   useTransform,
 } from "motion/react"
 import type { HTMLMotionProps, TargetAndTransition, Transition } from "motion/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type FileDropzoneStatus = "uploading" | "uploaded" | "failed"
 /** One row in the file list. A row without a status is a plain selection. */

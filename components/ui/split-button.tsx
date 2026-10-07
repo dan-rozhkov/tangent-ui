@@ -4,12 +4,13 @@ import { isValidElement, useEffect, useLayoutEffect, useRef, useState } from "re
 import type { CSSProperties, ReactNode, RefObject } from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { cva } from "class-variance-authority"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { TargetAndTransition } from "motion/react"
 import { ChevronDown } from "lucide-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface SplitButtonAction {
   label: string

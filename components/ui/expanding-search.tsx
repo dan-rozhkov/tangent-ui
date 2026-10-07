@@ -3,12 +3,13 @@
 import { useCallback, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { KeyboardEvent, ReactNode, RefObject } from "react"
 import { flushSync } from "react-dom"
-import { AnimatePresence, animate, motion, useMotionValue, useMotionValueEvent, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue, useMotionValueEvent } from "motion/react"
 import type { MotionValue } from "motion/react"
 import { Search, X } from "lucide-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface ExpandingSearchItem {
   id: string

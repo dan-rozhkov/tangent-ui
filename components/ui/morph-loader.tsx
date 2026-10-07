@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useRef } from "react"
 import type { CSSProperties } from "react"
-import { animate, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react"
+import { animate, motion, useMotionValue, useSpring, useTransform } from "motion/react"
 import type { MotionValue } from "motion/react"
 
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type MorphLoaderVariant = "dots" | "bars" | "ring" | "square"
 export type MorphLoaderStatus = "loading" | "success" | "error"

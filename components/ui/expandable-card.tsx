@@ -2,12 +2,13 @@
 
 import { useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { ComponentPropsWithoutRef, CSSProperties, KeyboardEvent, ReactNode } from "react"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
 import { ChevronDown as NavArrowDown } from "lucide-react"
 
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface ExpandableCardProps
   extends Omit<

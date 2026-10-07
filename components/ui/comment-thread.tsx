@@ -13,12 +13,13 @@ import {
   useSyncExternalStore,
 } from "react"
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
 import { Check, ChevronRight, CornerDownRight, RotateCcw, SmilePlus, X } from "lucide-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface CommentAuthor {
   id: string

@@ -2,10 +2,11 @@
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react"
 import type { KeyboardEvent, MouseEvent } from "react"
-import { AnimatePresence, motion, useAnimate, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion, useAnimate } from "motion/react"
 import { X as Xmark } from "lucide-react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface TagInputProps {
   label: string

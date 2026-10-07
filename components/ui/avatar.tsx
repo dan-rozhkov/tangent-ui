@@ -3,10 +3,11 @@
 import Image from "next/image"
 import { useLayoutEffect, useRef, useState, type HTMLAttributes } from "react"
 import { cva } from "class-variance-authority"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface AvatarProps extends HTMLAttributes<HTMLSpanElement> {
   name: string

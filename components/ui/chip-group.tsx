@@ -9,12 +9,12 @@ import {
   motion,
   useIsPresent,
   useMotionValue,
-  useReducedMotion,
   useTransform,
 } from "motion/react"
 import type { AnimationPlaybackControls, HTMLMotionProps, MotionValue, TargetAndTransition, Transition } from "motion/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface ChipOption {
   value: string

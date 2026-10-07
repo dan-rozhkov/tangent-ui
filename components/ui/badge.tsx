@@ -9,7 +9,6 @@ import {
   motion,
   useIsPresent,
   useMotionValue,
-  useReducedMotion,
   type AnimationPlaybackControls,
   type HTMLMotionProps,
   type TargetAndTransition,
@@ -18,6 +17,7 @@ import {
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type BadgeTone = "neutral" | "success" | "info" | "warning" | "danger"
 export type BadgeSize = "sm" | "md"

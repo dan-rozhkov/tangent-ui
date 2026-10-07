@@ -19,7 +19,6 @@ import {
   motionValue,
   useInView,
   useMotionValue,
-  useReducedMotion,
   useTransform,
   type AnimationPlaybackControls,
   type MotionValue,
@@ -28,6 +27,7 @@ import {
 import { CircleAlert, TriangleAlert } from "lucide-react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface UsageMeterSegment {
   /** Stable identity. Keep it the same while the value changes, so the segment re-flows instead of being replaced. */

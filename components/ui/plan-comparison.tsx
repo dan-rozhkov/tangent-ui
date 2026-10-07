@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import { animate, AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { animate, AnimatePresence, motion } from "motion/react";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { Switch } from "@/components/ui/switch";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 type Plan = "team" | "studio";
 type Billing = "monthly" | "yearly";

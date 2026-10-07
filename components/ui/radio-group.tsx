@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useId, useLayoutEffect, useRef } from "react"
-import { animate, motion, useReducedMotion } from "motion/react"
+import { animate, motion } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface RadioGroupProps {
   label: string

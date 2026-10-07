@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import type { KeyboardEvent, PointerEvent, ReactNode } from "react"
-import { AnimatePresence, MotionConfig, animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue, Transition } from "motion/react"
 import { Bell, BellOff, ChevronRight, Headphones, Presentation, Type, Volume1, Volume2, VolumeX, X } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { ReducedMotionConfig, useReducedMotion } from "@/lib/reduced-motion"
 
 export interface ControlCenterFocusMode {
   id: string
@@ -1182,7 +1183,7 @@ export function ControlCenter({
   const headIcon = shown === "focus" ? tiles.focus.icon : tiles.notifications.icon
 
   return (
-    <MotionConfig reducedMotion="user">
+    <ReducedMotionConfig>
       <section
         ref={panelRef}
         aria-label={label}
@@ -1355,7 +1356,7 @@ export function ControlCenter({
           </motion.div>
         )}
       </section>
-    </MotionConfig>
+    </ReducedMotionConfig>
   )
 }
 

@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from "react"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, type AnimationPlaybackControls } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue, type AnimationPlaybackControls } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface SkeletonProps {
   label?: string

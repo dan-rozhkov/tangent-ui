@@ -3,6 +3,7 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useLayoutEffect, useRef } from "react";
 import type { CSSProperties, HTMLAttributes, PointerEvent as ReactPointerEvent, ReactNode, Ref, UIEvent } from "react";
 import { cn } from "@/lib/utils";
+import { prefersReducedMotion } from "@/lib/reduced-motion";
 
 type Axis = "y" | "x";
 
@@ -206,7 +207,7 @@ export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(function S
     const rect = thumb.getBoundingClientRect();
     const before = axis === "y" ? event.clientY < rect.top : event.clientX < rect.left;
     const page = (axis === "y" ? node.clientHeight : node.clientWidth) * .9 * (before ? -1 : 1);
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduce = prefersReducedMotion();
     node.scrollBy({ [axis === "y" ? "top" : "left"]: page, behavior: reduce ? "auto" : "smooth" });
   };
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from "react"
 import type { CSSProperties, ReactNode } from "react"
-import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
 import {
   ArrowRight,
@@ -32,6 +32,7 @@ import { Sparkline } from "@/components/ui/sparkline"
 import { avatar } from "@/lib/media"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { ReducedMotionConfig, useReducedMotion } from "@/lib/reduced-motion"
 
 /* ---------------------------------------------------------------------------------------------------------------------
    Shared shell. Each variant adds its own classes for its one idea.
@@ -438,7 +439,7 @@ export function HeroContent({ layout, announcement, title, description, primaryA
   const arrowIcon = <ArrowRight className={arrow} size={14} strokeWidth={1.75} aria-hidden="true" />
   // Reduced motion: Motion skips every transform (rise, zoom, tilt entrance); opacity still fades briefly.
   return (
-    <MotionConfig reducedMotion="user">
+    <ReducedMotionConfig>
       <section className={cn(shell.hero, className)}>
         <div className={cn("mx-auto grid max-w-[1200px] px-10 py-24 @max-[560px]/hero:px-4 @max-[560px]/hero:py-16", layouts[layout].inner)}>
           <motion.div
@@ -503,7 +504,7 @@ export function HeroContent({ layout, announcement, title, description, primaryA
           )}
         </div>
       </section>
-    </MotionConfig>
+    </ReducedMotionConfig>
   )
 }
 
@@ -551,7 +552,7 @@ export function HeroCadence({
   const item = heroRise
   // Reduced motion: Motion skips every transform (rise, zoom, tilt entrance); opacity still fades briefly.
   return (
-    <MotionConfig reducedMotion="user">
+    <ReducedMotionConfig>
       <section
         className={cn(
           shell.hero,
@@ -613,7 +614,7 @@ export function HeroCadence({
           </motion.div>
         </motion.div>
       </section>
-    </MotionConfig>
+    </ReducedMotionConfig>
   )
 }
 
@@ -793,7 +794,7 @@ export function HeroLumen({
 
   // Reduced motion: Motion skips every transform (rise, zoom, tilt entrance); opacity still fades briefly.
   return (
-    <MotionConfig reducedMotion="user">
+    <ReducedMotionConfig>
       <section
         className={cn(
           shell.hero,
@@ -860,7 +861,7 @@ export function HeroLumen({
           </div>
         </motion.div>
       </section>
-    </MotionConfig>
+    </ReducedMotionConfig>
   )
 }
 
@@ -1202,7 +1203,7 @@ export function HeroRelay({
 
   // Reduced motion: Motion skips every transform (rise, tilt entrance); opacity still fades briefly.
   return (
-    <MotionConfig reducedMotion="user">
+    <ReducedMotionConfig>
       <section
         ref={root}
         className={cn(
@@ -1356,7 +1357,7 @@ export function HeroRelay({
           </motion.div>
         </div>
       </section>
-    </MotionConfig>
+    </ReducedMotionConfig>
   )
 }
 

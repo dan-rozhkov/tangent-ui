@@ -6,7 +6,6 @@ import {
   animate,
   motion,
   useMotionValue,
-  useReducedMotion,
   useTransform,
   type MotionStyle,
   type MotionValue,
@@ -15,6 +14,7 @@ import {
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type SliderValue = number | [number, number]
 export interface SliderMark {

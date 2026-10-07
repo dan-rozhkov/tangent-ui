@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, type CSSProperties } from "react"
-import { AnimatePresence, motion, useReducedMotion, type Variants } from "motion/react"
+import { AnimatePresence, motion, type Variants } from "motion/react"
 
 import { Avatar } from "@/components/ui/avatar"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface AvatarGroupMember {
   name: string

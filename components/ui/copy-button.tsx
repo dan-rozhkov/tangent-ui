@@ -3,12 +3,13 @@
 import { useState } from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
 import { cva } from "class-variance-authority"
-import { AnimatePresence, motion, useReducedMotion, type TargetAndTransition, type Transition } from "motion/react"
+import { AnimatePresence, motion, type TargetAndTransition, type Transition } from "motion/react"
 import { CircleAlert, Copy } from "lucide-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { useCopyFeedback } from "@/lib/use-copy-feedback"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface CopyButtonProps {
   value: string

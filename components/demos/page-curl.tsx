@@ -1,7 +1,6 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { useDialKit } from "dialkit"
 
 import { PageCurl } from "@/components/ui/page-curl"
 import { photo } from "@/lib/media"
@@ -99,27 +98,5 @@ const pages = [
 ]
 
 export default function Demo() {
-  const values = useDialKit(
-    "Page Curl",
-    {
-      pageAspect: [0.72, 0.5, 1.1, 0.01],
-      tease: true,
-      controls: true,
-      showHint: true,
-      hint: "Drag the corner",
-    },
-    { id: "page-curl" },
-  )
-
-  return (
-    <PageCurl
-      label="Quiet rooms, issue 7"
-      pages={pages}
-      pageAspect={values.pageAspect}
-      tease={values.tease}
-      controls={values.controls}
-      hint={values.showHint ? values.hint : null}
-      style={{ width: 460, maxWidth: "100%" }}
-    />
-  )
+  return <PageCurl label="Quiet rooms, issue 7" pages={pages} style={{ width: 460, maxWidth: "100%" }} />
 }

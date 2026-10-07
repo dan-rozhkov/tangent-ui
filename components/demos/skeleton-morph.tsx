@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useDialKit } from "dialkit"
 import { RotateCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -20,31 +19,16 @@ const payouts: { id: PersonId; name: string; note: string; amount: string; nameW
 export default function Demo() {
   const [loading, setLoading] = useState(true)
   const [round, setRound] = useState(0)
-  const values = useDialKit(
-    "Skeleton morph",
-    {
-      stagger: [0.04, 0, 0.2, 0.005],
-      fetchMs: [1500, 300, 5000, 100],
-      reload: { type: "action", label: "Reload" },
-    },
-    {
-      id: "skeleton-morph",
-      onAction: () => {
-        setLoading(true)
-        setRound(value => value + 1)
-      },
-    },
-  )
 
   // Each round pretends to fetch for a moment, then resolves.
   useEffect(() => {
-    const timer = window.setTimeout(() => setLoading(false), values.fetchMs)
+    const timer = window.setTimeout(() => setLoading(false), 1500)
     return () => window.clearTimeout(timer)
-  }, [round, values.fetchMs])
+  }, [round])
 
   return (
     <div className="flex w-full max-w-[490px] flex-col items-center gap-4">
-      <SkeletonMorph loading={loading} stagger={values.stagger} loadingLabel="Loading profile" as="article" className={card}>
+      <SkeletonMorph loading={loading} loadingLabel="Loading profile" as="article" className={card}>
         <div className="grid gap-4">
           <div className="flex items-center gap-3">
             <MorphBlock radius="circle" width={52} height={52} className="flex-none">
@@ -79,7 +63,7 @@ export default function Demo() {
           </div>
         </div>
       </SkeletonMorph>
-      <SkeletonMorph loading={loading} stagger={values.stagger} loadingLabel="Loading payouts" as="section" className={card}>
+      <SkeletonMorph loading={loading} loadingLabel="Loading payouts" as="section" className={card}>
         <div className="grid gap-4">
           <MorphBlock width={101} lines={1} lineHeight={20}>
             <h3 className="m-0 text-sm leading-[20px] font-medium">Recent payouts</h3>

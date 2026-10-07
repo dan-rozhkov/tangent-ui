@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useDialKit } from "dialkit"
 import { CalendarPlus, CheckSquare, StickyNote } from "lucide-react"
 
 import { ActionMorph, type ActionMorphSubmission } from "@/components/ui/action-morph"
@@ -10,14 +9,6 @@ const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 export default function Demo() {
   const [log, setLog] = useState<ActionMorphSubmission[]>([])
-  const dials = useDialKit(
-    "Action morph",
-    {
-      label: { type: "text", default: "Create" },
-      resetAfter: [1600, 0, 5000, 100],
-    },
-    { id: "action-morph" },
-  )
 
   return (
     <div className="relative h-[400px] w-full max-w-[680px] overflow-hidden rounded-surface border border-border bg-surface">
@@ -39,8 +30,7 @@ export default function Demo() {
       </div>
       <ActionMorph
         className="absolute right-6 bottom-6"
-        label={dials.label}
-        resetAfter={dials.resetAfter}
+        label="Create"
         actions={[
           {
             id: "task",

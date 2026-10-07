@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type FormEvent } from "react";
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, type Transition, type Variants } from "motion/react";
+import { AnimatePresence, animate, motion, useMotionValue, type Transition, type Variants } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { PasswordField } from "@/components/ui/password-field";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 const textButton = "cursor-pointer border-0 bg-transparent p-0 font-[inherit] text-text-secondary underline decoration-border-strong underline-offset-[3px] transition-[color,text-decoration-color] duration-160 ease-standard motion-reduce:transition-none pointer-fine:hover:text-foreground pointer-fine:hover:decoration-current";
 

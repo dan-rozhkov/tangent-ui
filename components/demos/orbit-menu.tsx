@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useDialKit } from "dialkit"
 import { Copy, FolderPlus, Heart, Send, Trash2 } from "lucide-react"
 
 import { OrbitMenu } from "@/components/ui/orbit-menu"
@@ -15,17 +14,6 @@ const labels: Record<string, string> = {
 }
 
 export default function Demo() {
-  const dial = useDialKit(
-    "Orbit menu",
-    {
-      radius: [104, 60, 180, 1],
-      spread: [150, 30, 360, 1],
-      direction: [-90, -180, 180, 1],
-      disabled: false,
-      announce: true,
-    },
-    { id: "orbit-menu" },
-  )
   const [last, setLast] = useState<string | null>(null)
 
   return (
@@ -38,11 +26,6 @@ export default function Demo() {
       </div>
       <OrbitMenu
         label="Photo actions"
-        radius={dial.radius}
-        spread={dial.spread}
-        direction={dial.direction}
-        disabled={dial.disabled}
-        announce={dial.announce}
         onAction={setLast}
         actions={[
           { id: "favorite", label: "Favorite", icon: <Heart />, done: "Added to favorites" },

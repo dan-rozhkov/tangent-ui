@@ -6,13 +6,13 @@ import {
   animate,
   motion,
   useMotionValue,
-  useReducedMotion,
 } from "motion/react"
 import type { Variants } from "motion/react"
 
 import { AnimatedCounter } from "@/components/ui/animated-counter"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface MetricCardProps {
   label: string

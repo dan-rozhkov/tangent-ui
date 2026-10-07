@@ -22,11 +22,11 @@ import {
   motion,
   useInView,
   useMotionValue,
-  useReducedMotion,
 } from "motion/react"
 import type { Variants } from "motion/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /** The original's CSS module, as Tailwind strings. The root is the size container, the grid is a group the cells read their reveal and highlight state from. Levels are tints of the accent over a neutral empty square, so the grid follows the selected accent and both themes. */
 const styles = {

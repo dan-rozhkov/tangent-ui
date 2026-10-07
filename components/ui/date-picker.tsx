@@ -2,13 +2,14 @@
 
 import { useEffect, useId, useRef, useState } from "react"
 import type { ButtonHTMLAttributes, FocusEvent, KeyboardEvent } from "react"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 import type { Variants } from "motion/react"
 import { CalendarDays, ChevronDown } from "lucide-react"
 
 import { Calendar, type CalendarDateMatcher } from "@/components/ui/calendar"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface DatePickerProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "value" | "onChange"> {
   label: string

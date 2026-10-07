@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useDialKit } from "dialkit"
 import {
   BarChart3,
   BookOpen,
@@ -88,14 +87,6 @@ const searchItems = [
 ]
 
 export default function Demo() {
-  const dial = useDialKit(
-    "Morph nav",
-    {
-      forceCompact: false,
-      collapseBelow: [720, 0, 1200, 10],
-    },
-    { id: "morph-nav" },
-  )
   const [scrolled, setScrolled] = useState(false)
   const [section, setSection] = useState("product")
   const [last, setLast] = useState<string | null>(null)
@@ -112,8 +103,7 @@ export default function Demo() {
           search={{ placeholder: "Search Fieldwork", items: searchItems }}
           action={{ label: "Get started", href: "#start" }}
           current={section}
-          compact={scrolled || dial.forceCompact}
-          collapseBelow={dial.collapseBelow}
+          compact={scrolled}
           onNavigate={destination => {
             if (destination.section && items.some(item => item.value === destination.section)) setSection(destination.section)
             setLast(destination.label)

@@ -3,12 +3,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { ButtonHTMLAttributes, RefObject } from "react"
 import { Button as ButtonPrimitive } from "@base-ui/react/button"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { TargetAndTransition, Variants } from "motion/react"
 import { ArrowRight } from "lucide-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface ActionButtonProps
   extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, "onClick" | "onDrag" | "onDragEnd" | "onDragStart" | "onAnimationStart"> {

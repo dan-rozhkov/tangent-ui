@@ -11,10 +11,11 @@ import {
   useSyncExternalStore,
 } from "react"
 import type { CSSProperties, HTMLAttributes, KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react"
-import { animate, motion, useMotionValue, useReducedMotion } from "motion/react"
+import { animate, motion, useMotionValue } from "motion/react"
 import type { Transition } from "motion/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface RadioCardOption {
   value: string

@@ -3,11 +3,12 @@
 import { useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-import { animate, AnimatePresence, motion, useMotionValue, useMotionValueEvent, useReducedMotion, useTransform } from "motion/react"
+import { animate, AnimatePresence, motion, useMotionValue, useMotionValueEvent, useTransform } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue, Variants } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type CalendarDateMatcher = (date: Date) => boolean
 

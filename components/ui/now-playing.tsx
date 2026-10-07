@@ -5,13 +5,11 @@ import type { KeyboardEvent, PointerEvent as ReactPointerEvent, RefObject } from
 import {
   AnimatePresence,
   LayoutGroup,
-  MotionConfig,
   animate,
   motion,
   useAnimationFrame,
   useMotionValue,
   useMotionValueEvent,
-  useReducedMotion,
   useSpring,
   useTransform,
 } from "motion/react"
@@ -20,6 +18,7 @@ import { ChevronDown, Pause, Play, SkipBack, SkipForward } from "lucide-react"
 
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { ReducedMotionConfig, useReducedMotion } from "@/lib/reduced-motion"
 
 export interface NowPlayingTrack {
   id: string
@@ -474,7 +473,7 @@ export function NowPlaying({
   )
 
   return (
-    <MotionConfig reducedMotion="user">
+    <ReducedMotionConfig>
       <LayoutGroup id={group}>
         <motion.section
           layout
@@ -593,7 +592,7 @@ export function NowPlaying({
           </p>
         </motion.section>
       </LayoutGroup>
-    </MotionConfig>
+    </ReducedMotionConfig>
   )
 }
 

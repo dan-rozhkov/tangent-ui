@@ -1,8 +1,5 @@
 "use client"
 
-import { useState } from "react"
-import { useDialKit } from "dialkit"
-
 import { LinkUnfurl, type LinkUnfurlPreview } from "@/components/ui/link-unfurl"
 import { photo } from "@/lib/media"
 
@@ -61,34 +58,10 @@ async function resolve(url: string, signal: AbortSignal): Promise<LinkUnfurlPrev
 }
 
 export default function Demo() {
-  const [run, setRun] = useState(0)
-  const props = useDialKit(
-    "Link unfurl",
-    {
-      autoExpand: true,
-      autoPlay: true,
-      paused: false,
-      speed: [1, 0.25, 3, 0.05],
-      placeholder: { type: "text", default: "Message #lisbon-offsite" },
-      sendLabel: { type: "text", default: "Send message" },
-      replay: { type: "action", label: "Replay demo" },
-    },
-    { id: "link-unfurl", onAction: () => setRun((n) => n + 1) },
-  )
   return (
     <div className="flex min-h-[520px] w-[628px] max-w-full flex-col items-center justify-center gap-3 rounded-[28px] border border-border bg-surface-muted p-6 max-sm:p-3">
       <div className="w-full max-w-[522px]">
-        <LinkUnfurl
-          key={run}
-          samples={samples}
-          resolve={resolve}
-          autoExpand={props.autoExpand}
-          autoPlay={props.autoPlay}
-          paused={props.paused}
-          speed={props.speed}
-          placeholder={props.placeholder}
-          sendLabel={props.sendLabel}
-        />
+        <LinkUnfurl samples={samples} resolve={resolve} />
       </div>
       <p className="max-w-[522px] text-center text-xs leading-[1.4] text-balance text-text-secondary">
         A demo composer, so nothing is sent. Paste any link, click a link to fold its card, or drag a card up.

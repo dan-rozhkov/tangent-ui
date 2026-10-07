@@ -20,12 +20,12 @@ import {
   useInView,
   useMotionValue,
   usePresence,
-  useReducedMotion,
   useTransform,
   type MotionValue,
   type Variants,
 } from "motion/react"
 import { motionTokens } from "@/lib/motion-tokens"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /** The original's CSS module, as Tailwind strings. Scrub and dark-theme bar fills stack as variants; the active bar always wins. */
 const styles = {

@@ -2,11 +2,12 @@
 
 import { forwardRef, useId, useRef } from "react"
 import type { InputHTMLAttributes } from "react"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 import { Search, X as Xmark } from "lucide-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface SearchFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, "type"> {
   label: string

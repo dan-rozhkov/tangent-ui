@@ -1,12 +1,13 @@
 "use client"
 
-import { forwardRef, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
+import { forwardRef, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { CSSProperties } from "react"
 import { animate, useInView } from "motion/react"
 
 import SegmentedControl from "@/components/ui/segmented-control"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /**
  * A small visual that proves the number beside it. Every kind is optional; a stat without one is just the number.
@@ -117,17 +118,6 @@ export interface StatsBandProps {
 type Bezier = [number, number, number, number]
 const enter = [...motionTokens.ease.enter] as Bezier
 const STAGGER = 0.09
-
-const REDUCE = "(prefers-reduced-motion: reduce)"
-const subscribeReduced = (onChange: () => void) => {
-  const query = window.matchMedia(REDUCE)
-  query.addEventListener("change", onChange)
-  return () => query.removeEventListener("change", onChange)
-}
-/** Reduced motion, read after hydration so the server and first client render agree. CSS covers the first paint. */
-function useReducedMotionSafe() {
-  return useSyncExternalStore(subscribeReduced, () => window.matchMedia(REDUCE).matches, () => false)
-}
 
 /**
  * Formats a stat's number, split from its compact unit so the unit can sit beside the digits like a suffix. A compact
@@ -379,7 +369,7 @@ export const StatsBand = forwardRef<HTMLElement, StatsBandProps>(function StatsB
   const id = useId()
   const list = useRef<HTMLDListElement>(null)
   const inView = useInView(list, { once: true, amount: 0.4 })
-  const reduced = useReducedMotionSafe()
+  const reduced = useReducedMotion()
   const withVisuals = stats.some(stat => stat.visual)
   const count = Math.min(stats.length, 4)
   const divided = layout === "divided"

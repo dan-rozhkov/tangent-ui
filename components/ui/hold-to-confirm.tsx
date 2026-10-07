@@ -7,11 +7,12 @@ import type {
   PointerEvent as ReactPointerEvent,
   ReactNode,
 } from "react"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useTransform } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue, TargetAndTransition } from "motion/react"
 import { Trash2 } from "lucide-react"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /**
  * A button that commits only after it is held, for destructive or hard to undo actions where a stray tap must not count. A fill tracks the hold on a

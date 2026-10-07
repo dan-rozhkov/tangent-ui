@@ -8,11 +8,12 @@ import type {
   MouseEvent as ReactMouseEvent,
   ReactNode,
 } from "react"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { TargetAndTransition, Variants } from "motion/react"
 import { Check, CircleAlert, Pencil, X } from "lucide-react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /**
  * Click-to-edit text for names and short fields that are read far more often than they change, such as a project name or its description.

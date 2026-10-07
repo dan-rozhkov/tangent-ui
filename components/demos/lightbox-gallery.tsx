@@ -1,7 +1,5 @@
 "use client"
 
-import { useDialKit } from "dialkit"
-
 import { LightboxGallery } from "@/components/ui/lightbox-gallery"
 import type { LightboxImage } from "@/components/ui/lightbox-gallery"
 import { photo } from "@/lib/media"
@@ -29,18 +27,9 @@ const images: LightboxImage[] = trip.map(({ id, title, caption }) => {
 })
 
 export default function Demo() {
-  const props = useDialKit(
-    "Lightbox gallery",
-    {
-      minColumnWidth: [160, 100, 300, 10],
-      gap: [8, 0, 24, 1],
-      label: { type: "text", default: "Lisbon photos" },
-    },
-    { id: "lightbox-gallery" },
-  )
   return (
     <div className="w-full max-w-[522px]">
-      <LightboxGallery images={images} label={props.label} minColumnWidth={props.minColumnWidth} gap={props.gap} />
+      <LightboxGallery images={images} label="Lisbon photos" minColumnWidth={160} gap={8} />
     </div>
   )
 }

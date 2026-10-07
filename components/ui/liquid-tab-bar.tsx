@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react"
 import type { KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue, useSpring, useTransform } from "motion/react"
 import type { Variants } from "motion/react"
 
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface LiquidTab {
   value: string

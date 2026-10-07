@@ -1,8 +1,9 @@
 "use client";
 import { Fragment, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { motion, useInView, useReducedMotion, type Transition } from "motion/react";
+import { motion, useInView, type Transition } from "motion/react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 export type InViewTitleVariant = "word" | "line" | "blur" | "tracking" | "wipe";
 /**

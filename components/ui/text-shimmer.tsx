@@ -1,9 +1,10 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useSyncExternalStore } from "react";
-import { AnimatePresence, animate, motion, useInView, useMotionValue, usePageInView, useReducedMotion, useTransform } from "motion/react";
+import { AnimatePresence, animate, motion, useInView, useMotionValue, usePageInView, useTransform } from "motion/react";
 import type { AnimationPlaybackControls } from "motion/react";
 import { useMotionTokens } from "@/lib/motion-tokens-context";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/reduced-motion";
 /* The band is the current text color; the resting base leans toward muted text. Override with --text-shimmer-highlight and --text-shimmer-base. */
 const shimmerVars = "[--ts-base:var(--text-shimmer-base,color-mix(in_oklab,currentColor_12%,var(--text-muted)))] [--ts-highlight:var(--text-shimmer-highlight,currentColor)]";
 /* While the line springs to a new width the label keeps its own line (data-sizing on the stage), so it never rewraps mid morph. */

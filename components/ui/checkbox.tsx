@@ -2,11 +2,12 @@
 
 import { forwardRef, useId, useState } from "react"
 import { Checkbox as CheckboxPrimitive } from "@base-ui/react/checkbox"
-import { motion, useReducedMotion } from "motion/react"
+import { motion } from "motion/react"
 import type { Transition } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /** Ticked, unticked, or mixed. Base UI splits mixed into its own `indeterminate` prop; this keeps the single-value API. */
 export type CheckedState = boolean | "indeterminate"

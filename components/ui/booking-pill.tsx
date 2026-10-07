@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
-import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useMotionValueEvent, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useMotionValueEvent } from "motion/react"
 import type { Variants } from "motion/react"
 import { ArrowLeft, ArrowRight, CalendarDays, Check, Minus, Plus, RotateCcw } from "lucide-react"
 
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface Booking {
   date: string

@@ -19,13 +19,13 @@ import {
   useIsPresent,
   useMotionValue,
   usePresence,
-  useReducedMotion,
   useTransform,
 } from "motion/react"
 import type { HTMLMotionProps, MotionProps, TargetAndTransition, Transition } from "motion/react"
 import { CircleCheck, CircleX, Info, TriangleAlert, X } from "lucide-react"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type ToastType = "success" | "info" | "warning" | "error" | "loading"
 

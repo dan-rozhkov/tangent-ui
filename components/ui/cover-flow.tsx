@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
-import { animate, motion, useMotionTemplate, useMotionValue, useReducedMotion, useTransform } from "motion/react"
+import { animate, motion, useMotionTemplate, useMotionValue, useTransform } from "motion/react"
 import type { MotionValue, Transition } from "motion/react"
 
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface CoverFlowItem {
   id: string

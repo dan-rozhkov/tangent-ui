@@ -4,7 +4,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useSta
 import type { FormEvent, KeyboardEvent, ReactNode } from "react"
 import { Radio } from "@base-ui/react/radio"
 import { RadioGroup } from "@base-ui/react/radio-group"
-import { AnimatePresence, LayoutGroup, animate, motion, useAnimationControls, useIsPresent, useMotionValue, useReducedMotion } from "motion/react"
+import { AnimatePresence, LayoutGroup, animate, motion, useAnimationControls, useIsPresent, useMotionValue } from "motion/react"
 import type { Transition, Variants } from "motion/react"
 import { ChevronLeft, Plus, X } from "lucide-react"
 
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button"
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface ActionMorphComposer {
   title: string

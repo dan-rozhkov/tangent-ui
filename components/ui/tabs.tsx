@@ -4,11 +4,12 @@ import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
 import { createContext, useCallback, useContext, useId, useLayoutEffect, useRef, useState } from "react"
 import type { ComponentPropsWithoutRef, RefObject } from "react"
 import { ChevronLeft as NavArrowLeft, ChevronRight as NavArrowRight } from "lucide-react"
-import { AnimatePresence, LayoutGroup, animate, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, LayoutGroup, animate, motion } from "motion/react"
 import type { AnimationPlaybackControls, Variants } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 type RootProps = Omit<ComponentPropsWithoutRef<typeof TabsPrimitive.Root>, "value" | "defaultValue" | "onValueChange"> & {
   value?: string

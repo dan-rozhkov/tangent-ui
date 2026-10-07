@@ -24,12 +24,12 @@ import {
   motion,
   motionValue,
   useInView,
-  useReducedMotion,
   type MotionValue,
   type Transition,
 } from "motion/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 const hoverRow =
   "[@media(hover:hover)_and_(pointer:fine)]:hover:bg-[color-mix(in_oklab,var(--foreground)_5%,transparent)]"

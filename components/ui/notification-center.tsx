@@ -7,7 +7,6 @@ import {
   motion,
   useIsPresent,
   useMotionValue,
-  useReducedMotion,
   type AnimationPlaybackControls,
   type HTMLMotionProps,
   type TargetAndTransition,
@@ -20,6 +19,7 @@ import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
 import { Avatar } from "@/components/ui/avatar"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface NotificationItem {
   id: string

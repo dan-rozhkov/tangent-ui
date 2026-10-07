@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { ComponentProps, FocusEvent, KeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
-import { AnimatePresence, LayoutGroup, Reorder, animate, motion, useMotionValue, useIsPresent, useReducedMotion, useTransform } from "motion/react"
+import { AnimatePresence, LayoutGroup, Reorder, animate, motion, useMotionValue, useIsPresent, useTransform } from "motion/react"
 import type { Variants } from "motion/react"
 
 import { motionTokens as presets } from "@/lib/motion-tokens"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface DockItem {
   id: string

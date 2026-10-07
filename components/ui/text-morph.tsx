@@ -1,9 +1,10 @@
 "use client"
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { AnimatePresence, animate, motion, useReducedMotion, type AnimationPlaybackControls } from "motion/react"
+import { AnimatePresence, animate, motion, type AnimationPlaybackControls } from "motion/react"
 
 import { useMotionTokens } from "@/lib/motion-tokens-context"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /**
  * Morphs one short label into the next in place. Letters both strings share glide to their new positions, new letters sharpen in, removed letters blur away,

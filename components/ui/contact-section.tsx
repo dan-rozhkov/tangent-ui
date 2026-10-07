@@ -2,7 +2,7 @@
 
 import { forwardRef, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent, ReactNode } from "react";
-import { AnimatePresence, LayoutGroup, motion, useAnimate, useIsPresent, useReducedMotion } from "motion/react";
+import { AnimatePresence, LayoutGroup, motion, useAnimate, useIsPresent } from "motion/react";
 import type { Variants } from "motion/react";
 import { Check, Clock, Mail, MessageCircle, Phone, Users } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { motionTokens } from "@/lib/motion-tokens";
 import { person } from "@/lib/media";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 export type ContactSectionVariant = "form" | "channels" | "offices";
 

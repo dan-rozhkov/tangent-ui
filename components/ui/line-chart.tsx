@@ -22,13 +22,13 @@ import {
   useInView,
   useMotionValue,
   useMotionValueEvent,
-  useReducedMotion,
   useSpring,
   useTransform,
   type MotionValue,
 } from "motion/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /** The original's CSS module, as Tailwind strings. Hover and state rules use group variants on the toggle and the chart. */
 const styles = {

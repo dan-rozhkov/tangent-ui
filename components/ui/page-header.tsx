@@ -4,7 +4,7 @@ import { Fragment, useEffect, useId, useRef, useState } from "react"
 import type { FocusEvent, ReactNode, UIEvent } from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion, type Transition, type Variants } from "motion/react"
+import { AnimatePresence, LayoutGroup, motion, type Transition, type Variants } from "motion/react"
 import {
   Archive,
   ArchiveRestore,
@@ -38,6 +38,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /** The header condenses past CONDENSE_AT and only opens again near the top, so it never flickers at the threshold. */
 const CONDENSE_AT = 16

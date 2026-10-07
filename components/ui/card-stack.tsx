@@ -7,7 +7,6 @@ import {
   animate,
   motion,
   useMotionValue,
-  useReducedMotion,
   useSpring,
   useTransform,
 } from "motion/react"
@@ -16,6 +15,7 @@ import { Check, RotateCcw, X } from "lucide-react"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type CardDecision = "left" | "right"
 

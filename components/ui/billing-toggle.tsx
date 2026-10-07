@@ -2,12 +2,13 @@
 
 import { useCallback, useLayoutEffect, useRef, useState } from "react"
 import type { KeyboardEvent } from "react"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 import type { Transition, Variants } from "motion/react"
 
 import { AnimatedCounter } from "@/components/ui/animated-counter"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface BillingToggleOption {
   value: string

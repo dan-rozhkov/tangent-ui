@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react"
 import type { KeyboardEvent, MouseEvent, PointerEvent as ReactPointerEvent, ReactNode } from "react"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue, useSpring, useTransform } from "motion/react"
 import type { MotionValue } from "motion/react"
 import { Check, Ellipsis, X } from "lucide-react"
 
 import { motionTokens as defaultTokens } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface OrbitAction {
   id: string

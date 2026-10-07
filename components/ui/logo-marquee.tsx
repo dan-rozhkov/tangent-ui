@@ -5,6 +5,7 @@ import { Pause, Play } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface LogoMarqueeBrand {
   name: string
@@ -88,11 +89,12 @@ export function LogoMarquee({
   const [paused, setPaused] = useState(false)
   const track = useRef<HTMLDivElement>(null)
   const travel = useRef<Animation | null>(null)
+  const reduced = useReducedMotion()
 
   // The original's `travel` keyframes (0 to -50% over 39s, linear, infinite) run as one Web Animation, so pause and play keep the position.
   useEffect(() => {
     const node = track.current
-    if (!node || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    if (!node || reduced) return
     const animation = node.animate([{ transform: "translateX(0)" }, { transform: "translateX(-50%)" }], {
       duration: 39000,
       iterations: Infinity,
@@ -103,7 +105,7 @@ export function LogoMarquee({
       animation.cancel()
       travel.current = null
     }
-  }, [])
+  }, [reduced])
 
   useEffect(() => {
     if (paused) travel.current?.pause()

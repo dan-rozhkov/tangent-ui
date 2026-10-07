@@ -2,10 +2,11 @@
 
 import { forwardRef, useEffect, useId, useRef, useState } from "react"
 import type { InputHTMLAttributes } from "react"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string

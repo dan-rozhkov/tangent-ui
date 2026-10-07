@@ -2,11 +2,12 @@
 
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { CSSProperties, ElementType, ReactNode } from "react"
-import { animate, motion, useMotionValue, useReducedMotion } from "motion/react"
+import { animate, motion, useMotionValue } from "motion/react"
 import type { AnimationPlaybackControls } from "motion/react"
 
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface SkeletonMorphProps {
   /** While true, blocks show their skeletons and the region is aria-busy. */

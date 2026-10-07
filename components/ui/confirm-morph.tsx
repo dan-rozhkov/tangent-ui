@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import type { KeyboardEvent as ReactKeyboardEvent, ReactNode, Ref } from "react"
-import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useIsPresent, useMotionValue } from "motion/react"
 import type { AnimationPlaybackControls, Transition, Variants } from "motion/react"
 import { CircleAlert, LoaderCircle } from "lucide-react"
 
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /** Where the control is in its life: resting, asking, working, finished, or failed. */
 export type ConfirmMorphState = "idle" | "confirming" | "pending" | "done" | "error"

@@ -3,12 +3,13 @@
 import { createContext, useCallback, useContext, useLayoutEffect, useRef, useState } from "react"
 import type { ReactNode } from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 import type { Transition } from "motion/react"
 import { X } from "lucide-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 /** Mirrors the open state so the content can stay mounted while it animates out, and retarget mid-flight if it is reopened or closed early. */
 const OpenContext = createContext<boolean | null>(null)

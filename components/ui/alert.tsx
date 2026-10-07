@@ -8,7 +8,6 @@ import {
   motion,
   useIsPresent,
   useMotionValue,
-  useReducedMotion,
   type AnimationPlaybackControls,
   type HTMLMotionProps,
   type MotionProps,
@@ -19,6 +18,7 @@ import { Check, Info as InfoCircle, TriangleAlert as WarningTriangle, CircleX as
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type AlertTone = "info" | "success" | "warning" | "danger"
 export interface AlertProps extends HTMLAttributes<HTMLDivElement> {

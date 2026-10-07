@@ -1,12 +1,13 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { AnimatePresence, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, motion } from "motion/react"
 import { Moon, Sun } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type ThemeSwitchVariant = "reveal" | "eclipse" | "split" | "rise"
 export type Theme = "light" | "dark"

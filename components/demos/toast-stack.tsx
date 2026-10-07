@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { useDialKit } from "dialkit"
 
 import { Button } from "@/components/ui/button"
 import { ToastStack, ToastStackProvider, useToastStack } from "@/components/ui/toast-stack"
@@ -63,30 +62,12 @@ function Controls() {
 }
 
 export default function Demo() {
-  const dials = useDialKit(
-    "Toast stack",
-    {
-      duration: [5000, 1000, 15000, 500],
-      limit: [12, 3, 20, 1],
-      visibleToasts: [3, 1, 6, 1],
-      position: { type: "select", options: ["bottom-right", "bottom-center", "bottom-left"], default: "bottom-right" },
-      hotkey: true,
-      label: { type: "text", default: "Notifications" },
-    },
-    { id: "toast-stack" },
-  )
   return (
-    <ToastStackProvider duration={dials.duration} limit={dials.limit}>
+    <ToastStackProvider>
       {/* Contained, so the stack sits inside the preview instead of the window corner. */}
       <div className="relative grid min-h-96 w-full place-items-center overflow-hidden rounded-panel border border-border bg-surface p-6">
         <Controls />
-        <ToastStack
-          contained
-          position={dials.position as "bottom-right" | "bottom-center" | "bottom-left"}
-          visibleToasts={dials.visibleToasts}
-          hotkey={dials.hotkey}
-          label={dials.label}
-        />
+        <ToastStack contained />
       </div>
     </ToastStackProvider>
   )

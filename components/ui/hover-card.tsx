@@ -4,10 +4,11 @@ import { forwardRef, useCallback, useEffect, useId, useLayoutEffect, useRef, use
 import type { FocusEvent, HTMLAttributes, PointerEvent, ReactElement, ReactNode } from "react"
 import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card"
 import { useRender } from "@base-ui/react/use-render"
-import { AnimatePresence, animate, motion, useMotionValue, usePresence, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue, usePresence } from "motion/react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 const OPEN_DELAY = 500
 const CLOSE_DELAY = 140

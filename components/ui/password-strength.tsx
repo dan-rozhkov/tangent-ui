@@ -2,10 +2,11 @@
 
 import { forwardRef, useEffect, useId, useRef, useState, useSyncExternalStore } from "react"
 import type { InputHTMLAttributes } from "react"
-import { AnimatePresence, animate, motion, useMotionValue, useReducedMotion } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue } from "motion/react"
 import type { AnimationPlaybackControls, Transition, Variants } from "motion/react"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export interface PasswordRule {
   id: string

@@ -2,13 +2,14 @@
 
 import { forwardRef, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { AnimatePresence, animate, motion, useInView, useMotionValue, useReducedMotion } from "motion/react";
+import { AnimatePresence, animate, motion, useInView, useMotionValue } from "motion/react";
 import { ArrowRight, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import SegmentedControl from "@/components/ui/segmented-control";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { ctaCopy, ctaFaces, ctaSetup, type CtaAction } from "./cta-section-data";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 export type { CtaAction } from "./cta-section-data";
 export type CtaVariant = "centered" | "split" | "banner";

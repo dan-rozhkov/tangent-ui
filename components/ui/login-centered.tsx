@@ -15,7 +15,6 @@ import {
   animate,
   motion,
   useMotionValue,
-  useReducedMotion,
   useSpring,
   useTransform,
   type MotionStyle,
@@ -29,6 +28,7 @@ import { Input } from "@/components/ui/input"
 import { OtpInput } from "@/components/ui/otp-input"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 type Step = "passkey" | "email" | "code" | "done"
 type Mode = "sign-in" | "sign-up"

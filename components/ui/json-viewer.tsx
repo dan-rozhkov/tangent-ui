@@ -2,12 +2,13 @@
 
 import { forwardRef, useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react"
-import { AnimatePresence, LayoutGroup, animate, motion, useReducedMotion } from "motion/react"
+import { AnimatePresence, LayoutGroup, animate, motion } from "motion/react"
 import type { AnimationPlaybackControls, Transition } from "motion/react"
 import { Check, ChevronDown, ChevronRight, ChevronUp, ChevronsDownUp, ChevronsUpDown, Copy, Link2, Search, X } from "lucide-react"
 
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type JsonValueType = "object" | "array" | "string" | "number" | "boolean" | "null" | "other"
 

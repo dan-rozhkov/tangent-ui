@@ -2,11 +2,12 @@
 
 import { forwardRef, useCallback, useEffect, useId, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ClipboardEvent as ReactClipboardEvent, CSSProperties, FormEvent, KeyboardEvent as ReactKeyboardEvent, ReactNode } from "react";
-import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useReducedMotion, useTransform } from "motion/react";
+import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useTransform } from "motion/react";
 import type { Transition, Variants } from "motion/react";
 import { ArrowLeft, Bold, Check, Code, Heading1, Heading2, Heading3, Italic, Link, List, ListOrdered, Minus, Pilcrow, Quote, SquareCode, Strikethrough, Unlink } from "lucide-react";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
+import { useReducedMotion } from "@/lib/reduced-motion";
 
 const toolBase = "grid size-8 flex-none cursor-pointer place-items-center rounded-[11px] border-0 p-0 active:[transform:scale(.92)]";
 const highlight = "pointer-events-none absolute top-0 right-0 left-0 rounded-[12px] bg-[color-mix(in_oklab,var(--foreground)_6.5%,transparent)]";

@@ -3,13 +3,14 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react"
 import type { ButtonHTMLAttributes, ReactNode, Ref, PointerEvent as ReactPointerEvent } from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
-import { AnimatePresence, animate, motion, useMotionValue, usePresence, useReducedMotion, useTransform } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue, usePresence, useTransform } from "motion/react"
 import type { MotionValue } from "motion/react"
 import { ChevronLeft, X } from "lucide-react"
 
 import { buttonVariants } from "@/components/ui/button"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
+import { useReducedMotion } from "@/lib/reduced-motion"
 
 export type SheetStackMode = "auto" | "sheet" | "dialog"
 
