@@ -6,6 +6,7 @@ import { AnimatePresence, animate, motion, useMotionValue, useTransform } from "
 import type { MotionValue, Variants } from "motion/react"
 import { MinusIcon, PlusIcon } from "@phosphor-icons/react"
 
+import { resistPast } from "@/lib/gesture"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -75,8 +76,8 @@ const kick = (() => {
 const decimalsOf = (value: number) => (String(value).split(".")[1] ?? "").length
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\-]/g, "\\$&")
 const affixText = (affix: NumberFieldAffix | undefined, value: number) => (typeof affix === "function" ? affix(value) : (affix ?? ""))
-/** iOS style resistance: travel past a limit gives less and less, and never more than `limit` pixels. */
-const rubber = (distance: number, limit = 10) => Math.sign(distance) * (1 - 1 / ((Math.abs(distance) * 0.55) / limit + 1)) * limit
+/** Pixels the scrub offset can stretch past a limit. */
+const SCRUB_STRETCH = 10
 
 /** Split a formatted number into columns keyed by place value, so 9 → 10 keeps the ones column the ones column. */
 function partsOf(value: number, format: Intl.NumberFormat): Part[] {
@@ -779,7 +780,7 @@ export function NumberField({
     // Past a limit the value follows the pointer with resistance, then springs back on release.
     const raw = state.from + travel * step
     const over = raw > max ? ((raw - max) / step) * SCRUB_PX : raw < min ? ((raw - min) / step) * SCRUB_PX : 0
-    scrubX.set(reduced ? 0 : rubber(over))
+    scrubX.set(reduced ? 0 : resistPast(over, 0, SCRUB_STRETCH))
   }
   function onScrubEnd(event: PointerEvent<HTMLLabelElement>) {
     const state = drag.current

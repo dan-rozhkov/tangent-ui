@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from "react"
 import { motion } from "motion/react"
 
+import { clamp, rubberBand } from "@/lib/gesture"
 import { motionTokens as staticTokens } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
@@ -107,7 +108,7 @@ const SPRING_STEP = { k: 380, c: 43 }
 const SPRING_PICK = { k: 137, c: 23.4 }
 /** Back from a rubber band stretch: critically damped at 15 rad/s, no bounce at the edge. */
 const SPRING_BACK = { k: 225, c: 30 }
-/** iOS rubber band: shown = D * c * d / (D + c * d), with D in rows (105px at a 42px row). */
+/** iOS rubber band, passed to rubberBand as (limit = RUBBER_D, k = RUBBER_C): the stretch tends to D rows (105px at a 42px row). */
 const RUBBER_C = 0.55
 const RUBBER_D = 2.5
 /** Pixels a press may wander and still count as a tap. */
@@ -139,7 +140,6 @@ const DEFAULT_COPY: Required<TimeWheelCopy> = {
 }
 
 const mod = (value: number, count: number) => ((value % count) + count) % count
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 const pad2 = (value: number) => String(value).padStart(2, "0")
 const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate())
 const addDays = (date: Date, days: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + days)
@@ -154,7 +154,6 @@ function normalize(date: Date, step: number) {
   next.setMinutes(Math.round(next.getMinutes() / step) * step)
   return next
 }
-const rubber = (distance: number) => (RUBBER_D * RUBBER_C * distance) / (RUBBER_D + RUBBER_C * distance)
 
 /* ---------------------------------------------------------------------------------------------------------------
    Reel models: what each column shows and how entries map to and from a Date.
@@ -858,7 +857,7 @@ class ReelEngine {
     // 1:1 in arc length from the first pixel; past the first or last entry it stretches like rubber.
     const raw = drag.origin + (drag.y - y) / this.row
     const last = model.count - 1
-    motion.pos = model.cyclic ? raw : raw < 0 ? -rubber(-raw) : raw > last ? last + rubber(raw - last) : raw
+    motion.pos = model.cyclic ? raw : raw < 0 ? -rubberBand(-raw, RUBBER_D, RUBBER_C) : raw > last ? last + rubberBand(raw - last, RUBBER_D, RUBBER_C) : raw
     drag.samples.push({ y, t: time })
     if (drag.samples.length > 12) drag.samples.shift()
     this.draw(reel)

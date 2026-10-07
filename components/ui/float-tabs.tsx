@@ -20,6 +20,7 @@ import type {
 import { animate, motion, useMotionValue, useSpring, useTransform } from "motion/react"
 import type { MotionValue } from "motion/react"
 
+import { clamp } from "@/lib/gesture"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -117,7 +118,6 @@ const RIM_SHIFT = 13
 const DISPERSION = 0.07
 
 const lerp = (from: number, to: number, t: number) => from + (to - from) * t
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
 /* ---------- environment ---------- */
 

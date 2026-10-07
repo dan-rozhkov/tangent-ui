@@ -16,6 +16,7 @@ import {
 import type { MotionValue, PanInfo, Transition, Variants } from "motion/react"
 import { CaretDownIcon, PauseIcon, PlayIcon, SkipBackIcon, SkipForwardIcon } from "@phosphor-icons/react"
 
+import { clamp } from "@/lib/gesture"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { ReducedMotionConfig, useReducedMotion } from "@/lib/reduced-motion"
@@ -70,7 +71,6 @@ const fadeInOf = (motionTokens: MotionTokens): Transition => ({ duration: motion
 const leaveOf = (motionTokens: MotionTokens): Transition => ({ duration: motionTokens.duration.fast, ease: [...motionTokens.ease.standard] })
 
 const wrap = (value: number, length: number) => ((value % length) + length) % length
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 
 function formatTime(seconds: number) {
   const whole = Math.max(0, Math.floor(seconds))

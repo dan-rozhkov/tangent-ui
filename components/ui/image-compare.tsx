@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
 import { animate, motion, useMotionValue, useTransform } from "motion/react";
 import { CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react"
+import { clamp, resistPast, rubberBand } from "@/lib/gesture";
 import { motionTokens } from "@/lib/motion-tokens";
 import { cn } from "@/lib/utils";
 import { useReducedMotion } from "@/lib/reduced-motion";
@@ -48,12 +49,9 @@ const turnSpring = physical(spring.morph);
 const kickSpring = physical(spring.morph);
 /** Rubber-band travel past an edge, the handle's inset from the frame, how far it gives inside that inset, and a key press at a limit. */
 const STRETCH = 9, MARGIN = 42, GIVE = 12, BUMP_PX = 150, INSET = 12;
-const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
 const lerp = (from: number, to: number, amount: number) => from + (to - from) * amount;
-/** iOS style resistance: travel past a limit gives less and less, and never more than `limit` pixels. */
-const rubber = (distance: number, limit = STRETCH) => Math.sign(distance) * (1 - 1 / (Math.abs(distance) * .55 / limit + 1)) * limit;
 /** The handle keeps the line's pace in the middle and slows smoothly near an edge, so it is never cut off and never stops dead. */
-const give = (distance: number) => GIVE * (1 - 1 / (distance / GIVE + 1));
+const give = (distance: number) => rubberBand(distance, GIVE, 1);
 const soften = (at: number, size: number) => at < MARGIN ? MARGIN - give(MARGIN - at) : at > size - MARGIN ? size - MARGIN + give(at - size + MARGIN) : at;
 const fade = (room: number) => clamp(room / 28, 0, 1);
 
@@ -189,7 +187,7 @@ export function ImageCompare({ before, after, position, defaultPosition = 50, on
   function follow(state: Drag, at: number, first = false) {
     const raw = at - state.grab, size = axisSize();
     const edge = clamp(raw, 0, 100);
-    const placed = reduced ? edge : edge + (rubber(((raw - edge) / 100) * size) / size) * 100;
+    const placed = reduced ? edge : edge + (resistPast(((raw - edge) / 100) * size, 0, STRETCH) / Math.max(size, 1)) * 100;
     state.raw = raw;
     if (first && state.press && !reduced) {
       const from = pos.get();

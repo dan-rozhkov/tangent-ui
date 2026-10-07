@@ -12,6 +12,7 @@ import {
   type Variants,
 } from "motion/react"
 
+import { clamp, resistPast } from "@/lib/gesture"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -74,12 +75,9 @@ const kickSpring = physical(spring.morph)
 const STRETCH = 9,
   BUMP_PX = 150,
   SNAP_PX = 12
-/** iOS style resistance: travel past a limit gives less and less, and never more than `limit` pixels. */
-const rubber = (distance: number, limit = STRETCH) => Math.sign(distance) * (1 - 1 / ((Math.abs(distance) * 0.55) / limit + 1)) * limit
 /** Where a release is heading, from a scroll-like deceleration (rate .99), in the same units as the velocity. */
 const project = (velocity: number) => velocity * 0.099
 const decimalsOf = (value: number) => (String(value).split(".")[1] ?? "").length
-const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value))
 const isDigit = (char: string) => char >= "0" && char <= "9"
 
 /** Digits are keyed by place value and the text around them by side, so $950 → $1,000 opens a column and a comma while the rest roll. */
@@ -488,7 +486,7 @@ export function Slider<T extends SliderValue = number>({
     const low = pct(lowOf(index, current)),
       high = pct(highOf(index, current))
     const edge = clamp(raw, low, high)
-    const placed = reduced ? edge : edge + (rubber(((raw - edge) / 100) * width) / width) * 100
+    const placed = reduced ? edge : edge + (resistPast(((raw - edge) / 100) * width, 0, STRETCH) / Math.max(width, 1)) * 100
     if (press && !reduced) {
       const from = thumb.pos.get()
       thumb.pos.jump(placed)

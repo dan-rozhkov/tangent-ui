@@ -23,6 +23,7 @@ import {
 } from "motion/react"
 import type { HTMLMotionProps, MotionProps, TargetAndTransition, Transition } from "motion/react"
 import { CheckCircleIcon, InfoIcon, WarningIcon, XCircleIcon, XIcon } from "@phosphor-icons/react"
+import { rubberBand } from "@/lib/gesture"
 import { useMotionTokens, type MotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -243,8 +244,6 @@ const durationFor = (type: ToastType, base: number) =>
   type === "loading" ? Infinity : type === "warning" || type === "error" ? base * 1.6 : base
 /** Where a release at this velocity would come to rest, using a fast scroll deceleration. */
 const project = (velocity: number) => ((velocity / 1000) * 0.99) / (1 - 0.99)
-/** Resistance past an edge: the pull keeps moving, but less and less, the way a scroll view overscrolls. */
-const rubberBand = (distance: number, dimension: number) => (1 - 1 / ((distance * 0.55) / dimension + 1)) * dimension
 const subscribeVisibility = (listener: () => void) => {
   document.addEventListener("visibilitychange", listener)
   return () => document.removeEventListener("visibilitychange", listener)

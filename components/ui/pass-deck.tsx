@@ -7,6 +7,7 @@ import type { MotionValue, TargetAndTransition, Transition } from "motion/react"
 
 import { CaretLeftIcon } from "@phosphor-icons/react"
 
+import { clamp, rubberBand } from "@/lib/gesture"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -90,10 +91,13 @@ const FLICK = 500
 const TILT = 5
 /** One critically damped curve for fan, cycle, and open, so every card moves in step and none overshoots. */
 
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value))
 const mix = (from: number, to: number, amount: number) => from + (to - from) * amount
 /** Past the first and last card the stack resists like a rubber band. */
-const rubber = (value: number, max: number) => (value < 0 ? -(1 - 1 / (-value * 1.6 + 1)) * 0.35 : value > max ? max + (1 - 1 / ((value - max) * 1.6 + 1)) * 0.35 : value)
+const EDGE_LIMIT = 0.35
+/** How much of the pull the stack follows at first, before it stiffens toward EDGE_LIMIT. */
+const EDGE_FOLLOW = 0.56
+const edgeStretch = (distance: number) => rubberBand(distance, EDGE_LIMIT, EDGE_FOLLOW)
+const rubber = (value: number, max: number) => (value < 0 ? -edgeStretch(-value) : value > max ? max + edgeStretch(value - max) : value)
 
 interface Geometry {
   width: MotionValue<number>

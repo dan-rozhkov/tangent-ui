@@ -9,6 +9,7 @@ import { AnimatePresence, animate, motion } from "motion/react"
 import type { AnimationPlaybackControls, Transition } from "motion/react"
 import { ArrowUpIcon, CaretUpIcon, CheckIcon, GlobeIcon, LinkIcon, XIcon } from "@phosphor-icons/react"
 
+import { clampUnit, rubberBand } from "@/lib/gesture"
 import { motionTokens as presets } from "@/lib/motion-tokens"
 import { useMotionTokens } from "@/lib/motion-tokens-context"
 import { cn } from "@/lib/utils"
@@ -76,6 +77,9 @@ const FOLD = { stiffness: 960, damping: 68 }
 /** A removed card holds a beat, then closes on a critically damped spring of about 14 rad/s. */
 const LEAVE = { stiffness: 196, damping: 28 }
 const LEAVE_HOLD = 0.04
+/** Past a full pull the progress still creeps up to this much further, first following this share of the pull. */
+const OVERPULL_LIMIT = 0.04
+const OVERPULL_FOLLOW = 0.12
 /** The link's own width follows its new label on a far stiffer critically damped spring (about 50 rad/s). */
 const CHIP_WIDTH: Transition = { type: "spring", stiffness: 2500, damping: 100, mass: 1 }
 /** After a fold the card, now sitting on its link, fades out over this window (seconds after the fold starts). */
@@ -87,7 +91,6 @@ const SEND_POP: Transition = { type: "spring", visualDuration: 0.3, bounce: 0.08
 const URL_PATTERN = /(?:https?:\/\/|www\.)[^\s<>"']+/g
 const TRAILING = /[.,!?;:)\]}'"]+$/
 
-const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
 const display = (url: string) => url.replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "")
 const hrefOf = (url: string) => (/^https?:\/\//.test(url) ? url : `https://${url}`)
 const same = (a: string, b: string) => display(a).toLowerCase() === display(b).toLowerCase()
@@ -458,7 +461,7 @@ export function PastePreview({
       jobs.push({ id, ctrl, tx0, ty0, l0, t0, r0, b0, r0px: chip.height / 2, w, h })
     }
     for (const { id, ctrl, tx0, ty0, l0, t0, r0, b0, r0px, w, h } of jobs) {
-      const p = clamp01(ctrl.p)
+      const p = clampUnit(ctrl.p)
       const { slot, card, plate, body, img } = ctrl
       if (!slot || !card || !plate) continue
       // The clip widens first and deepens after: width runs a little ahead of the progress, height and lane follow it exactly.
@@ -473,10 +476,10 @@ export function PastePreview({
       // Opening, the card shows within the first few percent; folded onto its link, it waits a beat and then fades.
       const folding = ctrl.target === 0 && !ctrl.drag
       const fade = ctrl.removed
-        ? clamp01(ctrl.p * 1.5)
+        ? clampUnit(ctrl.p * 1.5)
         : folding && Number.isFinite(ctrl.foldAt)
-          ? 1 - clamp01(((now - ctrl.foldAt) * pace - FADE_FROM) / FADE_FOR)
-          : clamp01(ctrl.p / 0.04)
+          ? 1 - clampUnit(((now - ctrl.foldAt) * pace - FADE_FROM) / FADE_FOR)
+          : clampUnit(ctrl.p / 0.04)
       const hidden = folding && p < 0.001 && fade <= 0.001
       slot.style.height = `${((h + GAP) * p).toFixed(2)}px`
       card.style.visibility = hidden ? "hidden" : "visible"
@@ -490,7 +493,7 @@ export function PastePreview({
       plate.style.height = `${Math.max(0, h - t - b).toFixed(2)}px`
       plate.style.borderRadius = `${radius.toFixed(2)}px`
       // The header shows from the first frame; the body fades in after it, and the image settles from a slight zoom.
-      if (body) body.style.opacity = `${clamp01((p - 0.18) / 0.54).toFixed(3)}`
+      if (body) body.style.opacity = `${clampUnit((p - 0.18) / 0.54).toFixed(3)}`
       if (img) img.style.transform = `scale(${(1 + 0.07 * (1 - p)).toFixed(4)})`
       if (ctrl.removed && p < 0.001 && ctrl.target === 0) dropRef.current(id)
     }
@@ -976,7 +979,7 @@ export function PastePreview({
       ctrl.v = 0
       // Pulling down past open gives a little, with resistance; pulling up folds 1:1.
       const raw = state.from + dy / state.travel
-      ctrl.p = raw > 1 ? 1 + (1 - 1 / ((raw - 1) * 3 + 1)) * 0.04 : Math.max(0, raw)
+      ctrl.p = raw > 1 ? 1 + rubberBand(raw - 1, OVERPULL_LIMIT, OVERPULL_FOLLOW) : Math.max(0, raw)
       state.samples.push({ t: e.timeStamp, y: e.clientY })
       if (state.samples.length > 5) state.samples.shift()
       kick()
