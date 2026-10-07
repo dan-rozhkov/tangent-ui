@@ -83,6 +83,7 @@ export const demos: Record<string, ComponentType> = {
   "newsletter-signup": lazy(() => import("./newsletter-signup")),
   "notification-center": lazy(() => import("./notification-center")),
   "number-field": lazy(() => import("./number-field")),
+  "onboarding-flow": lazy(() => import("./onboarding-flow")),
   "otp-input": lazy(() => import("./otp-input")),
   "page-header": lazy(() => import("./page-header")),
   "pagination": lazy(() => import("./pagination")),

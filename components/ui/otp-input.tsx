@@ -18,6 +18,8 @@ export interface OtpInputProps {
   error?: string
   autoFocus?: boolean
   disabled?: boolean
+  /** Hides the visible label while keeping it for assistive tech. Use when the surrounding screen already names the field. */
+  hideLabel?: boolean
   inputMode?: "numeric" | "text"
   className?: string
 }
@@ -125,6 +127,7 @@ export function OtpInput({
   error,
   autoFocus = false,
   disabled = false,
+  hideLabel = false,
   inputMode = "numeric",
   className,
 }: OtpInputProps) {
@@ -257,7 +260,8 @@ export function OtpInput({
   return (
     /* No row gap: grid tracks clamp a negative margin at zero, so a closed message row would still pay the gap. Each row carries its own space instead. */
     <div className={cn("grid min-w-0", className)}>
-      <span className="mb-2 text-(length:--text-sm) leading-body font-medium text-foreground">{label}</span>
+      {/* The group carries the label as its accessible name, so a hidden label needs no text of its own. */}
+      {hideLabel ? null : <span className="mb-2 text-(length:--text-sm) leading-body font-medium text-foreground">{label}</span>}
       <div
         ref={scope}
         className="group/otp relative flex w-fit max-w-full gap-2 max-[360px]:gap-1.5"

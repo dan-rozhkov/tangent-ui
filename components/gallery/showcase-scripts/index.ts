@@ -59,6 +59,7 @@ export const showcaseScripts: Record<string, () => Promise<{ default: AutoplaySc
   "date-picker": () => import("./date-picker"),
   "date-range-picker": () => import("./date-range-picker"),
   "time-wheel": () => import("./time-wheel"),
+  "onboarding-flow": () => import("./onboarding-flow"),
   "dialog": () => import("./dialog"),
   "donut-chart": () => import("./donut-chart"),
   "drawer": () => import("./drawer"),

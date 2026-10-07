@@ -931,6 +931,7 @@ export const catalog: CatalogItem[] = [
   {"name": "paste-preview", "title": "Paste preview", "description": "A reply box that turns each pasted address into an inline link, then opens it into a small card with image and source once the details arrive.", "category": "original", "kind": "component"},
   {"name": "skeleton-reveal", "title": "Skeleton reveal", "description": "Size-matched placeholders that dissolve in place as the real content fades up beneath them.", "category": "original", "kind": "component"},
   {"name": "time-wheel", "title": "Time wheel", "description": "Drum-style wheels for choosing a date and clock time, with flick momentum, snapping, quick shortcuts and full keyboard control.", "category": "original", "kind": "component"},
+  {"name": "onboarding-flow", "title": "Onboarding flow", "description": "A phone-sized sign-up flow whose one button rides up on a keypad, renames itself step to step, and wakes once the field is filled, while steps slide past and a dash tracks progress.", "category": "original", "kind": "component"},
 ]
 
 /** The catalog grouped by category in `categories` order. Empty groups are left out; `filter` narrows the items first. */
