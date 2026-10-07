@@ -59,11 +59,11 @@ async function lookup(url: string, signal: AbortSignal): Promise<PasteCard | nul
 
 export default function Demo() {
   return (
-    <div className="flex min-h-[520px] w-[628px] max-w-full flex-col items-center justify-center gap-3 rounded-[28px] border border-border bg-surface-muted p-6 max-sm:p-3">
-      <div className="w-full max-w-[522px]">
+    <div className="flex min-h-[520px] w-[522px] max-w-full flex-col items-center justify-center gap-3">
+      <div className="w-full">
         <PastePreview suggestions={suggestions} lookup={lookup} />
       </div>
-      <p className="max-w-[522px] text-center text-xs leading-[1.4] text-balance text-text-secondary">
+      <p className="px-3 text-center text-xs leading-[1.4] text-balance text-text-secondary">
         A demo composer, so no reply is sent. Paste any link, click a link to fold its card, or drag a card up.
       </p>
     </div>

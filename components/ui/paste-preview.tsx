@@ -1035,12 +1035,12 @@ export function PastePreview({
   return (
     <div
       ref={rootRef}
-      className={cn("@container grid w-full gap-2", className)}
+      className={cn("@container grid w-full grid-cols-1 gap-2", className)}
       style={rootStyle}
       aria-busy={pending || undefined}
       onPointerDownCapture={() => void (interacted.current = true)}
     >
-      <div className="grid rounded-[26px] border border-border bg-surface">
+      <div className="grid grid-cols-1 rounded-[26px] border border-border bg-surface">
         <div className="relative">
           <div
             ref={editorRef}
@@ -1064,7 +1064,7 @@ export function PastePreview({
             )}
           />
         </div>
-        <div data-lane="" className="relative z-10 grid px-3">
+        <div data-lane="" className="relative z-10 grid grid-cols-1 px-3">
           {ordered
             .filter(link => link.status === "ready" && link.preview)
             .map(link => (
