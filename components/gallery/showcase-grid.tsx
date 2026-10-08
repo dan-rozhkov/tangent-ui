@@ -172,7 +172,7 @@ function ShowcaseTile({ name, playing, onView, onHover, onSettle, onReplay }: Ti
       </div>
       <Link
         href={`/components/${name}`}
-        className="px-3 py-2.5 text-sm font-medium transition-colors duration-160 hover:text-text-secondary"
+        className="px-3 py-2.5 text-center text-sm font-medium transition-colors duration-160 hover:text-text-secondary"
       >
         {item.title}
       </Link>
