@@ -35,7 +35,7 @@
   --control-track-hover: oklch(86% 0 0);
   --control-thumb: oklch(100% 0 0);
   --control-thumb-on: oklch(100% 0 0);
-  --control-thumb-shadow: 0 0 0 .5px oklch(0% 0 0 / .07), 0 1px 2px oklch(0% 0 0 / .14), 0 2px 6px oklch(0% 0 0 / .06);
+  --control-thumb-shadow: 0 0 0 .5px color-mix(in oklab, var(--shade) 7%, transparent), 0 1px 2px color-mix(in oklab, var(--shade) 14%, transparent), 0 2px 6px color-mix(in oklab, var(--shade) 6%, transparent);
   --control-on-subtle: color-mix(in oklab, var(--control-on) 10%, transparent);
   /* Slider fills. Same as --control-on except neutral dark, where a mid grey keeps the white thumb distinct. */
   --control-fill: var(--control-on);
@@ -44,9 +44,21 @@
   --success: oklch(49% .19 150);
   --warning: oklch(58% .18 75);
   --danger: oklch(54% .21 25);
-  --shadow-resting: 0 1px 2px oklch(0% 0 0 / .035);
-  --shadow-raised: 0 6px 18px oklch(0% 0 0 / .065), 0 1px 3px oklch(0% 0 0 / .035);
-  --shadow-floating: 0 20px 48px oklch(0% 0 0 / .105), 0 3px 10px oklch(0% 0 0 / .045);
+  /* Theme-invariant inks, always applied with alpha (bg-shade/40, shadow color mixes). --shade darkens: shadows, scrims, veils, photo gradients.
+     --sheen lights: rims, glints, highlights on glass and materials. --on-media is text and icons over photos, video and dark art. */
+  --shade: oklch(0% 0 0);
+  --sheen: oklch(100% 0 0);
+  --on-media: var(--sheen);
+  /* Code syntax roles, tuned per theme for text contrast on the surface. Comments and punctuation use the text tokens. */
+  --syntax-string: oklch(46% .13 150);
+  --syntax-number: oklch(50% .14 55);
+  --syntax-keyword: oklch(48% .15 285);
+  --syntax-type: oklch(46% .13 230);
+  --syntax-function: oklch(43% .12 25);
+  --syntax-property: oklch(44% .12 85);
+  --shadow-resting: 0 1px 2px color-mix(in oklab, var(--shade) 3.5%, transparent);
+  --shadow-raised: 0 6px 18px color-mix(in oklab, var(--shade) 6.5%, transparent), 0 1px 3px color-mix(in oklab, var(--shade) 3.5%, transparent);
+  --shadow-floating: 0 20px 48px color-mix(in oklab, var(--shade) 10.5%, transparent), 0 3px 10px color-mix(in oklab, var(--shade) 4.5%, transparent);
   /* Brand gradient: soft lavender to warm peach. Light enough for dark text (--brand-gradient-foreground, >12:1). */
   --brand-gradient-from: oklch(90% .045 300);
   --brand-gradient-to: oklch(92% .045 65);
@@ -104,13 +116,19 @@
   --control-thumb: oklch(97% 0 0);
   --control-thumb-on: oklch(19% 0 0);
   --control-fill: oklch(62% 0 0);
-  --control-thumb-shadow: 0 0 0 .5px oklch(0% 0 0 / .3), 0 1px 2px oklch(0% 0 0 / .35), 0 2px 6px oklch(0% 0 0 / .2);
+  --control-thumb-shadow: 0 0 0 .5px color-mix(in oklab, var(--shade) 30%, transparent), 0 1px 2px color-mix(in oklab, var(--shade) 35%, transparent), 0 2px 6px color-mix(in oklab, var(--shade) 20%, transparent);
   --success: oklch(78% .18 150);
   --warning: oklch(83% .17 80);
   --danger: oklch(76% .2 25);
-  --shadow-resting: 0 1px 2px oklch(0% 0 0 / .18);
-  --shadow-raised: 0 8px 22px oklch(0% 0 0 / .22);
-  --shadow-floating: 0 22px 55px oklch(0% 0 0 / .34);
+  --syntax-string: oklch(77% .15 150);
+  --syntax-number: oklch(80% .14 75);
+  --syntax-keyword: oklch(78% .16 285);
+  --syntax-type: oklch(79% .13 230);
+  --syntax-function: oklch(80% .13 25);
+  --syntax-property: oklch(79% .12 85);
+  --shadow-resting: 0 1px 2px color-mix(in oklab, var(--shade) 18%, transparent);
+  --shadow-raised: 0 8px 22px color-mix(in oklab, var(--shade) 22%, transparent);
+  --shadow-floating: 0 22px 55px color-mix(in oklab, var(--shade) 34%, transparent);
   --brand-gradient-from: oklch(38% .05 300);
   --brand-gradient-to: oklch(40% .045 60);
   --brand-gradient-foreground: oklch(96% .005 300);

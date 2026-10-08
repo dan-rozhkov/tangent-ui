@@ -49,9 +49,9 @@ export const PAD_WIDTH = 600,
   PAD_HEIGHT = 260
 
 const INK: Record<InkColor, { label: string; export: string }> = {
-  black: { label: "Black ink", export: "#17171a" },
-  blue: { label: "Blue ink", export: "#1d3fae" },
-  violet: { label: "Violet ink", export: "#5b35c8" },
+  black: { label: "Black ink", export: "#17171a" }, // token-audit-ignore: pen ink palette, exported as image data
+  blue: { label: "Blue ink", export: "#1d3fae" }, // token-audit-ignore: pen ink palette, exported as image data
+  violet: { label: "Violet ink", export: "#5b35c8" }, // token-audit-ignore: pen ink palette, exported as image data
 }
 const WIDTHS: Record<InkWidth, { label: string; size: number }> = {
   fine: { label: "Fine", size: 3.4 },
@@ -605,7 +605,9 @@ export function SignaturePad({
     <div
       className={cn(
         "grid w-full min-w-0 gap-2.5 font-body tracking-body",
+        // token-audit-ignore: pen ink palette (data colors, not theme chrome)
         "[--ink-black:var(--foreground)] [--ink-blue:oklch(46%_.17_262)] [--ink-violet:oklch(49%_.2_292)]",
+        // token-audit-ignore: pen ink palette (data colors, not theme chrome)
         "dark:[--ink-blue:oklch(76%_.12_258)] dark:[--ink-violet:oklch(77%_.13_295)]",
         className,
       )}

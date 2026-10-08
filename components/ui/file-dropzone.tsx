@@ -117,7 +117,7 @@ function Sheet({ kind, dragging, children }: { kind: "back" | "side" | "front"; 
     <span
       className={cn(
         "absolute inset-0 grid [place-items:end_center] rounded-[7px] border border-border bg-surface-raised pb-[5px] text-text-muted",
-        "origin-[50%_100%] [transform:translate(var(--x),var(--y))_rotate(var(--r))] shadow-[0_1px_2px_oklch(0%_0_0/.05),0_3px_8px_oklch(0%_0_0/.04)]",
+        "origin-[50%_100%] [transform:translate(var(--x),var(--y))_rotate(var(--r))] shadow-[0_1px_2px_color-mix(in_oklab,var(--shade)_5%,transparent),0_3px_8px_color-mix(in_oklab,var(--shade)_4%,transparent)]",
         "[transition:transform_var(--duration-spring)_var(--ease-spring),color_var(--duration-standard)_var(--ease-standard),border-color_var(--duration-standard)_var(--ease-standard)] motion-reduce:transition-none",
         "[&>svg]:[transition:transform_var(--duration-spring)_var(--ease-spring)] motion-reduce:[&>svg]:transition-none",
         "before:absolute before:top-2 before:left-[7px] before:h-0.5 before:w-4 before:rounded-[2px] before:bg-current before:opacity-30 before:content-['']",
@@ -306,7 +306,7 @@ function Thumb({ item }: { item: FileDropzoneItem }) {
     <span
       className={cn(
         fileIconClass,
-        "block overflow-hidden rounded-[10px] bg-surface-muted shadow-[inset_0_0_0_1px_oklch(0%_0_0/.06)]"
+        "block overflow-hidden rounded-[10px] bg-surface-muted shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--shade)_6%,transparent)]"
       )}
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- registry components stay framework agnostic, and previews are often object URLs */}

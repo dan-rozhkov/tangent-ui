@@ -1,148 +1,8 @@
 {
-  "billing-toggle.tsx": {
-    "color": 4,
-    "palette": 0,
-    "motion": 0
-  },
-  "bottom-sheet.tsx": {
-    "color": 2,
-    "palette": 0,
-    "motion": 0
-  },
-  "card-stack.tsx": {
-    "color": 2,
-    "palette": 0,
-    "motion": 0
-  },
-  "card.tsx": {
-    "color": 1,
-    "palette": 0,
-    "motion": 0
-  },
-  "chat-thread.tsx": {
-    "color": 1,
-    "palette": 1,
-    "motion": 0
-  },
-  "code-block.tsx": {
-    "color": 14,
-    "palette": 0,
-    "motion": 0
-  },
-  "color-picker.tsx": {
-    "color": 29,
-    "palette": 0,
-    "motion": 0
-  },
-  "depth-rail.tsx": {
-    "color": 12,
-    "palette": 0,
-    "motion": 0
-  },
-  "dialog.tsx": {
-    "color": 1,
-    "palette": 0,
-    "motion": 0
-  },
   "drawer.tsx": {
-    "color": 2,
+    "color": 0,
     "palette": 0,
     "motion": 1
-  },
-  "drill-sheets.tsx": {
-    "color": 3,
-    "palette": 0,
-    "motion": 0
-  },
-  "file-dropzone.tsx": {
-    "color": 3,
-    "palette": 0,
-    "motion": 0
-  },
-  "float-tabs.tsx": {
-    "color": 27,
-    "palette": 0,
-    "motion": 0
-  },
-  "fluid-header.tsx": {
-    "color": 4,
-    "palette": 0,
-    "motion": 0
-  },
-  "hero-section.tsx": {
-    "color": 40,
-    "palette": 0,
-    "motion": 0
-  },
-  "image-compare.tsx": {
-    "color": 1,
-    "palette": 0,
-    "motion": 0
-  },
-  "login-centered.tsx": {
-    "color": 4,
-    "palette": 0,
-    "motion": 0
-  },
-  "logo-marquee.tsx": {
-    "color": 7,
-    "palette": 0,
-    "motion": 0
-  },
-  "newsletter-signup.tsx": {
-    "color": 7,
-    "palette": 0,
-    "motion": 0
-  },
-  "pass-deck.tsx": {
-    "color": 26,
-    "palette": 0,
-    "motion": 0
-  },
-  "progressive-blur-card.tsx": {
-    "color": 16,
-    "palette": 7,
-    "motion": 0
-  },
-  "radial-picker.tsx": {
-    "color": 0,
-    "palette": 1,
-    "motion": 0
-  },
-  "reserve-pill.tsx": {
-    "color": 4,
-    "palette": 0,
-    "motion": 0
-  },
-  "segmented-control.tsx": {
-    "color": 2,
-    "palette": 0,
-    "motion": 0
-  },
-  "share-panel.tsx": {
-    "color": 1,
-    "palette": 0,
-    "motion": 0
-  },
-  "sign-in.tsx": {
-    "color": 4,
-    "palette": 0,
-    "motion": 0
-  },
-  "signature-pad.tsx": {
-    "color": 7,
-    "palette": 0,
-    "motion": 0
-  },
-  "signup-form.tsx": {
-    "color": 4,
-    "palette": 0,
-    "motion": 0
-  },
-  "site-header.tsx": {
-    "color": 1,
-    "palette": 0,
-    "motion": 0
   },
   "slot-text.tsx": {
     "color": 0,
@@ -150,17 +10,12 @@
     "motion": 1
   },
   "stories.tsx": {
-    "color": 12,
-    "palette": 3,
+    "color": 0,
+    "palette": 0,
     "motion": 1
   },
-  "time-wheel.tsx": {
-    "color": 4,
-    "palette": 0,
-    "motion": 0
-  },
   "user-menu.tsx": {
-    "color": 2,
+    "color": 0,
     "palette": 0,
     "motion": 1
   },

@@ -285,7 +285,7 @@ export function DrillSheets({ children, path: stackProp, defaultPath = [], onPat
           aria-hidden="true"
           className={cn(
             // Black at 56% in dark; lighter in light so white sheets do not sit in a hole.
-            "absolute inset-0 bg-[oklch(0%_0_0/.32)] dark:bg-[oklch(0%_0_0/.56)]",
+            "absolute inset-0 bg-shade/32 dark:bg-shade/56",
             !contained && "backdrop-blur-[4px]",
             stack.length ? "pointer-events-auto" : "pointer-events-none",
           )}
@@ -711,7 +711,7 @@ function SheetPanel({ id, title, subtitle: description, children, actions: foote
             </div>
           ) : null}
           {/* Sheets below the top dim as they recede. */}
-          <motion.span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[inherit] bg-[oklch(0%_0_0/.34)]" style={{ opacity: dim }} />
+          <motion.span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-[inherit] bg-shade/34" style={{ opacity: dim }} />
         </DialogPrimitive.Popup>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

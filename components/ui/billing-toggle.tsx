@@ -110,7 +110,7 @@ type Thumb = { x: number; width: number }
 
 /** One thumb for the whole track. Its position and width are measured from the selected option. */
 const thumbClass =
-  "pointer-events-none absolute -z-1 rounded-pill bg-surface-raised shadow-[0_0_0_1px_var(--border-subtle),0_1px_2px_oklch(0%_0_0/.06),0_2px_6px_oklch(0%_0_0/.04)] dark:shadow-[0_0_0_1px_var(--border),inset_0_1px_0_oklch(100%_0_0/.05),0_1px_2px_oklch(0%_0_0/.3)]"
+  "pointer-events-none absolute -z-1 rounded-pill bg-surface-raised shadow-[0_0_0_1px_var(--border-subtle),0_1px_2px_color-mix(in_oklab,var(--shade)_6%,transparent),0_2px_6px_color-mix(in_oklab,var(--shade)_4%,transparent)] dark:shadow-[0_0_0_1px_var(--border),inset_0_1px_0_color-mix(in_oklab,var(--sheen)_5%,transparent),0_1px_2px_color-mix(in_oklab,var(--shade)_30%,transparent)]"
 
 /**
  * A billing period switch. One thumb glides between the options on a critically damped spring, and

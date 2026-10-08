@@ -141,12 +141,15 @@ function format(hsva: Hsva, kind: ColorFormat) {
   const rgb = hsvToRgb(hsva)
   const alpha = hsva.a < 0.999 ? ` / ${Math.round(hsva.a * 100)}%` : ""
   if (kind === "hex") return toHex(hsva)
+  // token-audit-ignore: computed color string for the chosen value
   if (kind === "rgb") return `rgb(${byte(rgb.r)} ${byte(rgb.g)} ${byte(rgb.b)}${alpha})`
   if (kind === "hsl") {
     const { h, s, l } = rgbToHsl(rgb, hsva.h)
+    // token-audit-ignore: computed color string for the chosen value
     return `hsl(${Math.round(h) % 360} ${Math.round(s * 100)}% ${Math.round(l * 100)}%${alpha})`
   }
   const { l, c, h } = rgbToOklch(rgb, hsva.h)
+  // token-audit-ignore: computed color string for the chosen value
   return `oklch(${round(l * 100, 1)}% ${round(c, 3)} ${round(h, 1) % 360}${alpha})`
 }
 const readAlpha = (text?: string) =>
@@ -276,12 +279,12 @@ function stepFor(event: ReactKeyboardEvent, axis: "x" | "y" | "both") {
 
 /* The gradient stops sit at the thumb's travel ends, so the color under the thumb is the value it reports. */
 const HUE_TRACK =
-  "linear-gradient(to right, #f00 11px, #ff0 calc(11px + (100% - 22px) * .1666), #0f0 calc(11px + (100% - 22px) * .3333), #0ff 50%, #00f calc(11px + (100% - 22px) * .6666), #f0f calc(11px + (100% - 22px) * .8333), #f00 calc(100% - 11px))"
+  "linear-gradient(to right, #f00 11px, #ff0 calc(11px + (100% - 22px) * .1666), #0f0 calc(11px + (100% - 22px) * .3333), #0ff 50%, #00f calc(11px + (100% - 22px) * .6666), #f0f calc(11px + (100% - 22px) * .8333), #f00 calc(100% - 11px))" // token-audit-ignore: the hue spectrum is data, not a theme color
 const ALPHA_TRACK = "linear-gradient(to right, transparent 11px, var(--picker-opaque) calc(100% - 11px)), var(--checker)"
 
 const thumbBaseClass = [
   "absolute size-[22px] cursor-grab rounded-full [translate:-50%_-50%]",
-  "shadow-[0_0_0_3px_#fff,0_2px_8px_oklch(0%_0_0/.3),inset_0_0_0_1px_oklch(0%_0_0/.12)]",
+  "shadow-[0_0_0_3px_var(--sheen),0_2px_8px_color-mix(in_oklab,var(--shade)_30%,transparent),inset_0_0_0_1px_color-mix(in_oklab,var(--shade)_12%,transparent)]",
   "[transition:scale_var(--duration-spring)_var(--ease-spring)] motion-reduce:transition-none",
 ].join(" ")
 
@@ -313,7 +316,7 @@ function Slider({ label, value, valueText, max, unit, onChange, className, style
     <div
       className={cn(
         "relative mx-[11px] h-3.5 cursor-pointer touch-none rounded-pill",
-        "before:absolute before:inset-y-0 before:-inset-x-[11px] before:rounded-[inherit] before:[background:var(--track)] before:shadow-[inset_0_0_0_1px_oklch(0%_0_0/.08)] before:content-['']",
+        "before:absolute before:inset-y-0 before:-inset-x-[11px] before:rounded-[inherit] before:[background:var(--track)] before:shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--shade)_8%,transparent)] before:content-['']",
         className,
       )}
       style={style}
@@ -354,7 +357,7 @@ function Slider({ label, value, valueText, max, unit, onChange, className, style
 function Chip({ color, className }: { color: string; className?: string }) {
   return (
     <span className={cn("relative block size-8 flex-none overflow-hidden rounded-full [background:var(--checker)]", className)}>
-      <span className="absolute inset-0 rounded-[inherit] shadow-[inset_0_0_0_1px_oklch(0%_0_0/.1)]" style={{ background: color }} />
+      <span className="absolute inset-0 rounded-[inherit] shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--shade)_10%,transparent)]" style={{ background: color }} />
     </span>
   )
 }
@@ -373,9 +376,9 @@ const newId = () => `swatch-${Date.now().toString(36)}-${swatchCount++}`
 
 export function ColorPicker({
   value,
-  defaultValue = "#2F6BFF",
+  defaultValue = "#2F6BFF", // token-audit-ignore: default picked color (user data)
   onValueChange,
-  background = "#FFFFFF",
+  background = "#FFFFFF", // token-audit-ignore: default contrast backdrop (user data)
   label = "Color",
   swatches: swatchesProp,
   defaultSwatches,
@@ -422,8 +425,11 @@ export function ColorPicker({
 
   const hex = toHex(hsva)
   const rgb = hsvToRgb(hsva)
+  // token-audit-ignore: computed color strings for the chosen value
   const css = `rgb(${byte(rgb.r)} ${byte(rgb.g)} ${byte(rgb.b)} / ${round(hsva.a, 3)})`
+  // token-audit-ignore: computed color strings for the chosen value
   const opaque = `rgb(${byte(rgb.r)} ${byte(rgb.g)} ${byte(rgb.b)})`
+  // token-audit-ignore: computed color strings for the chosen value
   const pure = `hsl(${hsva.h} 100% 50%)`
   const bg = parseColor(background)
   const ratio = contrast(hsva, bg ? hsvToRgb(bg) : { r: 1, g: 1, b: 1, a: 1 })
@@ -638,7 +644,9 @@ export function ColorPicker({
       ref={rootRef}
       className={cn(
         "relative inline-block font-body tracking-body text-foreground",
+        // token-audit-ignore: alpha checkerboard, fixed neutral greys
         "[--picker-fill:var(--surface)] [--picker-width:min(19rem,calc(100vw_-_32px))] [--checker:repeating-conic-gradient(oklch(88%_0_0)_0_25%,oklch(100%_0_0)_0_50%)_0_0/10px_10px]",
+        // token-audit-ignore: alpha checkerboard, fixed neutral greys
         "dark:[--picker-fill:var(--surface-raised)] dark:[--checker:repeating-conic-gradient(oklch(42%_0_0)_0_25%,oklch(30%_0_0)_0_50%)_0_0/10px_10px]",
         className,
       )}
@@ -665,7 +673,7 @@ export function ColorPicker({
         <div
           className={cn(
             "pointer-events-none absolute top-[-1px] left-[-1px] z-20 data-open:pointer-events-auto",
-            "[filter:drop-shadow(0_18px_36px_oklch(0%_0_0/.12))_drop-shadow(0_2px_6px_oklch(0%_0_0/.06))] dark:[filter:drop-shadow(0_20px_44px_oklch(0%_0_0/.5))]",
+            "[filter:drop-shadow(0_18px_36px_color-mix(in_oklab,var(--shade)_12%,transparent))_drop-shadow(0_2px_6px_color-mix(in_oklab,var(--shade)_6%,transparent))] dark:[filter:drop-shadow(0_20px_44px_color-mix(in_oklab,var(--shade)_50%,transparent))]",
           )}
           data-open={open || undefined}
         >
@@ -698,8 +706,9 @@ export function ColorPicker({
               {/* Saturation runs left to right, brightness bottom to top, over the pure hue. */}
               <div
                 className={cn(
-                  "group/area relative h-41 cursor-crosshair touch-none rounded-2xl shadow-[inset_0_0_0_1px_oklch(0%_0_0/.08)]",
-                  "[background:linear-gradient(to_top,#000,transparent),linear-gradient(to_right,#fff,transparent),var(--picker-hue)]",
+                  "group/area relative h-41 cursor-crosshair touch-none rounded-2xl shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--shade)_8%,transparent)]",
+                  // token-audit-ignore: saturation/value area gradient is data
+          "[background:linear-gradient(to_top,#000,transparent),linear-gradient(to_right,#fff,transparent),var(--picker-hue)]",
                 )}
                 data-active={active === "area" || undefined}
                 {...areaPad}

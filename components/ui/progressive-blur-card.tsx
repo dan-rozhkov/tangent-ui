@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils"
 type Bezier = [number, number, number, number]
 
 /** Frosted fill shared by the badge and the connected button. Fixed white: it sits on photography, not on the page. */
-const FROST = "bg-[oklch(1_0_0/0.2)] shadow-[inset_0_0_0_1px_oklch(1_0_0/0.22)]"
+const FROST = "bg-sheen/20 shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--sheen)_22%,transparent)]"
 /** The blur half of the frost, only worth its cost on the front card. */
 const FROST_BLUR = "backdrop-blur-md [-webkit-backdrop-filter:blur(12px)]"
 
@@ -283,7 +283,7 @@ export function ProgressiveBlurCard({
         setPinned((value) => !value)
       }}
       className={cn(
-        "relative isolate aspect-[3/4] w-full rounded-surface bg-surface-muted text-white shadow-floating",
+        "relative isolate aspect-[3/4] w-full rounded-surface bg-surface-muted text-on-media shadow-floating",
         className
       )}
     >
@@ -310,7 +310,7 @@ export function ProgressiveBlurCard({
 
         {/* Top: a short blur and scrim so the badge and name stay legible over bright skies. */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[34%]">
-          <div className="absolute inset-0 bg-gradient-to-b from-[oklch(0_0_0/0.34)] to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-shade/34 to-transparent" />
           {inactive ? null : (
             <ProgressiveBlur side="top" strength={10} layers={6} />
           )}
@@ -319,7 +319,7 @@ export function ProgressiveBlurCard({
           {badge ? (
             <span
               className={cn(
-                "inline-flex h-6 items-center gap-1 rounded-pill px-2.5 text-[0.6875rem] leading-none font-medium text-white",
+                "inline-flex h-6 items-center gap-1 rounded-pill px-2.5 text-[0.6875rem] leading-none font-medium text-on-media",
                 FROST,
                 !inactive && FROST_BLUR
               )}
@@ -328,7 +328,7 @@ export function ProgressiveBlurCard({
               {badge}
             </span>
           ) : null}
-          <p className="m-0 max-w-full truncate text-lg leading-tight font-medium text-white [text-shadow:0_1px_14px_oklch(0_0_0/0.4)]">
+          <p className="m-0 max-w-full truncate text-lg leading-tight font-medium text-on-media [text-shadow:0_1px_14px_color-mix(in_oklab,var(--shade)_40%,transparent)]">
             {name}
           </p>
         </div>
@@ -346,7 +346,7 @@ export function ProgressiveBlurCard({
           <div
             className="absolute inset-0"
             style={{
-              backgroundImage: `linear-gradient(to bottom, transparent 0%, oklch(0 0 0 / 0.1) ${(RAMP * 55).toFixed(1)}%, oklch(0 0 0 / 0.4) ${(RAMP * 100).toFixed(1)}%)`,
+              backgroundImage: `linear-gradient(to bottom, transparent 0%, color-mix(in oklab,var(--shade) 10%, transparent) ${(RAMP * 55).toFixed(1)}%, color-mix(in oklab,var(--shade) 40%, transparent) ${(RAMP * 100).toFixed(1)}%)`,
             }}
           />
           {/* Only the front card pays for the blur; cards behind keep the scrim. */}
@@ -379,7 +379,7 @@ export function ProgressiveBlurCard({
               {bio ? (
                 <motion.p
                   variants={details}
-                  className="m-0 text-xs leading-[1.45] [text-wrap:pretty] text-[oklch(1_0_0/0.9)] [text-shadow:0_1px_8px_oklch(0_0_0/0.35)]"
+                  className="m-0 text-xs leading-[1.45] [text-wrap:pretty] text-on-media/90 [text-shadow:0_1px_8px_color-mix(in_oklab,var(--shade)_35%,transparent)]"
                 >
                   {bio}
                 </motion.p>
@@ -388,7 +388,7 @@ export function ProgressiveBlurCard({
                 <motion.dl variants={details} className="m-0 flex gap-5">
                   {stats.map((stat) => (
                     <div key={stat.label} className="flex flex-col gap-0.5">
-                      <dt className="text-[0.6875rem] leading-none text-[oklch(1_0_0/0.7)]">
+                      <dt className="text-[0.6875rem] leading-none text-on-media/70">
                         {stat.label}
                       </dt>
                       <dd className="m-0 text-sm leading-none font-medium tabular-nums">
@@ -407,16 +407,16 @@ export function ProgressiveBlurCard({
               src={avatar.src}
               alt={avatar.alt ?? ""}
               draggable={false}
-              className="size-[2.125rem] shrink-0 rounded-full object-cover ring-1 ring-[oklch(1_0_0/0.85)]"
+              className="size-[2.125rem] shrink-0 rounded-full object-cover ring-1 ring-sheen/85"
             />
             <div className="min-w-0 flex-1">
               <p
                 id={handleId}
-                className="m-0 truncate text-[0.8125rem] leading-[1.3] font-medium text-white [text-shadow:0_1px_8px_oklch(0_0_0/0.35)]"
+                className="m-0 truncate text-[0.8125rem] leading-[1.3] font-medium text-on-media [text-shadow:0_1px_8px_color-mix(in_oklab,var(--shade)_35%,transparent)]"
               >
                 {handle}
               </p>
-              <p className="m-0 truncate text-xs leading-[1.3] text-[oklch(1_0_0/0.78)] [text-shadow:0_1px_8px_oklch(0_0_0/0.35)]">
+              <p className="m-0 truncate text-xs leading-[1.3] text-on-media/78 [text-shadow:0_1px_8px_color-mix(in_oklab,var(--shade)_35%,transparent)]">
                 {caption}
               </p>
             </div>
@@ -431,8 +431,8 @@ export function ProgressiveBlurCard({
               className={cn(
                 "relative inline-flex h-8 shrink-0 cursor-pointer items-center justify-center overflow-hidden px-3 text-xs leading-none font-medium whitespace-nowrap transition-[background-color,color,box-shadow] duration-[var(--duration-fast)] ease-standard active:scale-[0.97]",
                 connected
-                  ? cn(FROST, !inactive && FROST_BLUR, "text-white")
-                  : "bg-white text-[oklch(0.2_0_0)]"
+                  ? cn(FROST, !inactive && FROST_BLUR, "text-on-media")
+                  : "bg-on-media text-shade/95"
               )}
             >
               <AnimatePresence initial={false} mode="popLayout">
@@ -926,7 +926,7 @@ function StackSlot({
           {/* Resting cards sit on the standard shadow; a card in the hand or in flight floats on a deeper one. */}
           <motion.div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 rounded-surface shadow-[0_28px_56px_-14px_oklch(0_0_0/0.4),0_10px_20px_-10px_oklch(0_0_0/0.28)]"
+            className="pointer-events-none absolute inset-0 rounded-surface shadow-[0_28px_56px_-14px_color-mix(in_oklab,var(--shade)_40%,transparent),0_10px_20px_-10px_color-mix(in_oklab,var(--shade)_28%,transparent)]"
             style={{ opacity: shadow }}
           />
           <ProgressiveBlurCard
@@ -937,7 +937,7 @@ function StackSlot({
           {/* A live card (in hand or in flight) is never dimmed, whatever the lift. */}
           <motion.div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 rounded-surface bg-black"
+            className="pointer-events-none absolute inset-0 rounded-surface bg-shade"
             style={{ opacity: live ? dimBase : dimNow }}
           />
           {!live ? (

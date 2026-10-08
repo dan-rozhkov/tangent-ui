@@ -11,6 +11,14 @@ All notable changes to Tangent UI are listed here. The format follows [Keep a Ch
 - `npm run audit:tokens`: fails when hardcoded colors, default-palette utilities or raw easing grow in any file under `components/ui`, checked against `scripts/token-audit-baseline.json`.
 - `CONTRIBUTING.md` with conventions, the versioning policy and the deprecation policy.
 - Issue forms for component requests and bug reports, and a pull request template.
+- Color tokens `--shade` and `--sheen` (theme-invariant black and white inks for shadows, scrims and highlights, used with alpha), `--on-media` for text over photos, and `--syntax-*` for code highlighting.
+- `token-audit-ignore: <reason>` marks a deliberate literal (brand mark, mask alpha, art material). Exempt hits are still listed by the audit.
+
+### Changed
+
+- Components use color tokens instead of literal colors, with no visible change; the token audit baseline now holds only motion hits.
+- Foundation shadows mix `--shade` instead of a literal black.
+- The token audit counts hex colors inside Tailwind arbitrary values (`#b9c2ff_70%`) and skips mask lines, whose colors only carry alpha.
 
 ## [0.0.1]
 

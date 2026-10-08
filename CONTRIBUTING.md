@@ -36,7 +36,7 @@ Run `npm run dev` and check the component page in both themes, with every accent
 npm run lint && npm run typecheck && npm run audit:tokens && npm run build
 ```
 
-`audit:tokens` fails when hardcoded colors, default-palette utilities or raw easing grow in any file under `components/ui`. If a count must change on purpose, run `npm run audit:tokens -- --update` and explain why in the PR.
+`audit:tokens` fails when hardcoded colors, default-palette utilities or raw easing grow in any file under `components/ui`. Use a token first: `shade` and `sheen` with alpha cover shadows, scrims and highlights (`bg-shade/40`, `color-mix(in oklab, var(--shade) 6%, transparent)`), `on-media` covers text over photos. Mask lines are skipped, since their colors only carry alpha. A literal that is not a theme decision (a brand mark, computed color data, an art material) gets `// token-audit-ignore: <reason>` on its line or the comment line above; the audit still lists it. If a count must change on purpose, run `npm run audit:tokens -- --update` and explain why in the PR.
 
 Fill in the PR template. Add a screenshot or short recording for anything visual.
 

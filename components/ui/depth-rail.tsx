@@ -144,7 +144,7 @@ function Card({ item, index, count, front, pos, width, stage, still, onSelect }:
   const visibility = useTransform(() => (Math.abs(offset.get()) >= FADE_TO ? "hidden" : "visible"))
   // The edge shade sits on the side turned away from the viewer.
   const edgeAngle = useTransform(() => (offset.get() > 0 ? 270 : 90))
-  const edgeImage = useMotionTemplate`linear-gradient(${edgeAngle}deg, transparent 40%, oklch(0% 0 0 / .5))`
+  const edgeImage = useMotionTemplate`linear-gradient(${edgeAngle}deg, transparent 40%, color-mix(in oklab,var(--shade) 50%, transparent))`
 
   return (
     <motion.div
@@ -159,12 +159,12 @@ function Card({ item, index, count, front, pos, width, stage, still, onSelect }:
       {/* A soft ground shade around the card, then a tight contact shadow where it meets the floor. */}
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute top-[4%] left-[-3%] h-[98%] w-[106%] bg-[radial-gradient(closest-side,oklch(0%_0_0/.14),oklch(0%_0_0/.056)_55%,transparent)] dark:bg-[radial-gradient(closest-side,oklch(0%_0_0/.34),oklch(0%_0_0/.136)_55%,transparent)]"
+        className="pointer-events-none absolute top-[4%] left-[-3%] h-[98%] w-[106%] bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--shade)_14%,transparent),color-mix(in_oklab,var(--shade)_5.6%,transparent)_55%,transparent)] dark:bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--shade)_34%,transparent),color-mix(in_oklab,var(--shade)_13.6%,transparent)_55%,transparent)]"
       />
       {/* A quiet reflection on the floor: the bottom of the photo, mirrored and faded out. */}
       <motion.span
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-full overflow-hidden rounded-t-(--dr-r) [mask-image:linear-gradient(oklch(0%_0_0/.28),transparent_88%)]"
+        className="pointer-events-none absolute inset-x-0 top-full overflow-hidden rounded-t-(--dr-r) [mask-image:linear-gradient(color-mix(in_oklab,var(--shade)_28%,transparent),transparent_88%)]"
         style={{ height: `${REFLECTION * 100}%`, opacity: reflection }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -178,7 +178,7 @@ function Card({ item, index, count, front, pos, width, stage, still, onSelect }:
       </motion.span>
       <span
         aria-hidden="true"
-        className="pointer-events-none absolute top-[calc(100%-8px)] left-[5%] h-4 w-[90%] bg-[radial-gradient(closest-side,oklch(0%_0_0/.2232),oklch(0%_0_0/.0781)_60%,transparent)] dark:bg-[radial-gradient(closest-side,oklch(0%_0_0/.4092),oklch(0%_0_0/.1432)_60%,transparent)]"
+        className="pointer-events-none absolute top-[calc(100%-8px)] left-[5%] h-4 w-[90%] bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--shade)_22.32%,transparent),color-mix(in_oklab,var(--shade)_7.81%,transparent)_60%,transparent)] dark:bg-[radial-gradient(closest-side,color-mix(in_oklab,var(--shade)_40.92%,transparent),color-mix(in_oklab,var(--shade)_14.32%,transparent)_60%,transparent)]"
       />
       <span className="absolute inset-0 block overflow-hidden rounded-(--dr-r) bg-surface-muted">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -189,7 +189,7 @@ function Card({ item, index, count, front, pos, width, stage, still, onSelect }:
           className="size-full object-cover"
           style={{ objectPosition: item.imagePosition }}
         />
-        <motion.span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[oklch(0%_0_0/.62)] dark:bg-[oklch(0%_0_0/.9)]" style={{ opacity: veil }} />
+        <motion.span aria-hidden="true" className="pointer-events-none absolute inset-0 bg-shade/62 dark:bg-shade/90" style={{ opacity: veil }} />
         <motion.span aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ opacity: edge, backgroundImage: edgeImage }} />
       </span>
     </motion.div>

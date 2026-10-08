@@ -343,7 +343,7 @@ function StackCard({
         <div className="relative h-full overflow-hidden rounded-[inherit] border border-border bg-surface text-foreground">
           {children}
           <motion.span
-            className="pointer-events-none absolute inset-0 bg-[oklch(0%_0_0/.035)] dark:bg-[oklch(0%_0_0/.22)]"
+            className="pointer-events-none absolute inset-0 bg-shade/3.5 dark:bg-shade/22"
             style={{ opacity: shade }}
             aria-hidden="true"
           />

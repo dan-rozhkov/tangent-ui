@@ -85,7 +85,7 @@ function SwapText({ text }: { text: string }) {
 }
 
 /* While the layers leave, clicks pass through, so the trigger can reopen the dialog mid-exit. */
-const overlayClass = "fixed inset-0 z-50 bg-[oklch(10%_0_0/.46)] backdrop-blur-[7px] data-closed:pointer-events-none!"
+const overlayClass = "fixed inset-0 z-50 bg-shade/46 backdrop-blur-[7px] data-closed:pointer-events-none!"
 
 /* Centered with auto margins (like a native modal dialog) so transform stays free for the entrance spring. */
 const contentClass = [

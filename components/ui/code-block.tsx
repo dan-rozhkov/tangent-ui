@@ -24,13 +24,13 @@ type TokenKind = "comment" | "string" | "number" | "keyword" | "type" | "functio
 /* Each role has contrast in both themes; color supports, but never replaces, source text. */
 const tokenClass: Record<TokenKind, string> = {
   comment: "text-text-muted italic",
-  string: "text-[oklch(46%_.13_150)] dark:text-[oklch(77%_.15_150)]",
-  number: "text-[oklch(50%_.14_55)] dark:text-[oklch(80%_.14_75)]",
-  keyword: "text-[oklch(48%_.15_285)] dark:text-[oklch(78%_.16_285)]",
-  type: "text-[oklch(46%_.13_230)] dark:text-[oklch(79%_.13_230)]",
-  function: "text-[oklch(43%_.12_25)] dark:text-[oklch(80%_.13_25)]",
-  property: "text-[oklch(44%_.12_85)] dark:text-[oklch(79%_.12_85)]",
-  tag: "text-[oklch(46%_.13_230)] dark:text-[oklch(79%_.13_230)]",
+  string: "text-syntax-string",
+  number: "text-syntax-number",
+  keyword: "text-syntax-keyword",
+  type: "text-syntax-type",
+  function: "text-syntax-function",
+  property: "text-syntax-property",
+  tag: "text-syntax-type",
   punctuation: "text-text-secondary",
 };
 

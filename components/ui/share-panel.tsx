@@ -1001,7 +1001,7 @@ function PhoneSheet({
         <>
           <motion.div
             key="backdrop"
-            className="fixed inset-0 z-50 bg-[oklch(10%_0_0/.38)]"
+            className="fixed inset-0 z-50 bg-shade/38"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

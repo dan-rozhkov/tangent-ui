@@ -170,22 +170,36 @@ function Contactless() {
   )
 }
 
-const finishes: Record<PassFinish, { className: string; style: (tint?: string) => CSSProperties }> = {
+/** Physical pass materials: fixed illustration colors, the same in light and dark. */
+const MATERIAL = {
+  brushedInk: "oklch(30% 0.01 260)", // token-audit-ignore: fixed pass material
+  brushedA: "oklch(90% 0.005 260)", // token-audit-ignore: fixed pass material
+  brushedB: "oklch(74% 0.01 260)", // token-audit-ignore: fixed pass material
+  brushedC: "oklch(93% 0.004 260)", // token-audit-ignore: fixed pass material
+  brushedD: "oklch(70% 0.012 260)", // token-audit-ignore: fixed pass material
+  onyxInk: "oklch(92% 0 0)", // token-audit-ignore: fixed pass material
+  onyxBase: "oklch(17% 0.005 260)", // token-audit-ignore: fixed pass material
+  onyxA: "oklch(24% 0.005 260)", // token-audit-ignore: fixed pass material
+  onyxB: "oklch(12% 0.005 260)", // token-audit-ignore: fixed pass material
+  tintBase: "oklch(45% 0.15 262)", // token-audit-ignore: default pass tint
+}
+
+const finishes: Record<PassFinish, { className?: string; style: (tint?: string) => CSSProperties }> = {
   // Brushed metal: a soft sheen over fine horizontal grain.
   brushed: {
-    className: "text-[oklch(30%_0.01_260)]",
     style: () => ({
+      color: MATERIAL.brushedInk,
       backgroundImage:
-        "repeating-linear-gradient(0deg, oklch(100% 0 0/.07) 0 1px, transparent 1px 3px), linear-gradient(125deg, oklch(90% 0.005 260), oklch(74% 0.01 260) 38%, oklch(93% 0.004 260) 58%, oklch(70% 0.012 260))",
+        `repeating-linear-gradient(0deg, color-mix(in oklab,var(--sheen) 7%, transparent) 0 1px, transparent 1px 3px), linear-gradient(125deg, ${MATERIAL.brushedA}, ${MATERIAL.brushedB} 38%, ${MATERIAL.brushedC} 58%, ${MATERIAL.brushedD})`,
     }),
   },
   // A dark pass with a fine guilloche of overlapping rings.
   onyx: {
-    className: "text-[oklch(92%_0_0)]",
     style: () => ({
-      backgroundColor: "oklch(17% 0.005 260)",
+      color: MATERIAL.onyxInk,
+      backgroundColor: MATERIAL.onyxBase,
       backgroundImage:
-        "repeating-radial-gradient(circle at 12% 130%, oklch(100% 0 0/.07) 0 1px, transparent 1px 7px), repeating-radial-gradient(circle at 96% -30%, oklch(100% 0 0/.05) 0 1px, transparent 1px 9px), linear-gradient(135deg, oklch(24% 0.005 260), oklch(12% 0.005 260))",
+        `repeating-radial-gradient(circle at 12% 130%, color-mix(in oklab,var(--sheen) 7%, transparent) 0 1px, transparent 1px 7px), repeating-radial-gradient(circle at 96% -30%, color-mix(in oklab,var(--sheen) 5%, transparent) 0 1px, transparent 1px 9px), linear-gradient(135deg, ${MATERIAL.onyxA}, ${MATERIAL.onyxB})`,
     }),
   },
   // Frosted glass: whatever sits behind shows through a blur.
@@ -193,14 +207,14 @@ const finishes: Record<PassFinish, { className: string; style: (tint?: string) =
     className: "text-foreground backdrop-blur-[14px] backdrop-saturate-150",
     style: () => ({
       backgroundColor: "color-mix(in oklab, var(--surface-raised) 52%, transparent)",
-      backgroundImage: "linear-gradient(135deg, oklch(100% 0 0/.38), oklch(100% 0 0/.04) 55%, oklch(100% 0 0/.18))",
+      backgroundImage: "linear-gradient(135deg, color-mix(in oklab,var(--sheen) 38%, transparent), color-mix(in oklab,var(--sheen) 4%, transparent) 55%, color-mix(in oklab,var(--sheen) 18%, transparent))",
     }),
   },
   tint: {
-    className: "text-[oklch(98%_0_0)]",
+    className: "text-on-media",
     style: tint => ({
-      backgroundColor: tint ?? "oklch(45% 0.15 262)",
-      backgroundImage: "radial-gradient(120% 140% at 0% 0%, oklch(100% 0 0/.22), transparent 55%), linear-gradient(160deg, transparent 40%, oklch(0% 0 0/.28))",
+      backgroundColor: tint ?? MATERIAL.tintBase,
+      backgroundImage: "radial-gradient(120% 140% at 0% 0%, color-mix(in oklab,var(--sheen) 22%, transparent), transparent 55%), linear-gradient(160deg, transparent 40%, color-mix(in oklab,var(--shade) 28%, transparent))",
     }),
   },
 }
@@ -216,11 +230,11 @@ function PassFace({ pass }: { pass: Pass }) {
         <img src={pass.image} alt="" draggable={false} className="absolute inset-0 size-full object-cover" />
       ) : null}
       <span
-        className={cn("absolute inset-0 flex flex-col justify-between rounded-[inherit] p-[6cqw] ring-1 ring-[oklch(100%_0_0/.18)] ring-inset", finish.className)}
+        className={cn("absolute inset-0 flex flex-col justify-between rounded-[inherit] p-[6cqw] ring-1 ring-sheen/18 ring-inset", finish.className)}
         // Artwork shows through a tint finish; brushed and onyx stay opaque, and frost already lets it through.
         style={{
           ...finish.style(pass.tint),
-          ...(pass.image && material === "tint" ? { backgroundColor: `color-mix(in oklab, ${pass.tint ?? "oklch(45% 0.15 262)"} 62%, transparent)` } : null),
+          ...(pass.image && material === "tint" ? { backgroundColor: `color-mix(in oklab, ${pass.tint ?? MATERIAL.tintBase} 62%, transparent)` } : null),
         }}
       >
         <span className="flex items-start justify-between gap-[3cqw]">
@@ -236,7 +250,7 @@ function PassFace({ pass }: { pass: Pass }) {
             <span key={bar} className="bg-current" style={{ width: `${weight * 0.55}cqw` }} />
           ))}
         </span>
-        <span className="flex items-baseline gap-[2.5cqw] whitespace-nowrap tabular-nums [text-shadow:0_1px_0_oklch(100%_0_0/.3),0_-1px_0_oklch(0%_0_0/.35)]">
+        <span className="flex items-baseline gap-[2.5cqw] whitespace-nowrap tabular-nums [text-shadow:0_1px_0_color-mix(in_oklab,var(--sheen)_30%,transparent),0_-1px_0_color-mix(in_oklab,var(--shade)_35%,transparent)]">
           <span className="text-[3.7cqw] tracking-[0.14em] uppercase opacity-72">No.</span>
           <span className="text-[6.35cqw] tracking-[0.04em]">{pass.tail}</span>
         </span>
@@ -344,7 +358,7 @@ function StackPass({ pass, index, count, active, open, lifted, reduced, position
     >
       {/* A tight contact shadow on a slightly smaller span, so it reads under the card rather than around it. */}
       <motion.span
-        className="pointer-events-none absolute inset-x-[5%] top-[6%] bottom-[2%] rounded-[12%] shadow-[0_1px_1px_oklch(0%_0_0/.45),0_3px_8px_oklch(0%_0_0/.45)]"
+        className="pointer-events-none absolute inset-x-[5%] top-[6%] bottom-[2%] rounded-[12%] shadow-[0_1px_1px_color-mix(in_oklab,var(--shade)_45%,transparent),0_3px_8px_color-mix(in_oklab,var(--shade)_45%,transparent)]"
         style={{ opacity: shadow }}
         aria-hidden="true"
       />
@@ -352,7 +366,7 @@ function StackPass({ pass, index, count, active, open, lifted, reduced, position
       {/* A pre-painted highlight that only moves and fades. */}
       <span className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]" aria-hidden="true">
         <motion.span
-          className="absolute top-[-40%] left-[-40%] size-[180%] bg-[radial-gradient(circle_at_center,oklch(100%_0_0/.32),transparent_38%)] mix-blend-soft-light"
+          className="absolute top-[-40%] left-[-40%] size-[180%] bg-[radial-gradient(circle_at_center,color-mix(in_oklab,var(--sheen)_32%,transparent),transparent_38%)] mix-blend-soft-light"
           style={{ x: lightX, y: lightY, opacity: lightOpacity }}
         />
       </span>

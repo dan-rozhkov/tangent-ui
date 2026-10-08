@@ -177,7 +177,7 @@ const s = {
   featureArrow: "text-text-muted transition-transform duration-160 ease-standard pointer-fine:group-hover/feature:translate-x-[2px] motion-reduce:transition-none",
   featureText: "px-1 text-sm leading-body text-text-muted",
   /* Mobile sheet: drops from the bar and pushes nothing; the scrim closes it. */
-  scrim: "absolute inset-x-0 top-full h-dvh bg-[oklch(0%_0_0/.16)] @min-[760px]/site-header:hidden",
+  scrim: "absolute inset-x-0 top-full h-dvh bg-shade/16 @min-[760px]/site-header:hidden",
   sheet: "absolute inset-x-0 top-full overflow-hidden border-b border-border bg-background @min-[760px]/site-header:hidden",
   /* --site-header-sheet-max lets a header inside a fixed height scroller keep its actions in view. */
   sheetInner: "max-h-[var(--site-header-sheet-max,calc(100dvh_-_65px))] overflow-y-auto overscroll-contain px-4 pt-2 pb-5",

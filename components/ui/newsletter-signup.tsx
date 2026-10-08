@@ -321,7 +321,7 @@ export const NewsletterSignup = forwardRef<HTMLElement, NewsletterSignupProps>(f
 
   const descriptionClass = "m-0 text-(length:--text-lg) leading-body text-text-secondary text-pretty";
   const root = cn(
-    "@container/newsletter bg-background text-start font-body tracking-body text-foreground [--paper:var(--surface-raised)] [--paper-back:color-mix(in_oklab,var(--surface-raised),var(--surface-muted)_55%)] [--paper-far:var(--surface-muted)] [--paper-shadow:0_1px_1px_oklch(0%_0_0/.03),0_10px_28px_-6px_oklch(0%_0_0/.09)] [&_*]:box-border dark:[--paper:oklch(24.5%_0_0)] dark:[--paper-back:oklch(22.5%_0_0)] dark:[--paper-far:oklch(21%_0_0)] dark:[--paper-shadow:0_1px_1px_oklch(0%_0_0/.2),0_14px_32px_-6px_oklch(0%_0_0/.45)]",
+    "@container/newsletter bg-background text-start font-body tracking-body text-foreground [--paper:var(--surface-raised)] [--paper-back:color-mix(in_oklab,var(--surface-raised),var(--surface-muted)_55%)] [--paper-far:var(--surface-muted)] [--paper-shadow:0_1px_1px_color-mix(in_oklab,var(--shade)_3%,transparent),0_10px_28px_-6px_color-mix(in_oklab,var(--shade)_9%,transparent)] [&_*]:box-border dark:[--paper:var(--surface-raised)] dark:[--paper-back:color-mix(in_oklab,var(--surface-raised),var(--surface))] dark:[--paper-far:var(--surface)] dark:[--paper-shadow:0_1px_1px_color-mix(in_oklab,var(--shade)_20%,transparent),0_14px_32px_-6px_color-mix(in_oklab,var(--shade)_45%,transparent)]",
     variant === "card" && "px-6 py-20 @max-[520px]/newsletter:px-4 @max-[520px]/newsletter:py-10",
     className,
   );

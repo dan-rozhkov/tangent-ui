@@ -304,7 +304,7 @@ const MATERIAL_SHADOW =
 
 /** The lens when it lifts: a whiter fill with its own top highlight, glow and shadow. */
 const CLEAR_SHADOW =
-  "inset 0 1px .5px -.5px var(--gtb-rim), inset 0 0 10px var(--gtb-clear-glow), 0 6px 18px -6px oklch(0% 0 0 / .28)"
+  "inset 0 1px .5px -.5px var(--gtb-rim), inset 0 0 10px var(--gtb-clear-glow), 0 6px 18px -6px color-mix(in oklab,var(--shade) 28%, transparent)"
 
 /** A thin specular ring, brightest at the top left and again at the bottom right, drawn only on the rim. */
 function SpecularRing({ style }: { style?: CSSProperties }) {
@@ -729,12 +729,12 @@ export function FloatTabs({
         "pointer-events-none flex justify-center pb-[env(safe-area-inset-bottom)] select-none",
         // Material tokens, per theme and for increased contrast.
         "[--gtb-tint:color-mix(in_oklab,var(--background)_56%,transparent)] [--gtb-ink:color-mix(in_oklab,var(--foreground)_88%,transparent)] [--gtb-active:var(--foreground)]",
-        "[--gtb-glass:blur(18px)_saturate(1.8)_brightness(1.04)] [--gtb-hairline:oklch(0%_0_0/.07)] [--gtb-rim:oklch(100%_0_0/.95)] [--gtb-rim-low:oklch(100%_0_0/.5)] [--gtb-glow:oklch(100%_0_0/.32)]",
-        "[--gtb-drop:0_10px_30px_-10px_oklch(0%_0_0/.3),0_2px_8px_-2px_oklch(0%_0_0/.1)] [--gtb-border-width:0px] [--gtb-border:transparent]",
-        "[--gtb-fill:oklch(0%_0_0/.07)] [--gtb-lens-ring:oklch(100%_0_0/.45)] [--gtb-clear:oklch(100%_0_0/.42)] [--gtb-clear-glow:oklch(100%_0_0/.32)] [--gtb-badge-ring:var(--background)]",
+        "[--gtb-glass:blur(18px)_saturate(1.8)_brightness(1.04)] [--gtb-hairline:color-mix(in_oklab,var(--shade)_7%,transparent)] [--gtb-rim:color-mix(in_oklab,var(--sheen)_95%,transparent)] [--gtb-rim-low:color-mix(in_oklab,var(--sheen)_50%,transparent)] [--gtb-glow:color-mix(in_oklab,var(--sheen)_32%,transparent)]",
+        "[--gtb-drop:0_10px_30px_-10px_color-mix(in_oklab,var(--shade)_30%,transparent),0_2px_8px_-2px_color-mix(in_oklab,var(--shade)_10%,transparent)] [--gtb-border-width:0px] [--gtb-border:transparent]",
+        "[--gtb-fill:color-mix(in_oklab,var(--shade)_7%,transparent)] [--gtb-lens-ring:color-mix(in_oklab,var(--sheen)_45%,transparent)] [--gtb-clear:color-mix(in_oklab,var(--sheen)_42%,transparent)] [--gtb-clear-glow:color-mix(in_oklab,var(--sheen)_32%,transparent)] [--gtb-badge-ring:var(--background)]",
         "dark:[--gtb-tint:color-mix(in_oklab,var(--background)_58%,transparent)] dark:[--gtb-ink:color-mix(in_oklab,var(--foreground)_86%,transparent)] dark:[--gtb-glass:blur(18px)_saturate(1.6)_brightness(.86)]",
-        "dark:[--gtb-hairline:oklch(100%_0_0/.07)] dark:[--gtb-rim:oklch(100%_0_0/.36)] dark:[--gtb-rim-low:oklch(100%_0_0/.14)] dark:[--gtb-glow:oklch(100%_0_0/.05)]",
-        "dark:[--gtb-drop:0_12px_32px_-10px_oklch(0%_0_0/.65),0_2px_8px_-2px_oklch(0%_0_0/.4)] dark:[--gtb-fill:oklch(100%_0_0/.13)] dark:[--gtb-lens-ring:oklch(100%_0_0/.1)] dark:[--gtb-clear:oklch(100%_0_0/.14)] dark:[--gtb-clear-glow:oklch(100%_0_0/.08)]",
+        "dark:[--gtb-hairline:color-mix(in_oklab,var(--sheen)_7%,transparent)] dark:[--gtb-rim:color-mix(in_oklab,var(--sheen)_36%,transparent)] dark:[--gtb-rim-low:color-mix(in_oklab,var(--sheen)_14%,transparent)] dark:[--gtb-glow:color-mix(in_oklab,var(--sheen)_5%,transparent)]",
+        "dark:[--gtb-drop:0_12px_32px_-10px_color-mix(in_oklab,var(--shade)_65%,transparent),0_2px_8px_-2px_color-mix(in_oklab,var(--shade)_40%,transparent)] dark:[--gtb-fill:color-mix(in_oklab,var(--sheen)_13%,transparent)] dark:[--gtb-lens-ring:color-mix(in_oklab,var(--sheen)_10%,transparent)] dark:[--gtb-clear:color-mix(in_oklab,var(--sheen)_14%,transparent)] dark:[--gtb-clear-glow:color-mix(in_oklab,var(--sheen)_8%,transparent)]",
         "contrast-more:[--gtb-tint:color-mix(in_oklab,var(--background)_94%,transparent)] contrast-more:[--gtb-ink:var(--foreground)] contrast-more:[--gtb-border-width:1px] contrast-more:[--gtb-border:var(--border-strong)]",
         "dark:contrast-more:[--gtb-tint:color-mix(in_oklab,var(--background)_94%,transparent)] dark:contrast-more:[--gtb-ink:var(--foreground)]",
         // Reduced transparency: a solid raised surface.
@@ -850,6 +850,7 @@ export function FloatTabs({
             ].map((entry) =>
               entry.map ? (
                 <filter key={entry.id} id={entry.id} colorInterpolationFilters="sRGB">
+                  {/* token-audit-ignore: neutral displacement-map grey, not a theme color */}
                   <feFlood floodColor="rgb(128,128,128)" result="neutral" />
                   <feImage
                     ref={entry.ref}
@@ -868,6 +869,7 @@ export function FloatTabs({
             )}
             {lensMap ? (
               <filter ref={lensPasses} id={ids.lens} colorInterpolationFilters="sRGB">
+                {/* token-audit-ignore: neutral displacement-map grey, not a theme color */}
                 <feFlood floodColor="rgb(128,128,128)" result="neutral" />
                 <feImage ref={lensImage} href={lensMap} x="0" y="0" width="1" height="1" preserveAspectRatio="none" result="image" />
                 <feComposite in="image" in2="neutral" operator="over" result="map" />

@@ -999,7 +999,7 @@ export const ChatThread = forwardRef<ChatThreadHandle, ChatThreadProps>(function
                                         loading="lazy"
                                       />
                                       {at === 3 && images.length > 4 && (
-                                        <span className="absolute inset-0 grid place-items-center bg-[oklch(0%_0_0/.45)] text-(length:--text-lg) font-medium text-white">
+                                        <span className="absolute inset-0 grid place-items-center bg-shade/45 text-(length:--text-lg) font-medium text-on-media">
                                           +{images.length - 4}
                                         </span>
                                       )}

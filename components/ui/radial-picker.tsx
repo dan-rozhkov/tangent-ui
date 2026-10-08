@@ -202,7 +202,7 @@ function RadialItem({
         "bg-[color-mix(in_oklab,var(--surface-raised)_94%,transparent)] text-foreground shadow-raised [touch-action:none] [-webkit-tap-highlight-color:transparent]",
         "transition-[color,background,border-color,box-shadow] duration-160 ease-standard motion-reduce:transition-none",
         "data-targeted:border-transparent data-targeted:bg-transparent data-targeted:text-background data-targeted:shadow-none [&_svg]:size-5",
-        action.intent === "destructive" && "text-danger data-targeted:text-white",
+        action.intent === "destructive" && "text-danger data-targeted:text-background",
         reduced && "transition-[opacity,color,background] duration-160",
       )}
       style={{ x, y, opacity: fade, scale, filter }}

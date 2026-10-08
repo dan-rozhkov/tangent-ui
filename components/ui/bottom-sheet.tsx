@@ -52,7 +52,7 @@ export interface BottomSheetProps {
    While it leaves, nothing underneath is blocked and the sheet cannot be grabbed again.
    The sheet runs its own exit, so Base UI's hidden attribute is overridden until the exit finishes and the portal unmounts. */
 const overlayClass =
-  "fixed inset-0 z-50 bg-[oklch(16%_0_0/.34)] data-closed:pointer-events-none! dark:bg-[oklch(0%_0_0/.52)] [&[hidden]]:block!"
+  "fixed inset-0 z-50 bg-shade/34 data-closed:pointer-events-none! dark:bg-shade/52 [&[hidden]]:block!"
 /* The sheet is as tall as its largest detent plus a hidden extension below the fold; detents are translateY offsets from there. */
 const sheetClass = [
   "group/sheet fixed right-0 bottom-[calc(var(--sheet-extension)*-1)] left-0 z-51 mx-auto flex w-[min(100%,36rem)] flex-col overflow-hidden",

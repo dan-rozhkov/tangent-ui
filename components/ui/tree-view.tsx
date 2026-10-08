@@ -46,12 +46,13 @@ function flatten(nodes: TreeNode[], expanded: ReadonlySet<string>, depth = 1, pa
   ]);
 }
 
+// File-type identity hues (TypeScript blue and its siblings), fixed on purpose and tempered toward the foreground per theme.
 function fileTone(label: string) {
   const name = label.toLowerCase();
-  if (name.endsWith(".tsx") || name.endsWith(".ts")) return "text-[color-mix(in_oklab,#3178c6_78%,var(--foreground))]";
-  if (name.endsWith(".css")) return "text-[color-mix(in_oklab,#8b6ace_73%,var(--foreground))]";
-  if (name.endsWith(".md")) return "text-[color-mix(in_oklab,#38896b_74%,var(--foreground))]";
-  if (name.endsWith(".json")) return "text-[color-mix(in_oklab,#c48637_78%,var(--foreground))]";
+  if (name.endsWith(".tsx") || name.endsWith(".ts")) return "text-[color-mix(in_oklab,#3178c6_78%,var(--foreground))]"; // token-audit-ignore: file-type identity hue
+  if (name.endsWith(".css")) return "text-[color-mix(in_oklab,#8b6ace_73%,var(--foreground))]"; // token-audit-ignore: file-type identity hue
+  if (name.endsWith(".md")) return "text-[color-mix(in_oklab,#38896b_74%,var(--foreground))]"; // token-audit-ignore: file-type identity hue
+  if (name.endsWith(".json")) return "text-[color-mix(in_oklab,#c48637_78%,var(--foreground))]"; // token-audit-ignore: file-type identity hue
   return "";
 }
 

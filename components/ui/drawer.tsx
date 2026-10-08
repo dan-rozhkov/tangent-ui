@@ -118,8 +118,8 @@ function SwapText({ text }: { text: string }) {
 /* While a layer leaves it lets clicks through, so pressing the trigger again during the close reopens the drawer from wherever it is.
    Inside a container the layers anchor to that element instead of the viewport. */
 const overlayClass = [
-  "fixed inset-0 z-50 bg-[oklch(10%_0_0/.38)] backdrop-blur-[4px] data-closed:pointer-events-none!",
-  "data-contained:absolute data-contained:z-1 data-contained:bg-[oklch(10%_0_0/.16)] data-contained:backdrop-blur-none",
+  "fixed inset-0 z-50 bg-shade/38 backdrop-blur-[4px] data-closed:pointer-events-none!",
+  "data-contained:absolute data-contained:z-1 data-contained:bg-shade/16 data-contained:backdrop-blur-none",
 ].join(" ")
 
 const contentClass = [

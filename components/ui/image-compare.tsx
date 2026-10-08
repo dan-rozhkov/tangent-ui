@@ -269,7 +269,7 @@ export function ImageCompare({ before, after, position, defaultPosition = 50, on
       <motion.span className={chipClass} data-place="bottom" style={{ opacity: afterDown }} aria-hidden="true">{labels[1]}</motion.span>
     </>}
     <motion.div className="pointer-events-none absolute inset-0 z-2" style={{ x: pivotX, y: pivotY }}>
-      <motion.span className="absolute top-0 left-0 size-0" style={{ rotate: theta }}><span className="absolute -left-px h-[calc((100cqw_+_100cqh)_*_2)] w-0.5 top-[calc((100cqw_+_100cqh)_*_-1)] bg-surface-raised shadow-[0_0_0_.5px_oklch(0%_0_0/.14)] dark:bg-foreground" /></motion.span>
+      <motion.span className="absolute top-0 left-0 size-0" style={{ rotate: theta }}><span className="absolute -left-px h-[calc((100cqw_+_100cqh)_*_2)] w-0.5 top-[calc((100cqw_+_100cqh)_*_-1)] bg-surface-raised shadow-[0_0_0_.5px_color-mix(in_oklab,var(--shade)_14%,transparent)] dark:bg-foreground" /></motion.span>
       <motion.span className="absolute top-0 left-0" style={{ x: handleX, y: handleY }}>
         <motion.div ref={handleRef} data-handle="" data-quiet={quiet || undefined} className="pointer-events-auto absolute top-0 left-0 box-border grid size-10 [translate:-50%_-50%] place-items-center rounded-pill border border-border bg-surface-raised text-foreground shadow-raised transition-[border-color] duration-160 ease-standard after:absolute after:inset-[-8px] after:rounded-[inherit] after:content-[''] pointer-fine:group-hover/compare:border-border-strong motion-reduce:transition-none" role="slider" tabIndex={0} aria-label={label} aria-orientation={orientation}
           aria-valuemin={0} aria-valuemax={100} aria-valuenow={afterShare} aria-valuetext={`${afterShare}% after`}

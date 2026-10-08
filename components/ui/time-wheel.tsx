@@ -1014,7 +1014,7 @@ type ConfirmState = "idle" | "pending" | "success" | "failure"
 
 const lensClip = "inset(calc(50% - var(--reel-row) / 2) 0 calc(50% - var(--reel-row) / 2) 0)"
 const baseMask =
-  "linear-gradient(to bottom, #000 calc(50% - var(--reel-row) / 2), transparent calc(50% - var(--reel-row) / 2), transparent calc(50% + var(--reel-row) / 2), #000 calc(50% + var(--reel-row) / 2))"
+  "linear-gradient(to bottom, #000 calc(50% - var(--reel-row) / 2), transparent calc(50% - var(--reel-row) / 2), transparent calc(50% + var(--reel-row) / 2), #000 calc(50% + var(--reel-row) / 2))" // token-audit-ignore: mask colors, only alpha matters
 /** Nodes sit at the vertical center; the engine moves them along the cylinder with translateY and scale. */
 const slotClass = "absolute inset-x-0 top-[calc(50%-var(--reel-row)/2)] block h-(--reel-row) leading-(--reel-row) whitespace-nowrap tabular-nums will-change-transform"
 /** The stage fades its top and bottom quarter so the drum turns away into the card. */

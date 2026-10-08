@@ -296,7 +296,7 @@ export function Card({
                   <Dialog.Backdrop
                     key="overlay"
                     hidden={false}
-                    className="fixed inset-0 z-50 bg-[oklch(10%_0_0/.46)] backdrop-blur-[7px]"
+                    className="fixed inset-0 z-50 bg-shade/46 backdrop-blur-[7px]"
                     render={
                       <motion.div
                         initial={{ opacity: 0 }}

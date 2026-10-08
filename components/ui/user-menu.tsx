@@ -292,7 +292,7 @@ function Segmented<T extends string>({
       >
         <span
           className={cn(
-            "absolute top-0.5 bottom-0.5 left-0.5 -z-1 w-(--segment) rounded-pill bg-surface-raised shadow-[0_1px_2px_oklch(0%_0_0/.1),0_0_0_1px_var(--border-subtle)]",
+            "absolute top-0.5 bottom-0.5 left-0.5 -z-1 w-(--segment) rounded-pill bg-surface-raised shadow-[0_1px_2px_color-mix(in_oklab,var(--shade)_10%,transparent),0_0_0_1px_var(--border-subtle)]",
             "[transform:translateX(calc(var(--index)*100%))] [transition:transform_var(--duration-spring)_var(--ease-spring)] motion-reduce:transition-none",
             "dark:bg-[color-mix(in_oklab,var(--foreground)_20%,var(--surface-raised))] dark:shadow-none",
           )}
@@ -803,7 +803,7 @@ export function UserMenu({
       {open && sheet && (
         <motion.div
           key="scrim"
-          className="fixed inset-0 z-70 bg-[oklch(0%_0_0/.32)] [-webkit-tap-highlight-color:transparent]"
+          className="fixed inset-0 z-70 bg-shade/32 [-webkit-tap-highlight-color:transparent]"
           aria-hidden="true"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

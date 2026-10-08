@@ -57,6 +57,7 @@ const pathOf = name => {
   let m
   if ((m = n.match(/^neutral-(\d+)$/))) return `color.neutral.${m[1]}`
   if ((m = n.match(/^series-(\d+)$/))) return `color.series.${m[1]}`
+  if ((m = n.match(/^syntax-(\w+)$/))) return `color.syntax.${m[1]}`
   if ((m = n.match(/^control-height-(.+)$/))) return `size.control.${m[1]}`
   if (n === "control-thumb-shadow") return "shadow.control-thumb"
   if ((m = n.match(/^brand-gradient-(from|to|foreground)$/))) return `color.${n}`

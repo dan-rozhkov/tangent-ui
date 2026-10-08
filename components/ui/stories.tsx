@@ -906,7 +906,7 @@ function Face({
     <motion.div
       aria-hidden={active ? undefined : true}
       inert={!active}
-      className="absolute inset-0 overflow-hidden bg-surface-muted text-white"
+      className="absolute inset-0 overflow-hidden bg-surface-muted text-on-media"
       style={{ borderRadius: radius, opacity: cross }}
     >
       {/* One compositing layer for the photos: the face's radius changes every frame of a flight or a drag, and would otherwise re-raster them. */}
@@ -939,41 +939,41 @@ function Face({
         ) : null}
       </div>
       <motion.div className="pointer-events-none absolute inset-0 will-change-[opacity]" style={{ opacity: ui }}>
-        <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-[oklch(0_0_0/0.5)] to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-[oklch(0_0_0/0.5)] to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-shade/50 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-shade/50 to-transparent" />
         <div className="absolute inset-x-3 top-(--top) flex gap-1">
           {author.frames.map((_, bar) => (
-            <div key={bar} className="relative h-0.5 flex-1 overflow-hidden rounded-full bg-[oklch(1_0_0/0.35)]">
+            <div key={bar} className="relative h-0.5 flex-1 overflow-hidden rounded-full bg-sheen/35">
               <motion.div
-                className="absolute inset-0 origin-left rounded-full bg-white will-change-transform"
+                className="absolute inset-0 origin-left rounded-full bg-on-media will-change-transform"
                 style={{ scaleX: bar < frame ? 1 : bar === frame && active ? progress : 0 }}
               />
             </div>
           ))}
         </div>
         <div className="absolute inset-x-3 top-[calc(var(--top)+10px)] flex h-10 items-center gap-2.5 pr-[88px]">
-          <span className="relative block size-8 shrink-0 overflow-hidden rounded-full ring-1 ring-[oklch(1_0_0/0.85)]">
+          <span className="relative block size-8 shrink-0 overflow-hidden rounded-full ring-1 ring-sheen/85">
             <Image src={author.avatar} alt="" fill sizes="32px" className="object-cover" draggable={false} />
           </span>
-          <span className="min-w-0 truncate text-sm leading-tight font-medium [text-shadow:0_1px_8px_oklch(0_0_0/0.35)]">{author.name}</span>
-          {shown.time ? <span className="shrink-0 text-sm leading-tight text-[oklch(1_0_0/0.7)] [text-shadow:0_1px_8px_oklch(0_0_0/0.35)]">{shown.time}</span> : null}
+          <span className="min-w-0 truncate text-sm leading-tight font-medium [text-shadow:0_1px_8px_color-mix(in_oklab,var(--shade)_35%,transparent)]">{author.name}</span>
+          {shown.time ? <span className="shrink-0 text-sm leading-tight text-on-media/70 [text-shadow:0_1px_8px_color-mix(in_oklab,var(--shade)_35%,transparent)]">{shown.time}</span> : null}
         </div>
         {shown.caption ? (
-          <p className="absolute inset-x-4 bottom-[calc(var(--bottom)+52px)] m-0 text-base leading-snug [text-shadow:0_1px_12px_oklch(0_0_0/0.4)] [text-wrap:pretty]">{shown.caption}</p>
+          <p className="absolute inset-x-4 bottom-[calc(var(--bottom)+52px)] m-0 text-base leading-snug [text-shadow:0_1px_12px_color-mix(in_oklab,var(--shade)_40%,transparent)] [text-wrap:pretty]">{shown.caption}</p>
         ) : null}
       </motion.div>
       {/* The face turning away darkens, so the edge between two faces reads as a corner. */}
-      <motion.div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-[oklch(0_0_0)] will-change-[opacity]" style={{ opacity: turn }} />
+      <motion.div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-shade will-change-[opacity]" style={{ opacity: turn }} />
     </motion.div>
   )
 }
 
 /** 40px bare round icons over the photo. No focus ring: focus fills them like a hover does. */
 const iconButton = [
-  "pointer-events-auto grid size-10 cursor-pointer place-items-center rounded-pill text-white outline-none [-webkit-tap-highlight-color:transparent]",
-  "transition-[background-color,color,transform,opacity] duration-160 ease-standard pointer-fine:hover:bg-[oklch(1_0_0/0.18)] focus-visible:bg-[oklch(1_0_0/0.18)] motion-reduce:transition-none",
+  "pointer-events-auto grid size-10 cursor-pointer place-items-center rounded-pill text-on-media outline-none [-webkit-tap-highlight-color:transparent]",
+  "transition-[background-color,color,transform,opacity] duration-160 ease-standard pointer-fine:hover:bg-sheen/18 focus-visible:bg-sheen/18 motion-reduce:transition-none",
 ].join(" ")
-const iconShadow = "drop-shadow-[0_1px_4px_oklch(0_0_0/0.4)]"
+const iconShadow = "drop-shadow-[0_1px_4px_color-mix(in_oklab,var(--shade)_40%,transparent)]"
 /** 44px raised arrows beside the card. They vanish at the ends and below 640px, where swiping navigates. */
 const navButton = [
   "pointer-events-auto absolute top-1/2 grid size-11 -translate-y-1/2 cursor-pointer place-items-center rounded-pill bg-surface-raised text-foreground shadow-raised outline-none max-sm:hidden [-webkit-tap-highlight-color:transparent]",

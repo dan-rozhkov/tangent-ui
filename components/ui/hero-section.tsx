@@ -133,7 +133,7 @@ function hashOf(text: string) {
 /** Resolves any CSS color (hex, oklch, color-mix) to sRGB through a one pixel 2D canvas. */
 function toRgb(color: string, scratch: CanvasRenderingContext2D): Rgb {
   scratch.clearRect(0, 0, 1, 1)
-  scratch.fillStyle = "#000"
+  scratch.fillStyle = "#000" // token-audit-ignore: canvas mask compositing
   scratch.fillStyle = color
   scratch.fillRect(0, 0, 1, 1)
   const [r, g, b] = scratch.getImageData(0, 0, 1, 1).data
@@ -198,9 +198,9 @@ export function HeroMesh({ points, grain = 0.35, speed = 1, className, style }: 
 
     const readColors = () => {
       const css = getComputedStyle(host)
-      base = toRgb(css.getPropertyValue("--mesh-base").trim() || "#fff", scratch)
+      base = toRgb(css.getPropertyValue("--mesh-base").trim() || "#fff", scratch) // token-audit-ignore: computed fallback for mesh color math
       pts.forEach((_, i) => {
-        const c = toRgb(css.getPropertyValue(`--mesh-${i + 1}`).trim() || "#fff", scratch)
+        const c = toRgb(css.getPropertyValue(`--mesh-${i + 1}`).trim() || "#fff", scratch) // token-audit-ignore: computed fallback for mesh color math
         C.set(c, i * 3)
       })
     }
@@ -548,6 +548,7 @@ export function HeroCadence({
         )}
       >
         <HeroMesh
+          // token-audit-ignore: fixed mesh art palette, light and dark
           className="-z-1 [--mesh-1:#bdd3ec] [--mesh-2:#c3c6ff] [--mesh-3:#ffd0b0] [--mesh-4:#f6bfd6] [--mesh-5:#cfe8dc] [--mesh-6:#fff3dc] [--mesh-base:#f2ede7] dark:[--mesh-1:#0d3a47] dark:[--mesh-2:#2a2f86] dark:[--mesh-3:#5a2a3c] dark:[--mesh-4:#3a1f5a] dark:[--mesh-5:#7a3a22] dark:[--mesh-6:#12142c] dark:[--mesh-base:#09090f]"
           points={CADENCE_MESH}
           grain={0.55}
@@ -788,6 +789,7 @@ export function HeroLumen({
         )}
       >
         <HeroMesh
+          // token-audit-ignore: fixed mesh art palette, light and dark
           className="-z-1 [--mesh-1:#ffe6d8] [--mesh-2:#e3dcff] [--mesh-3:#dbe4ff] [--mesh-4:#f0e0ff] [--mesh-5:#e0eefc] [--mesh-base:var(--background)] dark:[--mesh-1:#2a1822] dark:[--mesh-2:#1c1a44] dark:[--mesh-3:#141c40] dark:[--mesh-4:#231842] dark:[--mesh-5:#0e2133]"
           points={LUMEN_MESH}
           grain={0.18}
@@ -824,6 +826,7 @@ export function HeroLumen({
           transition={calm ? { duration: motionTokens.duration.standard } : { duration: 1.1, ease: [...motionTokens.ease.enter], delay: 0.32 }}
         >
           <div
+            // token-audit-ignore: indigo glow tint, art color
             className="absolute inset-x-[10%] top-[calc(var(--halo)-110px)] -z-1 h-60 bg-[radial-gradient(50%_50%_at_50%_50%,var(--hero-glow),transparent_72%)] blur-[36px] [--hero-glow:color-mix(in_oklab,color-mix(in_oklab,var(--accent)_35%,#7d8cff)_36%,transparent)] dark:[--hero-glow:color-mix(in_oklab,color-mix(in_oklab,var(--accent)_30%,#6e7cff)_58%,transparent)]"
             aria-hidden="true"
           />
@@ -858,9 +861,12 @@ function LumenDashboard({ narrow }: { narrow: boolean }) {
     <div
       className={cn(
         "relative grid h-full grid-rows-[auto_minmax(0,1fr)] overflow-hidden rounded-2xl border border-border bg-surface text-left text-sm text-foreground",
-        "shadow-[0_1px_1px_rgb(20_24_40/.04),0_24px_48px_-16px_rgb(20_24_40/.16),0_60px_120px_-40px_rgb(40_48_110/.22)]",
-        "dark:border-[color-mix(in_oklab,var(--foreground)_14%,transparent)] dark:shadow-[inset_0_1px_0_color-mix(in_oklab,var(--foreground)_9%,transparent),0_24px_48px_-16px_rgb(0_0_0/.6),0_60px_140px_-40px_rgb(40_50_140/.35)]",
+        // token-audit-ignore: indigo ambient glow layer, art color
+        "shadow-[0_1px_1px_color-mix(in_oklab,var(--shade)_4%,transparent),0_24px_48px_-16px_color-mix(in_oklab,var(--shade)_16%,transparent),0_60px_120px_-40px_rgb(40_48_110/.22)]",
+        // token-audit-ignore: indigo ambient glow layer, art color
+        "dark:border-[color-mix(in_oklab,var(--foreground)_14%,transparent)] dark:shadow-[inset_0_1px_0_color-mix(in_oklab,var(--foreground)_9%,transparent),0_24px_48px_-16px_color-mix(in_oklab,var(--shade)_60%,transparent),0_60px_140px_-40px_rgb(40_50_140/.35)]",
         // A thin light catches the top edge, the way a real display does in a dark room.
+        // token-audit-ignore: indigo glow tint, art color
         "dark:after:pointer-events-none dark:after:absolute dark:after:inset-x-[12%] dark:after:top-0 dark:after:h-px dark:after:bg-[linear-gradient(to_right,transparent,color-mix(in_oklab,#b9c2ff_70%,transparent),transparent)] dark:after:content-['']",
       )}
       data-narrow={narrow || undefined}
@@ -1195,8 +1201,8 @@ export function HeroRelay({
           // Split, one full screen: the whole hero is a workflow canvas. A dot grid fills the screen, strongest behind the graph, and the
           // copy sits on the quiet side of it.
           "isolate grid items-center bg-[color-mix(in_oklab,var(--accent)_2%,var(--background))]",
-          "[--dot:color-mix(in_oklab,var(--foreground)_13%,transparent)] [--node-shadow:0_1px_1px_rgb(20_24_40/.04),0_8px_24px_-12px_rgb(20_24_40/.14)] [--wire:color-mix(in_oklab,var(--foreground)_17%,transparent)]",
-          "dark:[--dot:color-mix(in_oklab,var(--foreground)_17%,transparent)] dark:[--node-shadow:inset_0_1px_0_color-mix(in_oklab,var(--foreground)_7%,transparent),0_12px_32px_-14px_rgb(0_0_0/.7)] dark:[--wire:color-mix(in_oklab,var(--foreground)_20%,transparent)]",
+          "[--dot:color-mix(in_oklab,var(--foreground)_13%,transparent)] [--node-shadow:0_1px_1px_color-mix(in_oklab,var(--shade)_4%,transparent),0_8px_24px_-12px_color-mix(in_oklab,var(--shade)_14%,transparent)] [--wire:color-mix(in_oklab,var(--foreground)_17%,transparent)]",
+          "dark:[--dot:color-mix(in_oklab,var(--foreground)_17%,transparent)] dark:[--node-shadow:inset_0_1px_0_color-mix(in_oklab,var(--foreground)_7%,transparent),0_12px_32px_-14px_color-mix(in_oklab,var(--shade)_70%,transparent)] dark:[--wire:color-mix(in_oklab,var(--foreground)_20%,transparent)]",
           "before:pointer-events-none before:absolute before:inset-0 before:-z-1 before:bg-[radial-gradient(circle_at_1px_1px,var(--dot)_1px,transparent_1.5px)] before:bg-[length:22px_22px] before:[mask-image:radial-gradient(70%_80%_at_72%_52%,#000_30%,transparent_85%)] before:content-['']",
           "@max-[900px]/hero:before:[mask-image:radial-gradient(90%_60%_at_50%_78%,#000_30%,transparent_85%)]",
           className,
@@ -1477,8 +1483,8 @@ export function HeroSectionBlock({ variant: initial = "centered" }: { variant?: 
       <div
         className={cn(
           "absolute top-4 left-1/2 z-20 flex max-w-[calc(100%-2*var(--space-4))] -translate-x-1/2 rounded-pill border border-[color-mix(in_oklab,var(--foreground)_10%,transparent)]",
-          "bg-[color-mix(in_oklab,var(--surface)_64%,transparent)] shadow-[0_1px_1px_rgb(20_24_40/.04),0_10px_30px_-12px_rgb(20_24_40/.22)] backdrop-blur-[18px] backdrop-saturate-150",
-          "dark:border-[color-mix(in_oklab,var(--foreground)_14%,transparent)] dark:bg-[color-mix(in_oklab,var(--surface)_58%,transparent)] dark:shadow-[inset_0_1px_0_color-mix(in_oklab,var(--foreground)_8%,transparent),0_10px_30px_-12px_rgb(0_0_0/.6)]",
+          "bg-[color-mix(in_oklab,var(--surface)_64%,transparent)] shadow-[0_1px_1px_color-mix(in_oklab,var(--shade)_4%,transparent),0_10px_30px_-12px_color-mix(in_oklab,var(--shade)_22%,transparent)] backdrop-blur-[18px] backdrop-saturate-150",
+          "dark:border-[color-mix(in_oklab,var(--foreground)_14%,transparent)] dark:bg-[color-mix(in_oklab,var(--surface)_58%,transparent)] dark:shadow-[inset_0_1px_0_color-mix(in_oklab,var(--foreground)_8%,transparent),0_10px_30px_-12px_color-mix(in_oklab,var(--shade)_60%,transparent)]",
         )}
       >
         <SegmentedControl

@@ -725,8 +725,8 @@ export function FluidHeader({
           "transition-shadow duration-200 ease-standard",
           // Light theme uses the shared tokens; dark matches the two-layer shadows the bar and open states use.
           view.kind === "bar"
-            ? "shadow-raised dark:shadow-[0_1px_2px_oklch(0%_0_0/.2),0_6px_18px_oklch(0%_0_0/.18)]"
-            : "shadow-floating dark:shadow-[0_2px_6px_oklch(0%_0_0/.2),0_20px_48px_oklch(0%_0_0/.3)]",
+            ? "shadow-raised dark:shadow-[0_1px_2px_color-mix(in_oklab,var(--shade)_20%,transparent),0_6px_18px_color-mix(in_oklab,var(--shade)_18%,transparent)]"
+            : "shadow-floating dark:shadow-[0_2px_6px_color-mix(in_oklab,var(--shade)_20%,transparent),0_20px_48px_color-mix(in_oklab,var(--shade)_30%,transparent)]",
         )}
         style={{ width, height, borderRadius: radius }}
       >
