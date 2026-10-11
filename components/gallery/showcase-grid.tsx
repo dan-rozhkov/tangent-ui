@@ -36,6 +36,11 @@ function useFinePointer() {
   return useSyncExternalStore(subscribeFinePointer, () => finePointer().matches, () => false)
 }
 
+/** A trusted mouse move that really moved; Chrome also fires zero-movement ones when the page scrolls under the cursor. */
+function isMouseMove(event: PointerEvent) {
+  return event.isTrusted && event.pointerType === "mouse" && (event.movementX !== 0 || event.movementY !== 0)
+}
+
 const mountQueue: (() => void)[] = []
 let mountPump: { cancel: () => void } | null = null
 
@@ -159,16 +164,28 @@ function ShowcaseTile({ name, playing, hoverMode, owned, onView, onHover, onSett
     }
   }, [near, name, onView])
 
-  // The mouse counts as on the tile only once it moves there: Chrome also fires trusted pointerenter and pointerleave
-  // when the page scrolls under a stationary cursor, which must not stop a tour. Scripts fire untrusted events.
+  // The mouse counts as on the tile only once it moves there, and off it only once it moves elsewhere: Chrome also
+  // fires trusted pointerenter and pointerleave when the page scrolls under a stationary cursor, which must neither
+  // stop a tour nor reset the demo. Scripts fire untrusted events.
   useEffect(() => {
     const area = areaRef.current
     if (!area) return
     const move = (event: PointerEvent) => {
-      if (event.isTrusted && event.pointerType === "mouse" && (event.movementX !== 0 || event.movementY !== 0)) onHover(name, true)
+      if (isMouseMove(event)) onHover(name, true)
+    }
+    // Nothing on a pointerleave tells a scroll from a real exit, so a leave counts once the next real move lands off
+    // the tile. A real exit's own pointermove follows its pointerleave at once; leaving the window has no next move.
+    const recheck = (event: PointerEvent) => {
+      if (!isMouseMove(event)) return
+      document.removeEventListener("pointermove", recheck, { capture: true })
+      if (!area.contains(event.target as Node)) exit()
     }
     const leave = (event: PointerEvent) => {
       if (!event.isTrusted || event.pointerType !== "mouse") return
+      if (event.relatedTarget === null) exit()
+      else document.addEventListener("pointermove", recheck, { capture: true, passive: true })
+    }
+    const exit = () => {
       onHover(name, false)
       // The next hover replays the tour, so the demo must start from its initial state; a viewer's own state stays.
       if (hoverMode && ranRef.current && !ownedRef.current) {
@@ -181,6 +198,7 @@ function ShowcaseTile({ name, playing, hoverMode, owned, onView, onHover, onSett
     return () => {
       area.removeEventListener("pointermove", move)
       area.removeEventListener("pointerleave", leave)
+      document.removeEventListener("pointermove", recheck, { capture: true })
       onHover(name, false)
     }
   }, [name, onHover, hoverMode])
