@@ -113,7 +113,7 @@ function ShowcaseTile({ name, playing, hoverMode, owned, onView, onHover, onSett
     ownedRef.current = owned
     if (playing) ranRef.current = true
   })
-  const { run, replay, hasScript } = useDemoAutoplay(name, areaRef, stageRef, {
+  const { run, replay, hasScript } = useDemoAutoplay(name, stageRef, {
     active: playing,
     onSettle: reason => onSettle(name, reason),
   })

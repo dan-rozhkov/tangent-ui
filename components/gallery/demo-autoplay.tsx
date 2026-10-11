@@ -14,11 +14,11 @@ import { cn } from "@/lib/utils"
 interface DemoAutoplayOptions {
   takeOver?: "stage" | "page"
   /**
-   * Replaces the internal "seen" gate for the first run, so a caller can schedule the autoplay itself (the home grid
-   * plays one tile at a time). Flipping it off aborts the run; flipping it on again starts run 0 over, so the caller
-   * decides whether a spent run may be offered again.
+   * Gates the first run, so the caller schedules the autoplay (the home grid plays one tile at a time; component pages
+   * never autoplay). Flipping it off aborts the run; flipping it on again starts run 0 over, so the caller decides
+   * whether a spent run may be offered again.
    */
-  active?: boolean
+  active: boolean
   /** Called once per first run: its script finished, the viewer took over, or the run was cancelled (cleanup). */
   onSettle?: (reason: SettleReason) => void
 }
@@ -26,42 +26,23 @@ interface DemoAutoplayOptions {
 export type SettleReason = "done" | "takeover" | "cancelled"
 
 /**
- * Plays a demo's scripted walkthrough once its area is in view. `run` keys the demo, so each replay remounts it from
- * its initial state; run 0 is the autoplay on first sight. With `takeOver: "page"` a press or key anywhere on the page
+ * Plays a demo's scripted walkthrough while `active`. `run` keys the demo, so each replay remounts it from its initial
+ * state; run 0 is the autoplay. With `takeOver: "page"` a press or key anywhere on the page
  * ends the run, which a demo alone on its page needs: its dialogs and menus portal out of the stage.
  */
 export function useDemoAutoplay(
   name: string,
-  areaRef: RefObject<HTMLElement | null>,
   stageRef: RefObject<HTMLElement | null>,
-  { takeOver: scope = "stage", active, onSettle }: DemoAutoplayOptions = {},
+  { takeOver: scope = "stage", active, onSettle }: DemoAutoplayOptions,
 ) {
-  const [seen, setSeen] = useState(false)
   const [run, setRun] = useState(0)
-  const controlled = active !== undefined
   const settleRef = useRef(onSettle)
   useEffect(() => {
     settleRef.current = onSettle
   })
 
-  // Seen once the area reaches the middle half of the viewport, which a demo taller than the screen still does.
-  useEffect(() => {
-    const area = areaRef.current
-    if (!area || controlled) return
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return
-        setSeen(true)
-        observer.disconnect()
-      },
-      { rootMargin: "-25% 0px -25% 0px" },
-    )
-    observer.observe(area)
-    return () => observer.disconnect()
-  }, [areaRef, controlled])
-
   // An explicit replay runs whatever the gate says.
-  const open = run > 0 || (controlled ? active : seen)
+  const open = run > 0 || active
 
   // Reduced motion skips the autoplay, but an explicit replay still runs it.
   useEffect(() => {

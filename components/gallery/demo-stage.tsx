@@ -7,14 +7,12 @@ import { ReplayButton, useDemoAutoplay } from "@/components/gallery/demo-autopla
 
 export function DemoStage({ name, title }: { name: string; title: string }) {
   const Demo = demos[name]
-  const areaRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   // Component pages never autoplay; the replay button runs the script on request.
-  const { run, replay, hasScript } = useDemoAutoplay(name, areaRef, stageRef, { takeOver: "page", active: false })
+  const { run, replay, hasScript } = useDemoAutoplay(name, stageRef, { takeOver: "page", active: false })
 
   return (
     <div
-      ref={areaRef}
       data-stage
       className="relative flex min-h-80 min-w-0 items-center justify-center rounded-surface border border-border bg-surface p-8 sm:p-12"
     >
