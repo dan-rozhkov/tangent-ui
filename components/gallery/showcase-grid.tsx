@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Suspense, useCallback, useEffect, useRef, useState } from "react"
+import { Suspense, useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react"
 
 import { demos } from "@/components/demos"
 import { ReplayButton, useDemoAutoplay, type SettleReason } from "@/components/gallery/demo-autoplay"
@@ -12,6 +12,29 @@ import { showcase } from "@/lib/showcase"
 
 /** Pause between one tile's tour ending and the next starting, so the motion doesn't chain back to back. */
 const PLAY_GAP = 600
+
+/** How long the mouse must rest on a tile before its tour starts, so sweeping across the grid doesn't fire tours. */
+const HOVER_DELAY = 1000
+
+const FINE_POINTER = "(hover: hover) and (pointer: fine)"
+
+let finePointerQuery: MediaQueryList | undefined
+/** One shared query list: the snapshot is read on every render of the grid. */
+function finePointer() {
+  finePointerQuery ??= window.matchMedia(FINE_POINTER)
+  return finePointerQuery
+}
+
+function subscribeFinePointer(listener: () => void) {
+  const query = finePointer()
+  query.addEventListener("change", listener)
+  return () => query.removeEventListener("change", listener)
+}
+
+/** Whether a real mouse is the primary input; the server and touch devices answer false. */
+function useFinePointer() {
+  return useSyncExternalStore(subscribeFinePointer, () => finePointer().matches, () => false)
+}
 
 const mountQueue: (() => void)[] = []
 let mountPump: { cancel: () => void } | null = null
@@ -58,16 +81,22 @@ function withMember(set: ReadonlySet<string>, name: string, member: boolean): Re
 
 interface TileProps {
   name: string
-  /** This tile's turn in the grid's one-at-a-time autoplay queue. */
+  /** This tile's turn in the grid's one-at-a-time autoplay queue, or its hover tour on desktop. */
   playing: boolean
+  /** Desktop mode: tours follow the mouse, and leaving a tile that ran one puts the demo back to its start. */
+  hoverMode: boolean
+  /** The viewer took the demo over, so it keeps their state. */
+  owned: boolean
   onView: (name: string, inView: boolean) => void
   onHover: (name: string, hovered: boolean) => void
   onSettle: (name: string, reason: SettleReason) => void
+  /** The viewer pressed or typed into the demo, tour or not. */
+  onOwn: (name: string) => void
   /** The viewer replayed this tile by hand, which counts as its tour. */
   onReplay: (name: string) => void
 }
 
-function ShowcaseTile({ name, playing, onView, onHover, onSettle, onReplay }: TileProps) {
+function ShowcaseTile({ name, playing, hoverMode, owned, onView, onHover, onSettle, onOwn, onReplay }: TileProps) {
   const item = catalog.find(entry => entry.name === name)
   const Demo = demos[name]
   const areaRef = useRef<HTMLDivElement>(null)
@@ -76,8 +105,13 @@ function ShowcaseTile({ name, playing, onView, onHover, onSettle, onReplay }: Ti
   // Bumped when a tour is cut short by scrolling away, so the demo comes back fresh for its restart.
   const [fresh, setFresh] = useState(0)
   const playingRef = useRef(playing)
+  const ownedRef = useRef(owned)
+  // Whether a tour has run since the demo last mounted fresh.
+  const ranRef = useRef(false)
   useEffect(() => {
     playingRef.current = playing
+    ownedRef.current = owned
+    if (playing) ranRef.current = true
   })
   const { run, replay, hasScript } = useDemoAutoplay(name, areaRef, stageRef, {
     active: playing,
@@ -110,7 +144,10 @@ function ShowcaseTile({ name, playing, onView, onHover, onSettle, onReplay }: Ti
     if (!near || !area) return
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting && playingRef.current) setFresh(count => count + 1)
+        if (!entry.isIntersecting && playingRef.current) {
+          ranRef.current = false
+          setFresh(count => count + 1)
+        }
         onView(name, entry.isIntersecting)
       },
       { rootMargin: "-25% 0px -25% 0px" },
@@ -131,7 +168,13 @@ function ShowcaseTile({ name, playing, onView, onHover, onSettle, onReplay }: Ti
       if (event.isTrusted && event.pointerType === "mouse" && (event.movementX !== 0 || event.movementY !== 0)) onHover(name, true)
     }
     const leave = (event: PointerEvent) => {
-      if (event.isTrusted && event.pointerType === "mouse") onHover(name, false)
+      if (!event.isTrusted || event.pointerType !== "mouse") return
+      onHover(name, false)
+      // The next hover replays the tour, so the demo must start from its initial state; a viewer's own state stays.
+      if (hoverMode && ranRef.current && !ownedRef.current) {
+        ranRef.current = false
+        setFresh(count => count + 1)
+      }
     }
     area.addEventListener("pointermove", move, { passive: true })
     area.addEventListener("pointerleave", leave, { passive: true })
@@ -140,7 +183,23 @@ function ShowcaseTile({ name, playing, onView, onHover, onSettle, onReplay }: Ti
       area.removeEventListener("pointerleave", leave)
       onHover(name, false)
     }
-  }, [name, onHover])
+  }, [name, onHover, hoverMode])
+
+  // Any press or key in the demo makes it the viewer's, also when no tour runs: a pending hover tour must not start on
+  // top of it, and leaving must not reset it. Scripts fire untrusted events.
+  useEffect(() => {
+    const stage = stageRef.current
+    if (!stage || !hoverMode) return
+    const own = (event: Event) => {
+      if (event.isTrusted) onOwn(name)
+    }
+    stage.addEventListener("pointerdown", own, { capture: true, passive: true })
+    stage.addEventListener("keydown", own, { capture: true, passive: true })
+    return () => {
+      stage.removeEventListener("pointerdown", own, { capture: true })
+      stage.removeEventListener("keydown", own, { capture: true })
+    }
+  }, [name, onOwn, hoverMode])
 
   if (!item || !Demo) return null
 
@@ -181,19 +240,27 @@ function ShowcaseTile({ name, playing, onView, onHover, onSettle, onReplay }: Ti
 }
 
 /**
- * Plays the tiles' tours one at a time, in showcase order: while the mouse isn't on a tile, the first tile that is in
- * view, has a script and hasn't played goes next, a beat after the previous one ended. Everything moving at once costs
- * the first load and loses the eye, and a tour must never run under a viewer's cursor.
+ * Autoplays the tiles' tours, by input. With a mouse nothing moves by itself: a tour starts for the tile the mouse has
+ * rested on for HOVER_DELAY, stops when the mouse leaves, and the tile is reset on leaving so the next hover replays it;
+ * a viewer who clicks into a demo owns it, and it is never replayed or reset. Without a mouse the tours go one at a
+ * time, in showcase order: while no tile is touched, the first tile in view that has a script and hasn't played goes
+ * next, a beat after the previous one ended. Everything moving at once costs the first load and loses the eye, and a
+ * tour must never run under a viewer's cursor.
  */
 export function ShowcaseGrid() {
+  const hoverMode = useFinePointer()
   const [inView, setInView] = useState<ReadonlySet<string>>(new Set())
   const [hovered, setHovered] = useState<ReadonlySet<string>>(new Set())
+  // Queue mode: tours already spent. Hover mode: tours settled during the current hover.
   const [played, setPlayed] = useState<ReadonlySet<string>>(new Set())
+  const [owned, setOwned] = useState<ReadonlySet<string>>(new Set())
   const [playing, setPlaying] = useState<string | null>(null)
 
   const playingRef = useRef<string | null>(null)
+  const ownedRef = useRef(owned)
   useEffect(() => {
     playingRef.current = playing
+    ownedRef.current = owned
   })
 
   const finish = useCallback((name: string) => {
@@ -204,6 +271,15 @@ export function ShowcaseGrid() {
   const onSettle = useCallback((name: string, reason: SettleReason) => {
     if (reason !== "cancelled") finish(name)
   }, [finish])
+  const onOwn = useCallback((name: string) => setOwned(set => withMember(set, name, true)), [])
+  // A hand-pressed replay is the viewer's: on desktop it also ends the hover tour and keeps the demo as it is.
+  const onReplay = useCallback(
+    (name: string) => {
+      if (hoverMode) setOwned(set => withMember(set, name, true))
+      finish(name)
+    },
+    [finish, hoverMode],
+  )
   // The playing tile scrolling out of the middle band stops its tour without spending it, so it never holds the queue
   // from view yet restarts from the top when it is back.
   const onView = useCallback((name: string, visible: boolean) => {
@@ -213,25 +289,48 @@ export function ShowcaseGrid() {
   const onHover = useCallback(
     (name: string, over: boolean) => {
       setHovered(set => withMember(set, name, over))
-      if (over && playingRef.current === name) finish(name)
+      if (hoverMode) {
+        if (over) return
+        // Leaving ends the tour and lets the next hover play it again, unless the viewer took the demo over.
+        setPlaying(current => (current === name ? null : current))
+        if (!ownedRef.current.has(name)) setPlayed(set => withMember(set, name, false))
+      } else if (over && playingRef.current === name) finish(name)
     },
-    [finish],
+    [finish, hoverMode],
   )
 
   useEffect(() => {
+    if (hoverMode || playing || hovered.size > 0 || prefersReducedMotion()) return
     // A mouse resting on any tile holds the whole queue: the viewer is looking there, not at the next tour.
-    if (playing || hovered.size > 0 || prefersReducedMotion()) return
     const next = showcase.find(name => inView.has(name) && !played.has(name) && Object.hasOwn(showcaseScripts, name))
     if (!next) return
     const timer = window.setTimeout(() => setPlaying(next), PLAY_GAP)
     return () => window.clearTimeout(timer)
-  }, [playing, inView, played, hovered])
+  }, [hoverMode, playing, inView, played, hovered])
+
+  useEffect(() => {
+    if (!hoverMode || playing || prefersReducedMotion()) return
+    const next = showcase.find(name => hovered.has(name) && !played.has(name) && !owned.has(name) && Object.hasOwn(showcaseScripts, name))
+    if (!next) return
+    const timer = window.setTimeout(() => setPlaying(next), HOVER_DELAY)
+    return () => window.clearTimeout(timer)
+  }, [hoverMode, playing, hovered, played, owned])
 
   return (
     <ul className="grid grid-cols-1 gap-px overflow-hidden rounded-surface border border-border bg-border sm:grid-cols-2">
       {showcase.map(name => (
         <li key={name} className="min-w-0 bg-surface">
-          <ShowcaseTile name={name} playing={playing === name} onView={onView} onHover={onHover} onSettle={onSettle} onReplay={finish} />
+          <ShowcaseTile
+            name={name}
+            playing={playing === name}
+            hoverMode={hoverMode}
+            owned={owned.has(name)}
+            onView={onView}
+            onHover={onHover}
+            onSettle={onSettle}
+            onOwn={onOwn}
+            onReplay={onReplay}
+          />
         </li>
       ))}
     </ul>

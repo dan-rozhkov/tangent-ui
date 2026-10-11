@@ -9,7 +9,8 @@ export function DemoStage({ name, title }: { name: string; title: string }) {
   const Demo = demos[name]
   const areaRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
-  const { run, replay, hasScript } = useDemoAutoplay(name, areaRef, stageRef, { takeOver: "page" })
+  // Component pages never autoplay; the replay button runs the script on request.
+  const { run, replay, hasScript } = useDemoAutoplay(name, areaRef, stageRef, { takeOver: "page", active: false })
 
   return (
     <div
