@@ -43,6 +43,7 @@ export const demos: Record<string, ComponentType> = {
   "cta-section": lazy(() => import("./cta-section")),
   "date-picker": lazy(() => import("./date-picker")),
   "date-range-picker": lazy(() => import("./date-range-picker")),
+  "date-scrubber": lazy(() => import("./date-scrubber")),
   "depth-rail": lazy(() => import("./depth-rail")),
   "dialog": lazy(() => import("./dialog")),
   "donut-chart": lazy(() => import("./donut-chart")),

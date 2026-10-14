@@ -6,6 +6,7 @@ import { AnimatePresence, animate, motion, useIsPresent, useMotionValue, useTran
 import type { Transition, Variants } from "motion/react"
 import { CalendarBlankIcon, CaretDownIcon, CaretLeftIcon, CaretRightIcon } from "@phosphor-icons/react"
 
+import { addDays, startOfDay, useToday } from "@/lib/date"
 import { motionTokens } from "@/lib/motion-tokens"
 import { cn } from "@/lib/utils"
 import { useReducedMotion } from "@/lib/reduced-motion"
@@ -56,10 +57,8 @@ type Size = { w: number; h: number }
 type Bezier = [number, number, number, number]
 
 const DAY = 864e5
-const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate())
 const monthStart = (date: Date) => new Date(date.getFullYear(), date.getMonth(), 1)
 const monthEnd = (date: Date) => new Date(date.getFullYear(), date.getMonth() + 1, 0)
-const addDays = (date: Date, amount: number) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + amount)
 const addMonths = (date: Date, amount: number) => new Date(date.getFullYear(), date.getMonth() + amount, 1)
 const shiftMonths = (date: Date, amount: number) =>
   new Date(
@@ -95,37 +94,6 @@ export const defaultDateRangePresets: DateRangePreset[] = [
   },
   { label: "Year to date", range: (today) => ({ start: new Date(today.getFullYear(), 0, 1), end: today }) },
 ]
-
-/** Today turns over at local midnight; returning to the tab reads it again. Empty on the server so markup never depends on its clock. */
-const subscribeToday = (notify: () => void) => {
-  let timer = 0
-  const schedule = () => {
-    const now = new Date()
-    timer = window.setTimeout(
-      () => {
-        notify()
-        schedule()
-      },
-      addDays(now, 1).getTime() - now.getTime() + 1000,
-    )
-  }
-  const onVisible = () => {
-    if (document.visibilityState === "visible") notify()
-  }
-  schedule()
-  document.addEventListener("visibilitychange", onVisible)
-  return () => {
-    window.clearTimeout(timer)
-    document.removeEventListener("visibilitychange", onVisible)
-  }
-}
-const readToday = () => keyOf(new Date())
-const serverToday = () => ""
-/** The viewer's local date, or undefined during server render and hydration. */
-export function useToday() {
-  const key = useSyncExternalStore(subscribeToday, readToday, serverToday)
-  return useMemo(() => (key ? fromKey(key) : undefined), [key])
-}
 
 const noop = () => () => {}
 function useReducedFlag() {
