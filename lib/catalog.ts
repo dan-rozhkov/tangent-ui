@@ -765,6 +765,13 @@ export const catalog: CatalogItem[] = [
     "kind": "block"
   },
   {
+    "name": "availability-picker",
+    "title": "Availability picker",
+    "description": "Find a meeting time across attendees: day cards count open slots, a slot dims whoever is busy in the header, and the selection glides between times before you confirm.",
+    "category": "blocks",
+    "kind": "block"
+  },
+  {
     "name": "logo-marquee",
     "title": "Logo marquee",
     "description": "A quiet, continuously moving row of brand marks with a pause control.",

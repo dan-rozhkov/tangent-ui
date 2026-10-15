@@ -8,6 +8,7 @@ export const demos: Record<string, ComponentType> = {
   "alert": lazy(() => import("./alert")),
   "animated-counter": lazy(() => import("./animated-counter")),
   "announcement-bar": lazy(() => import("./announcement-bar")),
+  "availability-picker": lazy(() => import("./availability-picker")),
   "avatar": lazy(() => import("./avatar")),
   "avatar-group": lazy(() => import("./avatar-group")),
   "badge": lazy(() => import("./badge")),
