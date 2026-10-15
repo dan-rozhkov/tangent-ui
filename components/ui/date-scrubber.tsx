@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { KeyboardEvent, MouseEvent, PointerEvent } from "react"
-import { AnimatePresence, animate, motion, useMotionValue, useMotionValueEvent, useSpring, useTransform } from "motion/react"
+import { AnimatePresence, animate, motion, useMotionValue, useMotionValueEvent, useTransform } from "motion/react"
 import type { AnimationPlaybackControls, MotionValue, Transition, Variants } from "motion/react"
 import { ArrowLeftIcon, ArrowRightIcon, PlusIcon } from "@phosphor-icons/react"
 
@@ -127,7 +127,13 @@ export function DateScrubber({ value, defaultValue, onValueChange, today: todayP
   const offset = useMotionValue(index)
   const [width, setWidth] = useState(0)
   const center = width / 2
-  const bump = useSpring(0, motionTokens.spring.gentle)
+  const bump = useMotionValue(0)
+  /** The glide of the swell between the marker and the finger; a drag tracks the finger exactly once it has landed. */
+  const bumpGlide = useRef<AnimationPlaybackControls | null>(null)
+  const glideBump = (to: number, transition: Transition) => {
+    bumpGlide.current?.stop()
+    bumpGlide.current = animate(bump, to, { ...transition, onComplete: () => (bumpGlide.current = null) })
+  }
   const rulerRef = useRef<HTMLDivElement>(null)
 
   useLayoutEffect(() => {
@@ -142,7 +148,10 @@ export function DateScrubber({ value, defaultValue, onValueChange, today: todayP
   }, [])
   const dragging = useRef(false)
   useLayoutEffect(() => {
-    if (!dragging.current) bump.jump(center)
+    if (dragging.current) return
+    bumpGlide.current?.stop()
+    bumpGlide.current = null
+    bump.jump(center)
   }, [bump, center])
 
   // The ruler is measured from today, so when today (or the range) moves, re-seat it on the selected day.
@@ -256,7 +265,7 @@ export function DateScrubber({ value, defaultValue, onValueChange, today: todayP
     dragging.current = true
     const left = node.getBoundingClientRect().left
     drag.current = { pointerId: event.pointerId, node, x: event.clientX, offset: offset.get(), left, samples: [{ t: event.timeStamp, o: offset.get() }] }
-    if (!reduced) bump.set(event.clientX - left)
+    if (!reduced) glideBump(event.clientX - left, motionTokens.spring.snappy)
   }
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
     const state = drag.current
@@ -268,7 +277,10 @@ export function DateScrubber({ value, defaultValue, onValueChange, today: todayP
     offset.set(next)
     state.samples.push({ t: event.timeStamp, o: next })
     while (state.samples.length > 2 && event.timeStamp - state.samples[0].t > 100) state.samples.shift()
-    if (!reduced) bump.set(event.clientX - state.left)
+    if (reduced) return
+    // Still gliding in from the marker: retarget the glide (it keeps its velocity). After that the swell sits under the finger.
+    if (bumpGlide.current) glideBump(event.clientX - state.left, motionTokens.spring.snappy)
+    else bump.set(event.clientX - state.left)
   }
   const release = (event: PointerEvent<HTMLDivElement>) => {
     const state = drag.current
@@ -276,7 +288,7 @@ export function DateScrubber({ value, defaultValue, onValueChange, today: todayP
     drag.current = null
     dragging.current = false
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
-    bump.set(center)
+    if (!reduced) glideBump(center, motionTokens.spring.gentle)
     // A pause before letting go reads as 0, so only a throw that is still moving at release flings.
     const velocity = clamp(axisVelocity(state.samples, event.timeStamp, sample => sample.o), -60, 60)
     const snap = (target: number) => clamp(Math.round(target), minIndex, maxIndex)
